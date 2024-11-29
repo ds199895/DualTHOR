@@ -119,11 +119,20 @@ public class UnityClient : MonoBehaviour
                         return;
                     }
 
-                    // 执行动作
+                    // 执行动作并根据动作类型保存或跳过保存状态
                     agentMovement.ExecuteActionWithCallback(actionData, () =>
                     {
-                        // 在动作完成后保存当前场景状态
-                        sceneManager.SaveCurrentState();
+                        // 检查是否为 undo 或 redo 操作
+                        if (actionData.action == "Undo" || actionData.action == "Redo")
+                        {
+                            Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
+                        }
+                        else
+                        {
+                            // 在动作完成后保存当前场景状态
+                            sceneManager.SaveCurrentState();
+                            Debug.Log($"Saved current state after action: {actionData.action}");
+                        }
 
                         // 发送反馈给 Python
                         SendFeedbackToPython(actionData.action);
@@ -140,6 +149,7 @@ public class UnityClient : MonoBehaviour
             }
         }
     }
+
     public void SendFeedbackToPython(string action)
     {
         if (client != null && stream != null)

@@ -46,6 +46,7 @@ python server_ik.py
 ```bash
 python main.py
 ```
+![alt text](image.png)
 
 ## 三、操作方法
 
@@ -57,11 +58,17 @@ python main.py
    2. unity_launcher：启动文件，内含可执行文件的路径，也用于单独Build包的启动。
    3. tcp_server：通信服务端，需要确认Ip和Post来保证连接，正常情况启动该文件即可，再同时启动unity项目即可通信。
    4. actions：动作脚本，内含所有动作方法。
-      - Move和Rotate负责移动和旋转，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1（概率系统：每个action的最后一个参数均为successRate，默认为1）。例如MoveAhead即默认向前移动1个单位，MoveAhead 2 0.5即向前移动2个单位，成功率为50%。
+      - Move即移动，包括MoveAhead, MoveRight, MoveBack, MoveLeft，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1。例如MoveAhead即默认向前移动1个单位，MoveAhead 2 0.5即向前移动2个单位，成功率为50%。
+      ![alt text](image-1.png)
+      - Rotate即旋转，包括RotateRight, RotateLeft，指令输入大小写均可。后接参数，第一个参数为旋转方向，默认为90°；第二个参数为成功率，默认为1。例如RotateRight即默认右旋90°，成功率为100%，RotateRight 2 0.5即右旋180°，成功率为50%。
+      ![alt text](image-2.png)
       - Pick、place后第一个参数均为左右臂（Left\Right）选择，第二个参数为可交互物品的ObjectId，详情ObjectId在表格中均有介绍。
+      ![alt text](image-3.png)
       - tggle、open后接ObjectId（需提前tp至该物体旁边），目前默认右手操作，待修改。
+      ![alt text](image-4.png)
       - TP即传送，只有一个参数，为ObjectId，即可传送至该物品旁边。
       - Undo和Redo为历史状态管理，Redo可回到上一次状态信息，而Undo为撤销。
+      ![alt text](image-5.png)
       - Reset_joint为复位机械臂关节角，恢复至初始关节角，后接参数（Left\Right）。
 
 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
@@ -73,7 +80,15 @@ python main.py
   - 按 数字0 键进入漫游相机模式，即脱离整体进行。
 
 
-## 四、物品交互系统
+## 四、视觉系统
+1. 场景设有多个相机，包括第一人称和第三人称的前后左右视角，来提供360°全景无死角视角来进行图像信息获取，支持全方向自由旋转，确保机器人能实时监控周围环境，并且后续可根据需求定制视角的数量和方向。（全部展示的话太耗费性能，所以具体如何展示视角还待商量）
+![alt text](image-6.png)
+2. 提供相机视野内的深度图获取。
+3. 设有小地图，时刻关联机器人在场景中的位置，帮助玩家快速了解整体环境布局。
+4. 将每个视角的图像数据保存为带有UUID的PNG文件，放在本地目录下，后续可将图片数据转成二进制数据传输。
+
+
+## 五、物品交互系统
 ### 1. 物品分类
 将物体分为了三类：Static/Moveable/Can pickup。
 1. Static：场景中无法移动的物体。如开关，水龙头。

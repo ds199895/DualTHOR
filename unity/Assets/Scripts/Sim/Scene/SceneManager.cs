@@ -137,18 +137,18 @@ public class SceneManager : MonoBehaviour
         //{
         //    Redo(); 
         //}
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            SaveCurrentState();
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            Undo();
-        }
-        if ( Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            Redo();
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //{
+        //    SaveCurrentState();
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //{
+        //    Undo();
+        //}
+        //if ( Input.GetKeyDown(KeyCode.Alpha3))
+        //{
+        //    Redo();
+        //}
     }
 
     public void SaveCurrentState()
@@ -204,7 +204,7 @@ public class SceneManager : MonoBehaviour
         stateHistoryA2T.Add(stateA2T);
         maxStateIndexText.text= "MaxIndex:" + (stateHistory.Count-1).ToString();
         // 输出场景状态
-        print(JsonUtility.ToJson(state));
+        //print(JsonUtility.ToJson(state));
         print(JsonUtility.ToJson(stateA2T));
         currentStateIndex++;
     }
@@ -343,7 +343,7 @@ public class SceneManager : MonoBehaviour
     private void LoadState(SceneState state, SceneStateA2T stateA2T)
     {
         string sceneStateJson = JsonUtility.ToJson(state);
-        print(sceneStateJson);
+        //print(sceneStateJson);
         string sceneStateJsonA2T = JsonUtility.ToJson(stateA2T);
         print(sceneStateJsonA2T);
         // 更新场景状态和相关信息
