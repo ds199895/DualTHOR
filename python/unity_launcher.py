@@ -1,22 +1,18 @@
+from pathlib import Path
 import subprocess
 import time
 
-UNITY_EXECUTABLE_PATH = r'D:\Program Files\Unity\agent-playground\Build\Win\Playground.exe'
+# 构造相对路径：从当前脚本文件目录出发，定位到 Unity 可执行文件
+UNITY_EXECUTABLE_PATH = Path(__file__).parent.parent / "unity" / "Build" / "Win" / "Playground.exe"
 
 def start_unity(wait_time=5):
     """
     启动 Unity 可执行文件，并等待指定的时间确保启动完成。
-    
-    参数:
-    - wait_time (int): 等待 Unity 完全启动的时间（秒）。
-    
-    返回:
-    - unity_process (Popen): 返回启动的 Unity 进程对象，如果失败则返回 None。
     """
     try:
-        unity_process = subprocess.Popen([UNITY_EXECUTABLE_PATH])
+        unity_process = subprocess.Popen([str(UNITY_EXECUTABLE_PATH)])
         print("Unity environment started.")
-        time.sleep(wait_time)  # 默认等待 5 秒或使用传入的等待时间
+        time.sleep(wait_time)
         return unity_process
     except Exception as e:
         print(f"Failed to start Unity environment: {e}")
@@ -25,11 +21,8 @@ def start_unity(wait_time=5):
 def stop_unity(unity_process):
     """
     关闭 Unity 环境。
-    
-    参数:
-    - unity_process (Popen): Unity 进程对象。
     """
-    if unity_process and unity_process.poll() is None:  # 检查进程是否仍在运行
+    if unity_process and unity_process.poll() is None:
         unity_process.terminate()
         print("Unity environment terminated.")
     else:

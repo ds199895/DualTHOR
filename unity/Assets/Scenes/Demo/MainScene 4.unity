@@ -30425,6 +30425,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 298296785707988219, guid: bfee0b7b6a337694bbd5c95808f068db,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 473581823591488510, guid: bfee0b7b6a337694bbd5c95808f068db,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -30469,6 +30474,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2693087997074721455, guid: bfee0b7b6a337694bbd5c95808f068db,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3563473292216039430, guid: bfee0b7b6a337694bbd5c95808f068db,
         type: 3}
@@ -80177,7 +80187,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2020528277}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f67fde1c831307644ad416a9d25bad7a, type: 3}
   m_Name: 
