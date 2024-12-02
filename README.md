@@ -47,8 +47,8 @@ python main.py
 Python配置内含是main，actions，tcp_server，unity_launcher，server_ik。
    1. main.py：主程序入口，包含launcher、tcp_server、server_ik，直接启动该文件即可。
    2. unity_launcher：启动文件，内含可执行文件的路径，也用于单独Build包的启动。
-   3. tcp_server：通信服务端，需要确认Ip和Post来保证连接，也可单独启动该文件，再同时启动unity项目来调试通信。
-   4. server_ik：IK服务端，提供动作的IK计算，需要确认Ip和Post来保证连接。
+   3. tcp_server：通信服务端，需要确认Ip和PORT来保证连接，也可单独启动该文件，再同时启动unity项目来调试通信。
+   4. server_ik：IK服务端，提供动作的IK计算，需要确认Ip和PORT来保证连接。
    4. actions：动作脚本，内含所有动作方法。
       - Move即移动，包括`MoveAhead`, `MoveRight`, `MoveBack`, `MoveLeft`，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1。例如`MoveAhead`即默认向前移动1个单位，`MoveAhead 2 0.5`即向前移动2个单位，成功率为50%。
       ![alt text](image/img_v3_02h6_0531ed3b-670b-410e-b3bd-c07aebd162bg.gif)
@@ -66,7 +66,7 @@ Python配置内含是main，actions，tcp_server，unity_launcher，server_ik。
 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 
 ### 2. Unity端：
-  - 需提前确认IP和POST保证正常连接，当前默认localhost和5678。
+  - 需提前确认IP和PORT保证正常连接，当前默认localhost和5678。
   - 按 Z 即可进入机器人控制模式，WSAD去控制机器人的移动，鼠标控制旋转，屏幕中心对准可交互物品即可进行交互。比如左键Pick，再次点击左键即可Place；对准水龙头即可进行水的开关，对准冰箱即可开关门等等，详情可见[交互表格](#交互表格)。
   - 按 P 键保存所有相机图像，包括第一、三人称在内的所有相机截图保存在本地目录。
   - 按 数字0 键进入漫游相机模式，即脱离整体进行。

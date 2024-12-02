@@ -114,10 +114,10 @@ def ik_service():
     
     return jsonify(response)
 
-def start_ik_server():
+def start_server_ik():
     """启动 IK 服务"""
     print("Starting IK server...")
     app.run(host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
-    start_ik_server()
+    start_server_ik()
