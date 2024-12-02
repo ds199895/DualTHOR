@@ -169,7 +169,7 @@ public class ObjectHightLightController : MonoBehaviour
             heldObjectRigidbody.isKinematic = true;
             heldObject.transform.SetParent(hand.transform);
             //heldObject.transform.localPosition = Vector3.zero;
-            heldObject.transform.localPosition = new Vector3(0, 5f, 0);
+            heldObject.transform.localPosition = new Vector3(0, 0f, 0);
 
         }
         isHoldingObject = true;
