@@ -12,7 +12,7 @@
 
 ## 二、安装
 ### 1. 克隆项目
-git clone https://github.com/AgentX-Agibot/agent-playground.git  （rebuild分支）
+git clone https://github.com/AgentX-Agibot/agent-playground.git  （first_build分支）
 
 ### 2. 启动配置文件
 ---
