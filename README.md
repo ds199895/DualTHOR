@@ -1,6 +1,9 @@
-[toc]
 # 项目简介
 这是一个使用 Python 和 Unity 实现的仿真环境，灵感来源于 AI2-THOR。为Agent提供了一个 3D 环境，用于进行各种任务（如机器人控制、物体交互等），可以用于测评、训练具身智能体、多模态模型等，并且可以帮助开发和测试与视觉、语音、强化学习等相关的 AI 系统。
+
+### 新增功能点：
+概率系统：该版本新增了概率系统，可以自定义设置successrate来控制单独控制每个action的成功率。
+运控动作：已对接了IK库来实现动作设计，代替原先的直接吸附传递。
 
 ## 一、功能
 - 智能体控制：使用 Python 控制智能体在 3D 环境中移动、旋转、拾取物体等Action。
@@ -46,7 +49,7 @@ python server_ik.py
 ```bash
 python main.py
 ```
-![alt text](image.png)
+![alt text](img_v3_02h6_f6e11ef9-0d5e-426d-9c58-69c74b5236cg.gif)
 
 ## 三、操作方法
 
@@ -59,16 +62,16 @@ python main.py
    3. tcp_server：通信服务端，需要确认Ip和Post来保证连接，正常情况启动该文件即可，再同时启动unity项目即可通信。
    4. actions：动作脚本，内含所有动作方法。
       - Move即移动，包括MoveAhead, MoveRight, MoveBack, MoveLeft，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1。例如MoveAhead即默认向前移动1个单位，MoveAhead 2 0.5即向前移动2个单位，成功率为50%。
-      ![alt text](image-1.png)
+      ![alt text](img_v3_02h6_0531ed3b-670b-410e-b3bd-c07aebd162bg.gif)
       - Rotate即旋转，包括RotateRight, RotateLeft，指令输入大小写均可。后接参数，第一个参数为旋转方向，默认为90°；第二个参数为成功率，默认为1。例如RotateRight即默认右旋90°，成功率为100%，RotateRight 2 0.5即右旋180°，成功率为50%。
-      ![alt text](image-2.png)
+      ![alt text](img_v3_02h6_e10559cc-fef1-40d0-9502-daf56049640g.gif)
       - Pick、place后第一个参数均为左右臂（Left\Right）选择，第二个参数为可交互物品的ObjectId，详情ObjectId在表格中均有介绍。
-      ![alt text](image-3.png)
+      ![alt text](img_v3_02h6_3128daf3-c708-4b8a-a53c-c6a11250471g.gif)
       - tggle、open后接ObjectId（需提前tp至该物体旁边），目前默认右手操作，待修改。
-      ![alt text](image-4.png)
+      ![alt text](img_v3_02h6_d4ff7f24-bc9b-4dbf-93f4-5591da60bfbg.gif)
       - TP即传送，只有一个参数，为ObjectId，即可传送至该物品旁边。
-      - Undo和Redo为历史状态管理，Redo可回到上一次状态信息，而Undo为撤销。
-      ![alt text](image-5.png)
+      - Undo和Redo为历史状态管理，Redo可回溯到上一次状态信息，而Undo为撤销。
+      ![alt text](img_v3_02h6_6acf9e49-3226-49ae-81de-e7c70ccf7b4g.gif)
       - Reset_joint为复位机械臂关节角，恢复至初始关节角，后接参数（Left\Right）。
 
 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
@@ -82,7 +85,7 @@ python main.py
 
 ## 四、视觉系统
 1. 场景设有多个相机，包括第一人称和第三人称的前后左右视角，来提供360°全景无死角视角来进行图像信息获取，支持全方向自由旋转，确保机器人能实时监控周围环境，并且后续可根据需求定制视角的数量和方向。（全部展示的话太耗费性能，所以具体如何展示视角还待商量）
-![alt text](image-6.png)
+![alt text](image.png)
 2. 提供相机视野内的深度图获取。
 3. 设有小地图，时刻关联机器人在场景中的位置，帮助玩家快速了解整体环境布局。
 4. 将每个视角的图像数据保存为带有UUID的PNG文件，放在本地目录下，后续可将图片数据转成二进制数据传输。
