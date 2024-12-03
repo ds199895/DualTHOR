@@ -50,7 +50,7 @@ class TCPServer:
             if data_buffer.endswith(b'\n'):
                 break
         received_data = data_buffer.decode()
-        logging.info(f"Received data: {received_data}")
+        # logging.info(f"Received data: {received_data}")
         return received_data
 
     def stop(self):
