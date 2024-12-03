@@ -3,7 +3,7 @@ import subprocess
 import time
 
 # 构造相对路径：从当前脚本文件目录出发，定位到 Unity 可执行文件
-UNITY_EXECUTABLE_PATH = Path(__file__).parent.parent / "unity" / "Build" / "Win" / "Playground.exe"
+UNITY_EXECUTABLE_PATH = Path(__file__).parent.parent / "unity" / "Target" / "Win" / "Playground.exe"
 
 def start_unity(wait_time=5):
     """

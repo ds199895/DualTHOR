@@ -8,8 +8,22 @@
 
 
 ## 安装
+<<<<<<< HEAD
 ### 1. 克隆项目
 ```git clone -b first_build https://github.com/AgentX-Agibot/agent-playground.git```
+=======
+项目中有大文件，需要确保安装了Git LFS
+```bash
+git lfs install
+```
+### 1. 克隆项目
+```git clone -b first_build https://github.com/AgentX-Agibot/agent-playground.git```
+
+默认情况下，Git LFS 会在克隆时自动下载所有被跟踪的大文件。如果你希望确保拉取完整的文件数据，可以运行：
+```bash
+git lfs pull
+```
+>>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 
 ### 2. 启动配置文件
 ---
@@ -20,11 +34,16 @@
 ---
 
 #### 2. 安装所需库
+<<<<<<< HEAD
 MacOS/Linux:
+=======
+
+>>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 ```bash
 cd python
 pip install -r requirements.txt
 ```
+<<<<<<< HEAD
 
 Windows:
 ```bash
@@ -36,6 +55,13 @@ windows下pinocchio需要使用conda安装
   conda install -c conda-forge pinocchio
   ```
 
+=======
+- 其中Pinocchio 的git地址为   ```https://github.com/Hleewei728/pinocchio.git```
+    使用conda安装即可
+    ```bash
+    conda install -c conda-forge pinocchio
+    ```
+>>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 ---
 
 #### 3. 启动 Agent Server

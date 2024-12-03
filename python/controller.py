@@ -30,6 +30,7 @@ class Controller:
     def step(self, action, moveMagnitude=None, successRate=None, stateID=None):
         """
         执行一个动作 (AI2-THOR 风格接口)。
+        手臂异步
         """
         if moveMagnitude is None:
             moveMagnitude = 1.0
