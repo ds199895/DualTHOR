@@ -8,8 +8,17 @@
 
 
 ## 安装
+项目中有大文件，需要确保安装了Git LFS
+```bash
+git lfs install
+```
 ### 1. 克隆项目
 ```git clone -b first_build https://github.com/AgentX-Agibot/agent-playground.git```
+
+默认情况下，Git LFS 会在克隆时自动下载所有被跟踪的大文件。如果你希望确保拉取完整的文件数据，可以运行：
+```bash
+git lfs pull
+```
 
 ### 2. 启动配置文件
 ---
