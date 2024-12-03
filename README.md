@@ -102,8 +102,8 @@ Python配置内含是main，actions，tcp_server，unity_launcher，server_ik。
 | Fridge   |Kitchen_Fridge_ID| Kithcen   | Contains,Open  |    |
 | Mug   |Kitchen_Mug_ID| Kithcen   | Break,Can pickup,Fill   |    |
 | Pan   |Kitchen_Pan_ID| Kithcen   | Can pickup,Contains   |   |
-| PaperTowerRoll   |Kitchen_PaperTowerRoll_0X| Kithcen   | Can pickup,UsedUp   |   |
-| Potato   |Kitchen_Potato_0X| Kithcen   | Can pickup,Cook,Slice   | 土豆可被煮熟，也可切开后再被煮熟  |
-| StoveKnob   |Kitchen_StoveKnob_0X| Kithcen   | ToggleOnOff   |  燃气灶开关  |
+| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kithcen   | Can pickup,UsedUp   |   |
+| Potato   |Kitchen_Potato_ID| Kithcen   | Can pickup,Cook,Slice   | 土豆可被煮熟，也可切开后再被煮熟  |
+| StoveKnob   |Kitchen_StoveKnob_ID| Kithcen   | ToggleOnOff   |  燃气灶开关  |
 
 
