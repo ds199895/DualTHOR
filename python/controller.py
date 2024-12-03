@@ -1,53 +1,62 @@
 import logging
 import json
-from actions import Actions
 from tcp_server import TCPServer
-from configmanager import ConfigManager  # 引入 ConfigManager
+from actions import Actions
 
 logging.basicConfig(level=logging.INFO)
+
 
 class Controller:
     def __init__(self, host='localhost', port=5678, config_path="config.json"):
         """
-        初始化控制器，包括动作执行器和 TCP 服务器。
+        初始化控制器，包括动作执行器、TCP 服务器和配置加载。
         """
         self.executor = Actions()
         self.tcp_server = TCPServer(host, port)
-        self.config_manager = ConfigManager(config_path)  # 初始化配置管理器
-   
-    def start(self):
+        self.config = self.load_config(config_path)
+
+    def load_config(self, config_path):
         """
-        启动服务器并处理用户输入。
+        加载配置文件。
+        :param config_path: 配置文件路径
+        :return: 配置数据
         """
         try:
-            self.tcp_server.start()  # 启动 TCP 服务器
-            self.handle_user_input()  # 处理用户输入
+            with open(config_path, 'r') as file:
+                config = json.load(file)
+                logging.info("Config loaded successfully.")
+                return config
+        except Exception as e:
+            logging.error(f"Error loading config: {e}")
+            return {}
+
+    def get_default_success_rate(self, action_name):
+        """
+        从配置文件获取动作的默认成功率。
+        """
+        success_rates = self.config.get("success_rate", {})
+        return success_rates.get(action_name.lower(), 1.0)
+
+    def start(self):
+        """启动控制器"""
+        try:
+            self.tcp_server.start()
+            self.handle_user_input()
         except Exception as e:
             logging.error(f"Error in Controller: {e}")
         finally:
-            self.tcp_server.stop()  # 停止服务器
-            
-    def step(self, action, moveMagnitude=None, successRate=None, stateID=None):
-        """
-        执行一个动作 (AI2-THOR 风格接口)。
-        手臂异步
-        """
-        if moveMagnitude is None:
-            moveMagnitude = 1.0
+            self.tcp_server.stop()
 
-        # 使用 ConfigManager 获取成功率
-        if successRate is None:
-            successRate = self.config_manager.get_success_rate(action)
-            logging.info(f"Using success rate from config for action '{action}': {successRate}")
-
+    def step(self, action_name, **kwargs):
+        """
+        执行动作，并通过 TCP 服务器发送命令。
+        """
         try:
-            # 检查是否是 loadstate 动作
-            if action.lower() == "loadstate" and stateID:
-                action_json = self.executor.execute_action(action, state_id=stateID)
-            else:
-                action_json = self.executor.execute_action(action, moveMagnitude=moveMagnitude, successRate=successRate)
+            # 如果未指定 success_rate，从配置中加载默认值
+            if "successRate" not in kwargs:
+                kwargs["successRate"] = self.get_default_success_rate(action_name)
 
-            # 发送指令到 Unity 并接收反馈
+            action_json = self.executor.execute_action(action_name, **kwargs)
             self.tcp_server.send(action_json)
             feedback = self.tcp_server.receive()
             logging.info(f"Feedback from Unity: {feedback}")
@@ -55,44 +64,32 @@ class Controller:
         except Exception as e:
             logging.error(f"Error in step execution: {e}")
             return {"error": str(e)}
-        
+
     def handle_user_input(self):
         """
-        处理用户输入并与 Unity 环境交互。
+        动态解析用户输入，构造参数并调用动作执行器。
         """
         while True:
             try:
-                # 获取用户输入
-                action_input = input("Enter action: ").strip()
-                if not action_input:
-                    logging.warning("Empty action. Please enter a valid action.")
+                user_input = input("Enter action and parameters: ").strip()
+                if not user_input:
+                    logging.warning("Empty input. Please enter a valid action.")
                     continue
 
-                # 解析动作名称
-                parts = action_input.split()
-                action_name = parts[0]
+                # 动态解析输入
+                parts = user_input.split()
+                action_name = parts[0].lower()
+                parameters = self.executor.parse_parameters(parts[1:])
 
-                # 检查是否是 loadstate 动作
-                if action_name.lower() == "loadstate":
-                    if len(parts) < 2:
-                        logging.warning("LoadState requires a stateID.")
-                        continue
-                    state_id = parts[1]  # 获取 stateID
-                    feedback = self.step(action=action_name, stateID=state_id)
-                else:
-                    move_magnitude = float(parts[1]) if len(parts) > 1 else 1.0
-                    success_rate = float(parts[2]) if len(parts) > 2 else None
-                    feedback = self.step(action=action_name, moveMagnitude=move_magnitude, successRate=success_rate)
-
-                # 输出反馈
-                # print(f"Feedback: {feedback}")
-
+                # 执行动作
+                feedback = self.step(action_name, **parameters)
+                # logging.info(f"Feedback: {feedback}")
             except KeyboardInterrupt:
                 logging.info("User stopped the program.")
                 break
             except Exception as e:
-                logging.error(f"Error during action handling: {e}")
-
+                logging.error(f"Error handling user input: {e}")
+    
     def reset_environment(self):
         """
         重置环境。

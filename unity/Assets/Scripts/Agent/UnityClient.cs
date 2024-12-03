@@ -15,7 +15,7 @@ public class UnityClient : MonoBehaviour
     public class ActionData
     {
         public string action;
-        public float moveMagnitude;
+        public float Magnitude;
         public string arm;  
         public string objectID;
         public float successRate;

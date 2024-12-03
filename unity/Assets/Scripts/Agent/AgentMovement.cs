@@ -312,7 +312,7 @@ public class AgentMovement : MonoBehaviour
             }
             else if (param.ParameterType == typeof(float))
             {
-                args.Add(actionData.moveMagnitude); // 添加移动幅度
+                args.Add(actionData.Magnitude); // 添加移动幅度
             }
             else
             {
@@ -627,39 +627,39 @@ public class AgentMovement : MonoBehaviour
         EnableArticulationBodies();
     }
 
-    public IEnumerator MoveAhead(float moveMagnitude, Action callback = null)
+    public IEnumerator MoveAhead(float Magnitude, Action callback = null)
     {
-        yield return SmoothMove(Vector3.forward, moveMagnitude, 1.0f); 
+        yield return SmoothMove(Vector3.forward, Magnitude, 1.0f); 
         callback?.Invoke(); 
     }
 
-    public IEnumerator MoveRight(float moveMagnitude, Action callback = null)
+    public IEnumerator MoveRight(float Magnitude, Action callback = null)
     {
-        yield return SmoothMove(Vector3.right, moveMagnitude, 1.0f);
+        yield return SmoothMove(Vector3.right, Magnitude, 1.0f);
         callback?.Invoke();
     }
 
-    public IEnumerator MoveBack(float moveMagnitude, Action callback = null)
+    public IEnumerator MoveBack(float Magnitude, Action callback = null)
     {
-        yield return SmoothMove(Vector3.back, moveMagnitude, 1.0f);
+        yield return SmoothMove(Vector3.back, Magnitude, 1.0f);
         callback?.Invoke();
     }
 
-    public IEnumerator MoveLeft(float moveMagnitude, Action callback = null)
+    public IEnumerator MoveLeft(float Magnitude, Action callback = null)
     {
-        yield return SmoothMove(Vector3.left, moveMagnitude, 1.0f);
+        yield return SmoothMove(Vector3.left, Magnitude, 1.0f);
         callback?.Invoke();
     }
 
-    public IEnumerator RotateRight(float moveMagnitude, Action callback = null)
+    public IEnumerator RotateRight(float Magnitude, Action callback = null)
     {
-        yield return SmoothRotate(Vector3.up, Mathf.Abs(moveMagnitude), 1.0f);
+        yield return SmoothRotate(Vector3.up, Mathf.Abs(Magnitude), 1.0f);
         callback?.Invoke();
     }
 
-    public IEnumerator RotateLeft(float moveMagnitude, Action callback = null)
+    public IEnumerator RotateLeft(float Magnitude, Action callback = null)
     {
-        yield return SmoothRotate(Vector3.up, -Mathf.Abs(moveMagnitude), 1.0f);
+        yield return SmoothRotate(Vector3.up, -Mathf.Abs(Magnitude), 1.0f);
         callback?.Invoke();
     }
     public void Undo()
