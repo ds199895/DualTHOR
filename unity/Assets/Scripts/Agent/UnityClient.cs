@@ -16,10 +16,10 @@ public class UnityClient : MonoBehaviour
     {
         public string action;
         public float moveMagnitude;
-        public string arm;  // 添加 arm 字段以支持左右臂的 PickAndPlace
+        public string arm;  
         public string objectID;
         public float successRate;
-
+        public string stateID;  
     }
 
 
@@ -119,24 +119,41 @@ public class UnityClient : MonoBehaviour
                         return;
                     }
 
-                    // 执行动作并根据动作类型保存或跳过保存状态
-                    agentMovement.ExecuteActionWithCallback(actionData, () =>
+                    // 特殊处理 LoadSceneState 动作
+                    if (actionData.action == "LoadSceneState")
                     {
-                        // 检查是否为 undo 或 redo 操作
-                        if (actionData.action == "Undo" || actionData.action == "Redo")
+                        if (!string.IsNullOrEmpty(actionData.stateID))
                         {
-                            Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
+                            agentMovement.LoadState(actionData.stateID);
+                            Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
+
+                            // 发送反馈给 Python
+                            SendFeedbackToPython($"Loaded state ID: {actionData.stateID}");
                         }
                         else
                         {
-                            // 在动作完成后保存当前场景状态
-                            sceneManager.SaveCurrentState();
-                            Debug.Log($"Saved current state after action: {actionData.action}");
+                            Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
+                            SendFeedbackToPython("Error: Missing state ID for LoadSceneState.");
                         }
+                    }
+                    else
+                    {
+                        // 处理其他常规动作
+                        agentMovement.ExecuteActionWithCallback(actionData, () =>
+                        {
+                            if (actionData.action == "Undo" || actionData.action == "Redo")
+                            {
+                                Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
+                            }
+                            else
+                            {
+                                sceneManager.SaveCurrentState();
+                                Debug.Log($"Saved current state after action: {actionData.action}");
+                            }
 
-                        // 发送反馈给 Python
-                        SendFeedbackToPython(actionData.action);
-                    });
+                            SendFeedbackToPython(actionData.action);
+                        });
+                    }
                 }
                 else
                 {

@@ -102,67 +102,66 @@ public class AgentMovement : MonoBehaviour
 
     void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.Alpha1))
-        //{
-        //    StartCoroutine(ResetJoint(true)); // 同样，true表示使用左臂，false表示使用右臂
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha2))
-        //{
-        //    string targetObjectID = "Kitchen_Cup_01"; // 替换为目标物品的 ID
-        //    TP(targetObjectID);
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha3))
-        //{
-        //    StartCoroutine(Pick("Kitchen_Cup_01", true)); // true表示使用左臂，false表示使用右臂
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha4))
-        //{
-        //    StartCoroutine(Place("Kitchen_Cup_01", true)); // 同样，true表示使用左臂，false表示使用右臂
-        //}
-
-
-
-
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
+            StartCoroutine(ResetJoint(true)); // 同样，true表示使用左臂，false表示使用右臂
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            StartCoroutine(Toggle("Kitchen_Faucet_01")); // 
+            string targetObjectID = "Kitchen_Cup_01"; // 替换为目标物品的 ID
+            TP(targetObjectID);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
+            StartCoroutine(Pick("Kitchen_Cup_01", true)); // true表示使用左臂，false表示使用右臂
         }
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            StartCoroutine(Open("Kitchen_Fridge_01")); // 
+            StartCoroutine(Place("Kitchen_Cup_01", true)); // 同样，true表示使用左臂，false表示使用右臂
         }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            string targetObjectID = "Kitchen_StoveKnob_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            StartCoroutine(Toggle("Kitchen_StoveKnob_01")); // 
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            string targetObjectID = "Kitchen_Cabinet_02"; // 替换为目标物品的 ID
-            TP(targetObjectID);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            StartCoroutine(Open("Kitchen_Cabinet_02")); // 同样，
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            StartCoroutine(ResetJoint(false)); // 同样，true表示使用左臂，false表示使用右臂
-        }
+
+
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //{
+        //    string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
+        //    TP(targetObjectID);
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //{
+        //    StartCoroutine(Toggle("Kitchen_Faucet_01")); // 
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //{
+        //    string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
+        //    TP(targetObjectID);
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha4))
+        //{
+        //    StartCoroutine(Open("Kitchen_Fridge_01")); // 
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //{
+        //    string targetObjectID = "Kitchen_StoveKnob_01"; // 替换为目标物品的 ID
+        //    TP(targetObjectID);
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha6))
+        //{
+        //    StartCoroutine(Toggle("Kitchen_StoveKnob_01")); // 
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha7))
+        //{
+        //    string targetObjectID = "Kitchen_Cabinet_02"; // 替换为目标物品的 ID
+        //    TP(targetObjectID);
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha8))
+        //{
+        //    StartCoroutine(Open("Kitchen_Cabinet_02")); // 同样，
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha0))
+        //{
+        //    StartCoroutine(ResetJoint(false)); // 同样，true表示使用左臂，false表示使用右臂
+        //}
+
 
         if (Input.GetKeyDown(KeyCode.Z))        // Z键切换手动控制
         {
@@ -324,7 +323,12 @@ public class AgentMovement : MonoBehaviour
 
         return args.ToArray();
     }
-
+    // 调用 SceneManager 的 LoadStateByIndex 方法
+    public void LoadState(string stateID)
+    {
+        Debug.Log($"Attempting to load scene state with ID: {stateID}");
+        sceneManager.LoadStateByIndex(stateID);  // 调用 SceneManager 方法
+    }
 
     public IEnumerator Toggle(string objectID)
     {
