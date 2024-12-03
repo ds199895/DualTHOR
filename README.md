@@ -20,17 +20,21 @@
 ---
 
 #### 2. 安装所需库
-
+MacOS/Linux:
 ```bash
 cd python
 pip install -r requirements.txt
 ```
-- 其中Pinocchio 的git地址为   ```https://github.com/Hleewei728/pinocchio.git```
 
-    使用conda安装即可
-    ```bash
-    conda install -c conda-forge pinocchio
-    ```
+Windows:
+```bash
+cd python
+pip install -r requirements.txt
+```
+windows下pinocchio需要使用conda安装
+  ```bash
+  conda install -c conda-forge pinocchio
+  ```
 
 ---
 
