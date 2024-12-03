@@ -1,7 +1,8 @@
 import logging
+import json
 from actions import Actions
 from tcp_server import TCPServer
-import json
+from configmanager import ConfigManager  # 引入 ConfigManager
 
 logging.basicConfig(level=logging.INFO)
 
@@ -12,22 +13,8 @@ class Controller:
         """
         self.executor = Actions()
         self.tcp_server = TCPServer(host, port)
-        self.success_rates = self.load_config(config_path)  # 加载配置文件中的成功率
-
-    def load_config(self, file_path):
-        """
-        加载 config.json 文件，并提取成功率配置。
-        """
-        try:
-            logging.info(f"Loading config from: {file_path}")
-            with open(file_path, 'r') as file:
-                config = json.load(file)
-                logging.info(f"Config loaded: {config}")
-                return config.get("success_rate", {})
-        except Exception as e:
-            logging.error(f"Error loading config: {e}")
-            return {}
-        
+        self.config_manager = ConfigManager(config_path)  # 初始化配置管理器
+   
     def start(self):
         """
         启动服务器并处理用户输入。
@@ -47,11 +34,10 @@ class Controller:
         if moveMagnitude is None:
             moveMagnitude = 1.0
 
-        # 使用配置文件中的默认成功率
+        # 使用 ConfigManager 获取成功率
         if successRate is None:
-            successRate = self.success_rates.get(action.lower(), 1.0)
-            if successRate == 1.0:
-                logging.warning(f"Using default success rate for action: {action}")
+            successRate = self.config_manager.get_success_rate(action)
+            logging.info(f"Using success rate from config for action '{action}': {successRate}")
 
         try:
             action_json = self.executor.execute_action(action, moveMagnitude, successRate)
@@ -80,13 +66,11 @@ class Controller:
                 parts = action_input.split()
                 action_name = parts[0]
                 move_magnitude = float(parts[1]) if len(parts) > 1 else 1.0
-
-                # 如果用户未输入成功率，将其设置为 None
                 success_rate = float(parts[2]) if len(parts) > 2 else None
 
                 # 执行动作
                 feedback = self.step(action=action_name, moveMagnitude=move_magnitude, successRate=success_rate)
-                print(f"Feedback: {feedback}")
+                # print(f"Feedback: {feedback}")
 
             except KeyboardInterrupt:
                 logging.info("User stopped the program.")
@@ -127,5 +111,5 @@ class Controller:
 
 # 启动控制器
 if __name__ == '__main__':
-    controller = Controller(config_path="config.json")  # 指定配置文件路径
+    controller = Controller(config_path="config.json")  
     controller.start()

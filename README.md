@@ -2,7 +2,7 @@
 我们基于[AI2-THOR](https://ai2thor.allenai.org/)构建了一个轻量化的、能在web端运行的仿真环境，用于具身智能体和多模态模型的训练和测评。在AI2-THOR的基础上，我们新增了下述功能：
 - 双臂动作执行：现在支持双臂进行并行、异步任务执行。
 - 任务回溯：支持在任务执行过程中回退到任意时间步，提升数据合成效率。
-- 动作概率系统：该版本新增了概率系统，可以自定义设置success rate来控制单独控制每个action的成功率。
+- 动作概率系统：该版本新增了概率系统，可以根据config.json自定义设置success rate来控制单独控制每个action的成功率。
 - 更真实的动作执行：添加了IK库来实现动作，取代了直接吸附传递，可以对动作执行时间做更加细节的模拟。
 - 更真实的状态变化：对注水、煮熟等状态添加了更多细节的调优。
 
@@ -38,12 +38,12 @@ python main.py
 ## 操作方法
 
 ### 1. Python端：
-Python配置内含是main，actions，tcp_server，unity_launcher，server_ik。
+Python主要用于控制虚拟环境中的Agent，以执行导航、交互、控制等任务，并从环境中获取感知数据。主要脚本有：
    1. main.py：主程序入口，包含launcher、tcp_server、server_ik，直接启动该文件即可。
-   2. unity_launcher：启动文件，内含可执行文件的路径，也用于单独Build包的启动。
-   3. tcp_server：通信服务端，需要确认Ip和PORT来保证连接，也可单独启动该文件，再同时启动unity项目来调试通信。
-   4. server_ik：IK服务端，提供动作的IK计算，需要确认Ip和PORT来保证连接。
+   2. controller.py：控制器程序，负责与Unity环境交互、启动server端、调用action方法、发送并反馈。
+   3. config.json：配置文件，目前暂时只有success rate，后续可根据需求增加更多参数。
    4. actions：动作脚本，内含所有动作方法。
+   两种控制模式：用户命令行输入控制和controller.step调用action控制。 
       - Move即移动，包括`MoveAhead`, `MoveRight`, `MoveBack`, `MoveLeft`，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1。例如`MoveAhead`即默认向前移动1个单位，`MoveAhead 2 0.5`即向前移动2个单位，成功率为50%。
       ![alt text](image/img_v3_02h6_0531ed3b-670b-410e-b3bd-c07aebd162bg.gif)
       - Rotate即旋转，包括`RotateRight`, `RotateLeft`，指令输入大小写均可。后接参数，第一个参数为旋转方向，默认为90°；第二个参数为成功率，默认为1。例如`RotateRight`即默认右旋90°，成功率为100%，`RotateRight 2 0.5`即右旋180°，成功率为50%。
@@ -57,7 +57,7 @@ Python配置内含是main，actions，tcp_server，unity_launcher，server_ik。
       ![alt text](image/img_v3_02h6_6acf9e49-3226-49ae-81de-e7c70ccf7b4g.gif)
       - Reset_joint为复位机械臂关节角，恢复至初始关节角，后接参数（Left\Right）。
 
-反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
+#### 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 
 ### 2. Unity端：
   - 需提前确认IP和PORT保证正常连接，当前默认localhost和5678。

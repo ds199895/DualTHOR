@@ -1,7 +1,7 @@
 import threading
-import server_ik  # 导入 ikserver.py
-import unity_launcher  # Unity 启动逻辑
-from controller import Controller  # 替换为 Controller
+import server_ik  
+import unity_launcher  
+from controller import Controller  
 
 def main():
     """通过 main 启动 IK 服务、Unity 和 Controller"""
