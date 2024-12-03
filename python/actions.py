@@ -17,29 +17,36 @@ class Actions:
             "toggle": self.toggle, 
             "open": self.open,
             "undo": self.undo,
-            "redo": self.redo
+            "redo": self.redo,
+            "loadstate": self.loadstate 
         }
 
-    def execute_action(self, action_name, move_magnitude=1.0, success_rate=1.0):
+    def execute_action(self, action_name, **kwargs):
         # 查找并执行相应的动作方法
         action_method = self.actions.get(action_name.lower())
         if action_method:
-            return json.dumps(action_method(move_magnitude, success_rate))
+            return json.dumps(action_method(**kwargs))
         else:
             return json.dumps({"error": f"Unknown action: {action_name}"})
-
+        
+    def loadstate(self, state_id):
+        if not state_id:
+            return {"error": "StateID is required for LoadSceneState."}
+        return {"action": "LoadSceneState", "stateID": state_id}
+    
     # 具体的动作方法（接收 move_magnitude 和 success_rate 参数）
-    def move_ahead(self, move_magnitude=1.0, success_rate=1.0):
+    def move_ahead(self, move_magnitude=1.0, success_rate=1.0, **kwargs):
         return {"action": "MoveAhead", "moveMagnitude": move_magnitude, "successRate": success_rate}
 
-    def move_right(self, move_magnitude=1.0, success_rate=1.0):
+    def move_right(self, move_magnitude=1.0, success_rate=1.0, **kwargs):
         return {"action": "MoveRight", "moveMagnitude": move_magnitude, "successRate": success_rate}
 
-    def move_back(self, move_magnitude=1.0, success_rate=1.0):
+    def move_back(self, move_magnitude=1.0, success_rate=1.0, **kwargs):
         return {"action": "MoveBack", "moveMagnitude": move_magnitude, "successRate": success_rate}
 
-    def move_left(self, move_magnitude=1.0, success_rate=1.0):
-        return {"action": "MoveLeft", "moveMagnitude": move_magnitude, "successRate": success_rate}
+    def move_left(self, moveMagnitude=1.0, successRate=1.0, **kwargs):
+        return {"action": "MoveLeft", "moveMagnitude": moveMagnitude, "successRate": successRate}
+
 
     def rotate_right(self, move_magnitude=1.0, success_rate=1.0):
         return {"action": "RotateRight", "moveMagnitude": move_magnitude, "successRate": success_rate}

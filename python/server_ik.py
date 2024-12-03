@@ -4,12 +4,17 @@ import numpy as np
 from numpy.linalg import norm, solve
 from copy import deepcopy
 from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
 
-# 设置URDF文件的绝对路径
-urdf_filename = "D:/Program Files/Unity/collider/Assets/UR5/ur_description/urdf/ur5_robot.urdf"
-print("urdf_filename: " + urdf_filename)
+
+# 获取当前脚本目录
+script_dir = os.path.dirname(os.path.abspath(__file__))
+urdf_filename = os.path.join(script_dir, "../unity/Assets/UR5/ur_description/urdf/ur5_robot.urdf")
+urdf_filename = os.path.normpath(urdf_filename)  # 标准化路径
+
+print(f"URDF file path: {urdf_filename}")
 
 # 加载URDF模型
 model = pinocchio.buildModelFromUrdf(urdf_filename)

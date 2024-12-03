@@ -27,7 +27,7 @@ class Controller:
         finally:
             self.tcp_server.stop()  # 停止服务器
             
-    def step(self, action, moveMagnitude=None, successRate=None):
+    def step(self, action, moveMagnitude=None, successRate=None, stateID=None):
         """
         执行一个动作 (AI2-THOR 风格接口)。
         """
@@ -40,9 +40,14 @@ class Controller:
             logging.info(f"Using success rate from config for action '{action}': {successRate}")
 
         try:
-            action_json = self.executor.execute_action(action, moveMagnitude, successRate)
-            self.tcp_server.send(action_json)
+            # 检查是否是 loadstate 动作
+            if action.lower() == "loadstate" and stateID:
+                action_json = self.executor.execute_action(action, state_id=stateID)
+            else:
+                action_json = self.executor.execute_action(action, moveMagnitude=moveMagnitude, successRate=successRate)
 
+            # 发送指令到 Unity 并接收反馈
+            self.tcp_server.send(action_json)
             feedback = self.tcp_server.receive()
             logging.info(f"Feedback from Unity: {feedback}")
             return feedback
@@ -65,11 +70,20 @@ class Controller:
                 # 解析动作名称
                 parts = action_input.split()
                 action_name = parts[0]
-                move_magnitude = float(parts[1]) if len(parts) > 1 else 1.0
-                success_rate = float(parts[2]) if len(parts) > 2 else None
 
-                # 执行动作
-                feedback = self.step(action=action_name, moveMagnitude=move_magnitude, successRate=success_rate)
+                # 检查是否是 loadstate 动作
+                if action_name.lower() == "loadstate":
+                    if len(parts) < 2:
+                        logging.warning("LoadState requires a stateID.")
+                        continue
+                    state_id = parts[1]  # 获取 stateID
+                    feedback = self.step(action=action_name, stateID=state_id)
+                else:
+                    move_magnitude = float(parts[1]) if len(parts) > 1 else 1.0
+                    success_rate = float(parts[2]) if len(parts) > 2 else None
+                    feedback = self.step(action=action_name, moveMagnitude=move_magnitude, successRate=success_rate)
+
+                # 输出反馈
                 # print(f"Feedback: {feedback}")
 
             except KeyboardInterrupt:
