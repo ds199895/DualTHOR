@@ -35,12 +35,10 @@ cd python
 pip install -r requirements.txt
 ```
 - 其中Pinocchio 的git地址为   ```https://github.com/Hleewei728/pinocchio.git```
-
     使用conda安装即可
     ```bash
     conda install -c conda-forge pinocchio
     ```
-
 ---
 
 #### 3. 启动 Agent Server
