@@ -8,10 +8,6 @@
 
 
 ## 安装
-<<<<<<< HEAD
-### 1. 克隆项目
-```git clone -b first_build https://github.com/AgentX-Agibot/agent-playground.git```
-=======
 项目中有大文件，需要确保安装了Git LFS
 ```bash
 git lfs install
@@ -23,7 +19,6 @@ git lfs install
 ```bash
 git lfs pull
 ```
->>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 
 ### 2. 启动配置文件
 ---
@@ -34,16 +29,11 @@ git lfs pull
 ---
 
 #### 2. 安装所需库
-<<<<<<< HEAD
 MacOS/Linux:
-=======
-
->>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 ```bash
 cd python
 pip install -r requirements.txt
 ```
-<<<<<<< HEAD
 
 Windows:
 ```bash
@@ -55,13 +45,6 @@ windows下pinocchio需要使用conda安装
   conda install -c conda-forge pinocchio
   ```
 
-=======
-- 其中Pinocchio 的git地址为   ```https://github.com/Hleewei728/pinocchio.git```
-    使用conda安装即可
-    ```bash
-    conda install -c conda-forge pinocchio
-    ```
->>>>>>> b6c899261a9efbf7d00845feb9397f6b226159ad
 ---
 
 #### 3. 启动 Agent Server
@@ -93,6 +76,7 @@ Python主要用于控制虚拟环境中的Agent，以执行导航、交互、控
       ![alt text](image/img_v3_02h6_6acf9e49-3226-49ae-81de-e7c70ccf7b4g.gif)
       - Reset_joint为复位机械臂关节角，恢复至初始关节角，后接参数（Left\Right）。
 
+#### 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 #### 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 
 ### 2. Unity端：
@@ -129,8 +113,19 @@ Python主要用于控制虚拟环境中的Agent，以执行导航、交互、控
 9. **UsedUp**：物品可被使用完。如卫生纸可以被耗尽。
 ### 3. 交互表格
 这个表格列举了目前所有可交互物品的种类，物品ID命名（房间_物品种类_ID）所在房间，具有的交互状态和备注。
+这个表格列举了目前所有可交互物品的种类，物品ID命名（房间_物品种类_ID）所在房间，具有的交互状态和备注。
 | 物品种类   |物品ID格式| 所在房间 | 可交互状态 | 备注 |
 |:-: |:-:|:-:|:-:|:-:|
+| Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
+| CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
+| Drawer   |Kitchen_Drawer_ID| Kithcen   | Contains,Open   |    |
+| Faucet   |Kitchen_Faucet_ID| Kithcen   | ToggleOnOff   |    |
+| Fridge   |Kitchen_Fridge_ID| Kithcen   | Contains,Open  |    |
+| Mug   |Kitchen_Mug_ID| Kithcen   | Break,Can pickup,Fill   |    |
+| Pan   |Kitchen_Pan_ID| Kithcen   | Can pickup,Contains   |   |
+| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kithcen   | Can pickup,UsedUp   |   |
+| Potato   |Kitchen_Potato_ID| Kithcen   | Can pickup,Cook,Slice   | 土豆可被煮熟，也可切开后再被煮熟  |
+| StoveKnob   |Kitchen_StoveKnob_ID| Kithcen   | ToggleOnOff   |  燃气灶开关  |
 | Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
 | CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
 | Drawer   |Kitchen_Drawer_ID| Kithcen   | Contains,Open   |    |
