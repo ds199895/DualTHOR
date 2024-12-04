@@ -302,33 +302,31 @@ public class AgentMovement : MonoBehaviour
 
         foreach (var param in parameters)
         {
-            if (param.ParameterType == typeof(string) && !string.IsNullOrEmpty(actionData.objectID))
+            // 根据参数名称显式映射
+            switch (param.Name.ToLower())
             {
-                args.Add(actionData.objectID); // 添加 objectID
-            }
-            else if (param.ParameterType == typeof(bool))
-            {
-                args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // 添加 arm 参数
-            }
-            else if (param.ParameterType == typeof(float))
-            {
-                args.Add(actionData.Magnitude); // 添加移动幅度
-            }
-            else
-            {
-                Debug.LogWarning($"Unsupported parameter type: {param.ParameterType.Name}");
-                args.Add(null); // 默认值
+                case "stateid":
+                    args.Add(actionData.stateID); // 映射到 stateID
+                    break;
+                case "objectid":
+                    args.Add(actionData.objectID); // 映射到 objectID
+                    break;
+                case "isleftarm":
+                    args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // 映射到 arm
+                    break;
+                case "magnitude":
+                    args.Add(actionData.Magnitude); // 映射到 Magnitude
+                    break;
+                default:
+                    Debug.LogWarning($"Unsupported parameter: {param.Name} of type {param.ParameterType.Name}");
+                    args.Add(null); // 默认值
+                    break;
             }
         }
 
         return args.ToArray();
     }
-    // 调用 SceneManager 的 LoadStateByIndex 方法
-    public void LoadState(string stateID)
-    {
-        Debug.Log($"Attempting to load scene state with ID: {stateID}");
-        sceneManager.LoadStateByIndex(stateID);  // 调用 SceneManager 方法
-    }
+
 
     public IEnumerator Toggle(string objectID)
     {
@@ -675,7 +673,14 @@ public class AgentMovement : MonoBehaviour
         EnableArticulationBodies();
     }
 
-
+    // 调用 SceneManager 的 LoadStateByIndex 方法
+    public void LoadState(string stateID)
+    {
+        Debug.Log($"Attempting to load scene state with ID: {stateID}");
+        DisableArticulationBodies();
+        sceneManager.LoadStateByIndex(stateID);
+        EnableArticulationBodies();
+    }
     public void DisableArticulationBodies()
     {
         foreach (ArticulationBody body in articulationChain)

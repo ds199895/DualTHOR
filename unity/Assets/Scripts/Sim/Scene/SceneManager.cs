@@ -327,8 +327,8 @@ public class SceneManager : MonoBehaviour
 
     private void LoadState(SceneState state)
     {
-        string sceneStateJson = JsonUtility.ToJson(state);
-        print(sceneStateJson);
+        //string sceneStateJson = JsonUtility.ToJson(state);
+        //print(sceneStateJson);
         // 更新场景状态和相关信息
         agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
         stateIndexText.text = "CurrentIndex: " + state.id;
@@ -342,7 +342,7 @@ public class SceneManager : MonoBehaviour
 
     private void LoadState(SceneState state, SceneStateA2T stateA2T)
     {
-        string sceneStateJson = JsonUtility.ToJson(state);
+        //string sceneStateJson = JsonUtility.ToJson(state);
         //print(sceneStateJson);
         string sceneStateJsonA2T = JsonUtility.ToJson(stateA2T);
         print(sceneStateJsonA2T);

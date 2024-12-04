@@ -21,7 +21,12 @@ public class UnityClient : MonoBehaviour
         public float successRate;
         public string stateID;  
     }
-
+    string PreprocessJson(string json)
+    {
+        return json.Replace("\"stateid\"", "\"stateID\"")
+                   .Replace("\"objectid\"", "\"objectID\"")
+                   .Replace("\"successrate\"", "\"successRate\"");
+    }
 
     void Start()
     {
@@ -109,6 +114,7 @@ public class UnityClient : MonoBehaviour
                     Debug.Log($"Received action from Python: {actionJson}");
 
                     // 解析 JSON 数据
+                    actionJson = PreprocessJson(actionJson);
                     ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
 
                     // 确保 action 有效
@@ -120,14 +126,12 @@ public class UnityClient : MonoBehaviour
                     }
 
                     // 特殊处理 LoadSceneState 动作
-                    if (actionData.action == "LoadSceneState")
+                    if (actionData.action == "loadstate")
                     {
                         if (!string.IsNullOrEmpty(actionData.stateID))
                         {
                             agentMovement.LoadState(actionData.stateID);
                             Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
-
-                            // 发送反馈给 Python
                             SendFeedbackToPython($"Loaded state ID: {actionData.stateID}");
                         }
                         else
@@ -141,7 +145,7 @@ public class UnityClient : MonoBehaviour
                         // 处理其他常规动作
                         agentMovement.ExecuteActionWithCallback(actionData, () =>
                         {
-                            if (actionData.action == "Undo" || actionData.action == "Redo")
+                            if (actionData.action == "undo" || actionData.action == "redo")
                             {
                                 Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
                             }

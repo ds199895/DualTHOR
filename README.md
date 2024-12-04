@@ -52,7 +52,7 @@ windows下pinocchio需要使用conda安装
 ```bash
 python main.py
 ```
-![alt text](image/img_v3_02h6_bf815466-8056-40de-99b9-90aef51c911g.gif)
+![alt text](image/img_v3_launcher.gif)
 
 ## 操作方法
 
@@ -62,21 +62,22 @@ Python主要用于控制虚拟环境中的Agent，以执行导航、交互、控
    2. controller.py：控制器程序，负责与Unity环境交互、启动server端、调用action方法、发送并反馈。
    3. config.json：配置文件，目前暂时只有success rate，后续可根据需求增加更多参数。
    4. actions：动作脚本，内含所有动作方法。
-   两种控制模式：用户命令行输入控制和controller.step调用action控制。 
-      - Move即移动，包括`MoveAhead`, `MoveRight`, `MoveBack`, `MoveLeft`，指令输入大小写均可。后接参数，第一个参数为幅度，默认为1；第二个参数为成功率，默认为1。例如`MoveAhead`即默认向前移动1个单位，`MoveAhead 2 0.5`即向前移动2个单位，成功率为50%。
-      ![alt text](image/img_v3_02h6_0531ed3b-670b-410e-b3bd-c07aebd162bg.gif)
-      - Rotate即旋转，包括`RotateRight`, `RotateLeft`，指令输入大小写均可。后接参数，第一个参数为旋转方向，默认为90°；第二个参数为成功率，默认为1。例如`RotateRight`即默认右旋90°，成功率为100%，`RotateRight 2 0.5`即右旋180°，成功率为50%。
-      ![alt text](image/img_v3_02h6_e10559cc-fef1-40d0-9502-daf56049640g.gif)
-      - Pick、Place后第一个参数均为左右臂（Left\Right）选择，第二个参数为可交互物品的ObjectId，详情ObjectId在表格中均有介绍。
-      ![alt text](image/img_v3_02h6_3128daf3-c708-4b8a-a53c-c6a11250471g.gif)
-      - Toggle、Open后接ObjectId（需提前tp至该物体旁边），目前默认右手操作，待修改。
-      ![alt text](image/img_v3_02h6_d4ff7f24-bc9b-4dbf-93f4-5591da60bfbg.gif)
+   两种控制模式：用户命令行输入控制和controller.step调用action控制。
+      - Move即移动，包括`MoveAhead`, `MoveRight`, `MoveBack`, `MoveLeft`，指令输入大小写均可。后接参数，第一个参数为幅度Magnitude，默认为1。例如`MoveAhead Magnitude=1`即默认向前移动1个单位，`MoveAhead Magnitude=2 `即向前移动2个单位。
+      ![alt text](image/img_v3_move.gif)
+      - Rotate即旋转，包括`RotateRight`, `RotateLeft`，指令输入大小写均可。后接参数，第一个参数为旋转方向，默认为90°；第二个参数为成功率，默认为1。例如`RotateRight Magnitude=1`即默认右旋90°，`RotateRight Magnitude=2 `即右旋180°。
+      ![alt text](image/img_v3_rotate.gif)
+      - Pick、Place后为抓和放（需提前tp至该物体旁边），第一个参数均为左右臂（Left\Right）选择（目前默认左右操作，待修改），第二个参数为可交互物品的ObjectId，详情ObjectId在表格中均有介绍。例如`tp objectID=Kitchen_Cup_01` `pick arm=left objectID=Kitchen_Cup_01`即先传送到Cup旁边，然后左臂抓起Cup。
+      ![alt text](image/img_v3_pick.gif)
+      - Toggle、Open后接ObjectId（需提前tp至该物体旁边），目前默认右手操作，待修改。例如`tp Kitchen_Faucet_01` `toggle Kitchen_Faucet_01`即传送到水龙头旁边打开水龙头。
+      ![alt text](image/img_v3_toggle.gif)
       - TP即传送，只有一个参数，为ObjectId，即可传送至该物品旁边。
       - Undo和Redo为历史状态管理，Redo可回溯到上一次状态信息，而Undo为撤销。
-      ![alt text](image/img_v3_02h6_6acf9e49-3226-49ae-81de-e7c70ccf7b4g.gif)
-      - Reset_joint为复位机械臂关节角，恢复至初始关节角，后接参数（Left\Right）。
+      - LoadState为指定回溯，后接指定状态id。例如`loadstate stateID=1`即回溯到第1个状态。
+      ![alt text](image/img_v3_loadstate.gif)
+      - Resetjoint为复位机械臂关节角，恢复至初始关节角，后接参数（arm=Left\Right）。例如`resetjoint arm=left`。
+      ![alt text](image/img_v3_resetjoint.gif)
 
-#### 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 #### 反馈系统：在动作执行完成后会自动返回反馈所有状态信息，包括机器人及物品等。
 
 ### 2. Unity端：

@@ -46,6 +46,8 @@ class Actions:
         param_mapping = {
             "magnitude": "Magnitude",
             "successrate": "successRate",
+            "objectid": "objectID",
+            "stateid": "stateID",
         }
 
         # 特殊处理：loadstate 动作且只有一个参数
