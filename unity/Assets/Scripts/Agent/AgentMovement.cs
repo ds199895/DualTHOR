@@ -3,6 +3,7 @@ using System.Reflection;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class AgentMovement : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public class AgentMovement : MonoBehaviour
     public List<ArticulationBody> rightArmJoints; // 右臂关节
 
     private bool hasMovedToPosition = false; // toggle函数中标记是否已经到达目标位置
+    private bool isTargetAnglesUpdated = false;
 
 
 
@@ -94,9 +96,7 @@ public class AgentMovement : MonoBehaviour
         cameraTransform = Camera.main.transform;
         InitializeAdjustments(true);
         InitializeAdjustments(false);
-
-        //StartCoroutine(Pick(true));
-        //StartCoroutine(MoveToPosition(target.position,true));
+        ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
 
     }
 
@@ -507,14 +507,24 @@ public class AgentMovement : MonoBehaviour
     }
 
 
-    // 单独的方法处理移动
+    private void UpdateTargetJointAngles(List<float> updatedAngles)
+    {
+        targetJointAngles = updatedAngles;
+        isTargetAnglesUpdated = true; // 标记角度已更新
+    }
+
     private IEnumerator MoveToPosition(Vector3 position, bool isLeftArm)
     {
-        // 设置目标位置
+        // 请求计算目标角度
         ikClient.ProcessTargetPosition(position, isLeftArm);
 
-        // 确保目标关节角度已经生成
-        yield return new WaitUntil(() => targetJointAngles != null && targetJointAngles.Count > 0);
+        // 等待目标角度更新
+        yield return new WaitUntil(() => isTargetAnglesUpdated);
+
+        //Debug.Log("MoveToPosition 中的目标角度: " + string.Join(", ", targetJointAngles));
+
+        // 重置标记
+        isTargetAnglesUpdated = false;
 
         yield return StartCoroutine(SmoothUpdateJointAngles(targetJointAngles, 2f, isLeftArm));
 
@@ -524,26 +534,19 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator SmoothUpdateJointAngles(List<float> targetJointAngles, float duration, bool isLeftArm)
     {
+        //Debug.Log("进入 SmoothUpdateJointAngles 时的目标角度: " + string.Join(", ", targetJointAngles));
+
         List<float> startAngles = new List<float>();
         var joints = isLeftArm ? leftArmJoints : rightArmJoints;
         var adjustments = isLeftArm ? this.adjustments : rightAdjustments;
 
-        // 记录初始角度
         foreach (var joint in joints)
         {
             startAngles.Add(NormalizeAngle(joint.xDrive.target));
         }
 
-        // 检查是否有目标角度，如果没有，直接退出
-        if (targetJointAngles == null || targetJointAngles.Count == 0)
-        {
-            Debug.Log("未传入目标角度，保持初始角度不变");
-            yield break;
-        }
-
         float elapsedTime = 0f;
 
-        // 插值过程
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
@@ -554,21 +557,18 @@ public class AgentMovement : MonoBehaviour
                 var joint = joints[i];
                 var drive = joint.xDrive;
 
-                // 调整后的目标角度
                 float adjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
-
-                // 插值计算（直接线性插值）
                 float interpolatedAngle = Mathf.Lerp(startAngles[i], adjustedAngle, t);
 
-                // 确保插值后角度在 -180 到 180 之间
                 drive.target = NormalizeAngle(interpolatedAngle);
                 joint.xDrive = drive;
+
+                //Debug.Log($"插值中: 关节 {i + 1}, 初始={startAngles[i]}, 调整后目标={adjustedAngle}, 插值={interpolatedAngle}, xDrive={drive.target}");
             }
 
             yield return null;
         }
 
-        // 最终确保关节角度完全达到目标
         for (int i = 0; i < joints.Count; i++)
         {
             var joint = joints[i];
@@ -577,8 +577,12 @@ public class AgentMovement : MonoBehaviour
             float finalAdjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
             drive.target = finalAdjustedAngle;
             joint.xDrive = drive;
+
+            //Debug.Log($"关节 {i + 1} 最终目标角度 (度): {finalAdjustedAngle}");
         }
     }
+
+
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {

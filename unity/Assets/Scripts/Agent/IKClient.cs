@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 
 public class IKClient : MonoBehaviour
 {
@@ -14,8 +15,9 @@ public class IKClient : MonoBehaviour
     private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // 左臂的偏移量（夹爪中心与末端关节）
     public Transform ur5BaseRight; // 右臂的基座
     private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
-    
-    
+
+    public event Action<List<float>> OnTargetJointAnglesUpdated;
+
     // 接收和处理目标位置
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
@@ -86,33 +88,17 @@ public class IKClient : MonoBehaviour
     // 处理服务器响应
     private void ProcessResponse(string jsonResponse)
     {
-        //Debug.Log("处理服务器响应的 JSON 数据: " + jsonResponse);
-
         JObject result = JObject.Parse(jsonResponse);
 
         if (result["success"].Value<bool>())
         {
             List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
-
-            // 将关节角度结果存储在 agentMovement 的 targetJointAngles 数组中
-            agentMovement.targetJointAngles = jointAnglesDegrees;
-
-            // 打印 jointAnglesDegrees
-            Debug.Log("关节角度 (度): " + string.Join(", ", jointAnglesDegrees));
+            OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
+            Debug.Log("目标角度并触发更新事件: " + string.Join(", ", jointAnglesDegrees));
         }
-
         else
         {
             Debug.Log("未找到反向运动学解决方案");
-        }
-
-        if (result["err"] != null && result["err"].Type == JTokenType.Array)
-        {
-            //Debug.Log("返回的误差值: " + string.Join(", ", result["err"].ToObject<List<float>>()));
-        }
-        else if (result["err"] != null)
-        {
-            //Debug.LogError("错误信息: 'err' 字段不是数组类型");
         }
     }
 
