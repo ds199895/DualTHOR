@@ -119,17 +119,15 @@ public class AgentMovement : MonoBehaviour
         {
             StartCoroutine(Place("Kitchen_Cup_01", true)); // 同样，true表示使用左臂，false表示使用右臂
         }
-
-
-        //if (Input.GetKeyDown(KeyCode.Alpha1))
-        //{
-        //    string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
-        //    TP(targetObjectID);
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha2))
-        //{
-        //    StartCoroutine(Toggle("Kitchen_Faucet_01")); // 
-        //}
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
+            TP(targetObjectID);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            StartCoroutine(Toggle("Kitchen_Faucet_01")); // 
+        }
         //if (Input.GetKeyDown(KeyCode.Alpha3))
         //{
         //    string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
@@ -507,6 +505,8 @@ public class AgentMovement : MonoBehaviour
 
         Debug.Log(logMessage);
     }
+
+
     // 单独的方法处理移动
     private IEnumerator MoveToPosition(Vector3 position, bool isLeftArm)
     {
@@ -534,6 +534,13 @@ public class AgentMovement : MonoBehaviour
             startAngles.Add(NormalizeAngle(joint.xDrive.target));
         }
 
+        // 检查是否有目标角度，如果没有，直接退出
+        if (targetJointAngles == null || targetJointAngles.Count == 0)
+        {
+            Debug.Log("未传入目标角度，保持初始角度不变");
+            yield break;
+        }
+
         float elapsedTime = 0f;
 
         // 插值过程
@@ -550,17 +557,8 @@ public class AgentMovement : MonoBehaviour
                 // 调整后的目标角度
                 float adjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
 
-                // 计算顺时针和逆时针差值
-                float clockwiseDifference = (adjustedAngle - startAngles[i] + 360f) % 360f;
-                float counterClockwiseDifference = (startAngles[i] - adjustedAngle + 360f) % 360f;
-
-                // 选择最短路径
-                float shortestDifference = (clockwiseDifference <= counterClockwiseDifference)
-                    ? clockwiseDifference
-                    : -counterClockwiseDifference;
-
-                // 插值计算
-                float interpolatedAngle = startAngles[i] + shortestDifference * t;
+                // 插值计算（直接线性插值）
+                float interpolatedAngle = Mathf.Lerp(startAngles[i], adjustedAngle, t);
 
                 // 确保插值后角度在 -180 到 180 之间
                 drive.target = NormalizeAngle(interpolatedAngle);
@@ -581,8 +579,6 @@ public class AgentMovement : MonoBehaviour
             joint.xDrive = drive;
         }
     }
-
-
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
