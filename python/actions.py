@@ -9,6 +9,8 @@ class Actions:
             "moveright": self.dynamic_action,
             "moveback": self.dynamic_action,
             "moveleft": self.dynamic_action,
+             "moveup": self.dynamic_action,
+            "movedown": self.dynamic_action,
             "rotateright": self.dynamic_action,
             "rotateleft": self.dynamic_action,
             "pick": self.dynamic_action,

@@ -2,6 +2,8 @@ import logging
 import json
 from tcp_server import TCPServer
 from actions import Actions
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,6 +16,8 @@ class Controller:
         self.executor = Actions()
         self.tcp_server = TCPServer(host, port)
         self.config = self.load_config(config_path)
+        self.thread_pool = ThreadPoolExecutor(max_workers=10)  # 最大并发线程数
+        self.stop_event = threading.Event()
 
     def load_config(self, config_path):
         """
@@ -41,29 +45,46 @@ class Controller:
         """启动控制器"""
         try:
             self.tcp_server.start()
+            # 启动反馈接收线程
+            threading.Thread(target=self.handle_feedback, daemon=True).start()
+            # 启动用户输入处理
             self.handle_user_input()
         except Exception as e:
             logging.error(f"Error in Controller: {e}")
         finally:
+            self.stop_event.set()
             self.tcp_server.stop()
+            self.thread_pool.shutdown(wait=True)
 
     def step(self, action_name, **kwargs):
         """
         执行动作，并通过 TCP 服务器发送命令。
         """
-        try:
-            # 如果未指定 success_rate，从配置中加载默认值
-            if "successRate" not in kwargs:
-                kwargs["successRate"] = self.get_default_success_rate(action_name)
+        def execute_action():
+            try:
+                # 如果未指定 success_rate，从配置中加载默认值
+                if "successRate" not in kwargs:
+                    kwargs["successRate"] = self.get_default_success_rate(action_name)
 
-            action_json = self.executor.execute_action(action_name, **kwargs)
-            self.tcp_server.send(action_json)
-            feedback = self.tcp_server.receive()
-            logging.info(f"Feedback from Unity: {feedback}")
-            return feedback
-        except Exception as e:
-            logging.error(f"Error in step execution: {e}")
-            return {"error": str(e)}
+                action_json = self.executor.execute_action(action_name, **kwargs)
+                self.tcp_server.send(action_json)
+                logging.info(f"Action '{action_name}' sent with parameters: {kwargs}")
+            except Exception as e:
+                logging.error(f"Error executing action {action_name}: {e}")
+
+        # 将动作提交到线程池，独立执行
+        self.thread_pool.submit(execute_action)
+
+    def handle_feedback(self):
+        """
+        后台线程：统一处理来自 Unity 的反馈。
+        """
+        while not self.stop_event.is_set():
+            try:
+                feedback = self.tcp_server.receive()
+                logging.info(f"Feedback from Unity: {feedback}")
+            except Exception as e:
+                logging.error(f"Error receiving feedback: {e}")
 
     def handle_user_input(self):
         """
@@ -81,44 +102,34 @@ class Controller:
                 action_name = parts[0].lower()
                 parameters = self.executor.parse_parameters(parts[1:])
 
-                # 执行动作
-                feedback = self.step(action_name, **parameters)
-                # logging.info(f"Feedback: {feedback}")
+                # 立即执行动作
+                self.step(action_name, **parameters)
             except KeyboardInterrupt:
                 logging.info("User stopped the program.")
                 break
             except Exception as e:
                 logging.error(f"Error handling user input: {e}")
-    
+
     def reset_environment(self):
         """
         重置环境。
         """
         logging.info("Resetting environment...")
-        reset_action = self.executor.execute_action("reset")
-        self.tcp_server.send(reset_action)
-        feedback = self.tcp_server.receive()
-        logging.info(f"Reset feedback: {feedback}")
+        self.step("reset")
 
     def undo_last_action(self):
         """
         撤销上一个动作。
         """
         logging.info("Undoing last action...")
-        undo_action = self.executor.execute_action("undo")
-        self.tcp_server.send(undo_action)
-        feedback = self.tcp_server.receive()
-        logging.info(f"Undo feedback: {feedback}")
+        self.step("undo")
 
     def redo_last_action(self):
         """
         重做上一个动作。
         """
         logging.info("Redoing last action...")
-        redo_action = self.executor.execute_action("redo")
-        self.tcp_server.send(redo_action)
-        feedback = self.tcp_server.receive()
-        logging.info(f"Redo feedback: {feedback}")
+        self.step("redo")
 
 
 # 启动控制器

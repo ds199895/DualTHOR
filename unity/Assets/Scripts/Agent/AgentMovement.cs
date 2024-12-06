@@ -121,22 +121,41 @@ public class AgentMovement : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
+            StartCoroutine(Pick("Kitchen_Cup_01", false)); // true表示使用左臂，false表示使用右臂
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            StartCoroutine(Toggle("Kitchen_Faucet_01")); // 
+            StartCoroutine(Place("Kitchen_Cup_01", false)); // 同样，true表示使用左臂，false表示使用右臂
         }
-        //if (Input.GetKeyDown(KeyCode.Alpha3))
-        //{
-        //    string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
-        //    TP(targetObjectID);
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha4))
-        //{
-        //    StartCoroutine(Open("Kitchen_Fridge_01")); // 
-        //}
+
+
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+        {
+            string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
+            TP(targetObjectID);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+        {
+            StartCoroutine(Toggle("Kitchen_Faucet_01", true)); //
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha9))
+        {
+            StartCoroutine(Toggle("Kitchen_Faucet_01", false)); //
+        }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
+            TP(targetObjectID);
+        }
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            StartCoroutine(Open("Kitchen_Fridge_01", true)); // 
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            StartCoroutine(Open("Kitchen_Fridge_01", false)); // 
+        }
         //if (Input.GetKeyDown(KeyCode.Alpha5))
         //{
         //    string targetObjectID = "Kitchen_StoveKnob_01"; // 替换为目标物品的 ID
@@ -326,7 +345,7 @@ public class AgentMovement : MonoBehaviour
     }
 
 
-    public IEnumerator Toggle(string objectID)
+    public IEnumerator Toggle(string objectID, bool isLeftArm)
     {
         // 获取目标交互点和 Toggle 脚本
         Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
@@ -335,7 +354,7 @@ public class AgentMovement : MonoBehaviour
         // 如果尚未到达目标位置，执行移动
         if (!hasMovedToPosition && interactPoint != null)
         {
-            yield return StartCoroutine(MoveToPosition(interactPoint.position, false));
+            yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
@@ -345,21 +364,21 @@ public class AgentMovement : MonoBehaviour
         yield return new WaitForSeconds(1f);
     }
 
-    public IEnumerator Open(string objectID)
+    public IEnumerator Open(string objectID, bool isLeftArm)
     {
-        // 获取目标交互点和 Toggle 脚本
+        // 获取目标交互点和 Open 脚本
         Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
         CanOpen_Object openScript = interactPoint?.GetComponentInParent<CanOpen_Object>();
 
         // 如果尚未到达目标位置，执行移动
         if (!hasMovedToPosition && interactPoint != null)
         {
-            yield return StartCoroutine(MoveToPosition(interactPoint.position, false));
+            yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
 
-        // 切换开关
+        // 打开对象
         openScript?.Interact();
         yield return new WaitForSeconds(1f);
     }
@@ -429,7 +448,8 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Place(string objectID, bool isLeftArm)
     {
-        Vector3 offset = new Vector3(0, 0.1f, -0.13f); // 偏移定义
+        // 根据是否是左臂设置偏移量
+        Vector3 offset = isLeftArm ? new Vector3(0, 0.1f, -0.13f) : new Vector3(0, 0.1f, 0.13f);
         Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
 
         if (pickPosition == null)
@@ -507,7 +527,7 @@ public class AgentMovement : MonoBehaviour
     }
 
 
-    private void UpdateTargetJointAngles(List<float> updatedAngles)
+    private void UpdateTargetJointAngles(List<float> updatedAngles)//事件
     {
         targetJointAngles = updatedAngles;
         isTargetAnglesUpdated = true; // 标记角度已更新
@@ -556,8 +576,9 @@ public class AgentMovement : MonoBehaviour
             {
                 var joint = joints[i];
                 var drive = joint.xDrive;
-
+                //关节1和5是Y轴，且反向调整
                 float adjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
+
                 float interpolatedAngle = Mathf.Lerp(startAngles[i], adjustedAngle, t);
 
                 drive.target = NormalizeAngle(interpolatedAngle);
@@ -575,6 +596,7 @@ public class AgentMovement : MonoBehaviour
             var drive = joint.xDrive;
 
             float finalAdjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
+
             drive.target = finalAdjustedAngle;
             joint.xDrive = drive;
 
@@ -648,7 +670,17 @@ public class AgentMovement : MonoBehaviour
         yield return SmoothMove(Vector3.left, Magnitude, 1.0f);
         callback?.Invoke();
     }
+    public IEnumerator MoveUp(float Magnitude, Action callback = null)
+    {
+        yield return SmoothMove(Vector3.up, Magnitude * 0.1f, 1.0f);
+        callback?.Invoke();
+    }
 
+    public IEnumerator MoveDown(float Magnitude, Action callback = null)
+    {
+        yield return SmoothMove(Vector3.down, Magnitude * 0.1f, 1.0f);
+        callback?.Invoke();
+    }
     public IEnumerator RotateRight(float Magnitude, Action callback = null)
     {
         yield return SmoothRotate(Vector3.up, Mathf.Abs(Magnitude), 1.0f);

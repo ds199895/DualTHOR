@@ -17,13 +17,13 @@ public class GripperController : MonoBehaviour
 
         if (open)
         {
-            leftDrive.target = isLeftArm ? 11f : -11f; // ×ó±ÛÎª11£¬ÓÒ±ÛÎª-11
-            rightDrive.target = isLeftArm ? -11f : 11f; // ×ó±ÛÎª-11£¬ÓÒ±ÛÎª11
+            leftDrive.target = isLeftArm ? 11f : 11f; //×ó¼Ð×¦
+            rightDrive.target = isLeftArm ? -11f : -11f; // ÓÒ¼Ð×¦
         }
         else
         {
-            leftDrive.target = isLeftArm ? -3f : 4f;
-            rightDrive.target = isLeftArm ? 3f : -4f;
+            leftDrive.target = isLeftArm ? -3f : -3f;
+            rightDrive.target = isLeftArm ? 3f : 3f;
         }
 
         leftGripper.xDrive = leftDrive;

@@ -94,11 +94,11 @@ public class IKClient : MonoBehaviour
         {
             List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
             OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
-            Debug.Log("目标角度并触发更新事件: " + string.Join(", ", jointAnglesDegrees));
+            Debug.Log("IK角度: " + string.Join(", ", jointAnglesDegrees));
         }
         else
         {
-            Debug.Log("未找到反向运动学解决方案");
+            Debug.Log("IK计算失败");
         }
     }
 
