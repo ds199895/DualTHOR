@@ -1,0 +1,5 @@
+unity/Target/Linux/Playground_Data/*.resS filter=lfs diff=lfs merge=lfs -text
+unity/Target/Linux/Playground_Data/sharedassets0.assets filter=lfs diff=lfs merge=lfs -text
+unity/Target/Win/Playground_Data/sharedassets0.assets filter=lfs diff=lfs merge=lfs -text
+*.assets filter=lfs diff=lfs merge=lfs -text
+*.resS filter=lfs diff=lfs merge=lfs -text
