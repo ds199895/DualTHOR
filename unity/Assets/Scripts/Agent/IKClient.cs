@@ -14,9 +14,15 @@ public class IKClient : MonoBehaviour
     public Transform ur5BaseLeft; // 左臂的基座
     private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // 左臂的偏移量（夹爪中心与末端关节）
     public Transform ur5BaseRight; // 右臂的基座
+<<<<<<< HEAD
     private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
 
     public event Action<List<float>> OnTargetJointAnglesUpdated;
+=======
+    private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
+
+    public event Action<List<float>> OnTargetJointAnglesUpdated;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
     // 接收和处理目标位置
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
@@ -86,6 +92,7 @@ public class IKClient : MonoBehaviour
     }
 
     // 处理服务器响应
+<<<<<<< HEAD
     private void ProcessResponse(string jsonResponse)
     {
         JObject result = JObject.Parse(jsonResponse);
@@ -100,6 +107,22 @@ public class IKClient : MonoBehaviour
         {
             Debug.Log("IK计算失败");
         }
+=======
+    private void ProcessResponse(string jsonResponse)
+    {
+        JObject result = JObject.Parse(jsonResponse);
+
+        if (result["success"].Value<bool>())
+        {
+            List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
+            OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
+            Debug.Log("IK角度: " + string.Join(", ", jointAnglesDegrees));
+        }
+        else
+        {
+            Debug.Log("IK计算失败");
+        }
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     }
 
     // 将目标位置转换为基座坐标系

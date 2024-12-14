@@ -47,7 +47,11 @@ namespace RootMotion {
 
 		private bool animatePhysics {
 			get {
+<<<<<<< HEAD
 				if (animator != null) return animator.updateMode == AnimatorUpdateMode.AnimatePhysics;
+=======
+				if (animator != null) return animator.updateMode == AnimatorUpdateMode.Fixed;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 				if (legacy != null) return legacy.animatePhysics;
 				return false;
 			}

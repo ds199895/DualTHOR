@@ -38,7 +38,11 @@ namespace RootMotion.Demos {
 			// Reset the cube
 			cubeRigidbody.MovePosition(cubeDefaultPosition + UnityEngine.Random.insideUnitSphere * cubeRandomPosition);
 			cubeRigidbody.MoveRotation(Quaternion.identity);
+<<<<<<< HEAD
 			cubeRigidbody.velocity = Vector3.zero;
+=======
+			cubeRigidbody.linearVelocity = Vector3.zero;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			cubeRigidbody.angularVelocity = Vector3.zero;
 		}
 	}

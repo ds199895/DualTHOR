@@ -6,6 +6,7 @@
 Shader "TextMeshPro/Mobile/Distance Field" {
 
 Properties {
+<<<<<<< HEAD
 	[HDR]_FaceColor     ("Face Color", Color) = (1,1,1,1)
 	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
 
@@ -14,6 +15,16 @@ Properties {
 	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
 
 	[HDR]_UnderlayColor	("Border Color", Color) = (0,0,0,.5)
+=======
+	_FaceColor          ("Face Color", Color) = (1,1,1,1)
+	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
+
+	_OutlineColor	    ("Outline Color", Color) = (0,0,0,1)
+	_OutlineWidth		("Outline Thickness", Range(0,1)) = 0
+	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
+
+	_UnderlayColor	    ("Border Color", Color) = (0,0,0,.5)
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 	_UnderlayOffsetX 	("Border OffsetX", Range(-1,1)) = 0
 	_UnderlayOffsetY 	("Border OffsetY", Range(-1,1)) = 0
 	_UnderlayDilate		("Border Dilate", Range(-1,1)) = 0
@@ -81,6 +92,10 @@ SubShader {
 
 	Pass {
 		CGPROGRAM
+<<<<<<< HEAD
+=======
+		#pragma enable_d3d11_debug_symbols
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 		#pragma vertex VertShader
 		#pragma fragment PixShader
 		#pragma shader_feature __ OUTLINE_ON
@@ -98,7 +113,11 @@ SubShader {
 			float4	vertex			: POSITION;
 			float3	normal			: NORMAL;
 			fixed4	color			: COLOR;
+<<<<<<< HEAD
 			float2	texcoord0		: TEXCOORD0;
+=======
+			float4	texcoord0		: TEXCOORD0;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			float2	texcoord1		: TEXCOORD1;
 		};
 
@@ -117,6 +136,12 @@ SubShader {
 			#endif
 		};
 
+<<<<<<< HEAD
+=======
+		float _UIMaskSoftnessX;
+        float _UIMaskSoftnessY;
+        int _UIVertexColorAlwaysGammaSpace;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
 		pixel_t VertShader(vertex_t input)
 		{
@@ -127,7 +152,11 @@ SubShader {
 			UNITY_TRANSFER_INSTANCE_ID(input, output);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
+<<<<<<< HEAD
 			float bold = step(input.texcoord1.y, 0);
+=======
+			float bold = step(input.texcoord0.w, 0);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
 			float4 vert = input.vertex;
 			vert.x += _VertexOffsetX;
@@ -138,7 +167,11 @@ SubShader {
 			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 
 			float scale = rsqrt(dot(pixelSize, pixelSize));
+<<<<<<< HEAD
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);
+=======
+			scale *= abs(input.texcoord0.w) * _GradientScale * (_Sharpness + 1);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			if(UNITY_MATRIX_P[3][3] == 0) scale = lerp(abs(scale) * (1 - _PerspectiveFilter), scale, abs(dot(UnityObjectToWorldNormal(input.normal.xyz), normalize(WorldSpaceViewDir(vert)))));
 
 			float weight = lerp(_WeightNormal, _WeightBold, bold) / 4.0;
@@ -150,7 +183,15 @@ SubShader {
 			float bias = (0.5 - weight) * scale - 0.5;
 			float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
+<<<<<<< HEAD
 			float opacity = input.color.a;
+=======
+            if (_UIVertexColorAlwaysGammaSpace && !IsGammaSpace())
+            {
+                input.color.rgb = UIGammaToLinear(input.color.rgb);
+            }
+            float opacity = input.color.a;
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
 			opacity = 1.0;
 			#endif
@@ -182,7 +223,13 @@ SubShader {
 			output.outlineColor = outlineColor;
 			output.texcoord0 = float4(input.texcoord0.x, input.texcoord0.y, maskUV.x, maskUV.y);
 			output.param = half4(scale, bias - outline, bias + outline, bias);
+<<<<<<< HEAD
 			output.mask = half4(vert.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + pixelSize.xy));
+=======
+
+			const half2 maskSoftness = half2(max(_UIMaskSoftnessX, _MaskSoftnessX), max(_UIMaskSoftnessY, _MaskSoftnessY));
+			output.mask = half4(vert.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * maskSoftness + pixelSize.xy));
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			#if (UNDERLAY_ON || UNDERLAY_INNER)
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
 			output.underlayParam = half2(layerScale, layerBias);

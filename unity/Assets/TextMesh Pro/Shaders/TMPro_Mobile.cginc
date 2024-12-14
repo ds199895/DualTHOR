@@ -1,20 +1,38 @@
+<<<<<<< HEAD
 ﻿struct vertex_t {
+=======
+﻿struct vertex_t
+{
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     UNITY_VERTEX_INPUT_INSTANCE_ID
     float4	position		: POSITION;
     float3	normal			: NORMAL;
     float4	color			: COLOR;
+<<<<<<< HEAD
     float2	texcoord0		: TEXCOORD0;
     float2	texcoord1		: TEXCOORD1;
 };
 
 struct pixel_t {
+=======
+    float4	texcoord0		: TEXCOORD0;
+    float2	texcoord1		: TEXCOORD1;
+};
+
+struct pixel_t
+{
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
     float4	position		: SV_POSITION;
     float4	faceColor		: COLOR;
     float4	outlineColor	: COLOR1;
     float4	texcoord0		: TEXCOORD0;
+<<<<<<< HEAD
     float4	param			: TEXCOORD1;		// weight, scaleRatio
+=======
+    float4	param			: TEXCOORD1;		// x = weight, y = no longer used
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     float2	mask			: TEXCOORD2;
     #if (UNDERLAY_ON || UNDERLAY_INNER)
     float4	texcoord2		: TEXCOORD3;
@@ -22,10 +40,21 @@ struct pixel_t {
     #endif
 };
 
+<<<<<<< HEAD
 float4 SRGBToLinear(float4 rgba) {
     return float4(lerp(rgba.rgb / 12.92f, pow((rgba.rgb + 0.055f) / 1.055f, 2.4f), step(0.04045f, rgba.rgb)), rgba.a);
 }
 
+=======
+float4 SRGBToLinear(float4 rgba)
+{
+    return float4(lerp(rgba.rgb / 12.92f, pow((rgba.rgb + 0.055f) / 1.055f, 2.4f), step(0.04045f, rgba.rgb)), rgba.a);
+}
+
+float _UIMaskSoftnessX;
+float _UIMaskSoftnessY;
+
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 pixel_t VertShader(vertex_t input)
 {
     pixel_t output;
@@ -35,7 +64,11 @@ pixel_t VertShader(vertex_t input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
+<<<<<<< HEAD
     float bold = step(input.texcoord1.y, 0);
+=======
+    float bold = step(input.texcoord0.w, 0);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
     float4 vert = input.position;
     vert.x += _VertexOffsetX;
@@ -71,7 +104,11 @@ pixel_t VertShader(vertex_t input)
     output.faceColor = faceColor;
     output.outlineColor = outlineColor;
     output.texcoord0 = float4(input.texcoord0.xy, maskUV.xy);
+<<<<<<< HEAD
     output.param = float4(0.5 - weight, 1.3333 * _GradientScale * (_Sharpness + 1) / _TextureWidth, _OutlineWidth * _ScaleRatioA * 0.5, 0);
+=======
+    output.param = float4(0.5 - weight, 0, _OutlineWidth * _ScaleRatioA * 0.5, 0);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
     float2 mask = float2(0, 0);
     #if UNITY_UI_CLIP_RECT
@@ -99,8 +136,14 @@ float4 PixShader(pixel_t input) : SV_Target
 
     float d = tex2D(_MainTex, input.texcoord0.xy).a;
 
+<<<<<<< HEAD
     float2 UV = input.texcoord0.xy;
     float scale = rsqrt(abs(ddx(UV.x) * ddy(UV.y) - ddy(UV.x) * ddx(UV.y))) * input.param.y;
+=======
+    float pixelSize = abs(ddx(input.texcoord0.y)) + abs(ddy(input.texcoord0.y));
+    pixelSize *= _TextureHeight * 0.75;
+    float scale = 1 / pixelSize * _GradientScale * (_Sharpness + 1);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 
     #if (UNDERLAY_ON | UNDERLAY_INNER)
     float layerScale = scale;
@@ -112,7 +155,11 @@ float4 PixShader(pixel_t input) : SV_Target
 
     float4 faceColor = input.faceColor * saturate((d - input.param.x) * scale + 0.5);
 
+<<<<<<< HEAD
     #ifdef OUTLINE_ON
+=======
+    #if OUTLINE_ON
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     float4 outlineColor = lerp(input.faceColor, input.outlineColor, sqrt(min(1.0, input.param.z * scale * 2)));
     faceColor = lerp(outlineColor, input.faceColor, saturate((d - input.param.x - input.param.z) * scale + 0.5));
     faceColor *= saturate((d - input.param.x + input.param.z) * scale + 0.5);
@@ -130,7 +177,11 @@ float4 PixShader(pixel_t input) : SV_Target
     faceColor += float4(_UnderlayColor.rgb * _UnderlayColor.a, _UnderlayColor.a) * (1 - saturate(d - layerBias)) * sd * (1 - faceColor.a);
     #endif
 
+<<<<<<< HEAD
     #ifdef MASKING
+=======
+    #if MASKING
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     float a = abs(_MaskInverse - tex2D(_MaskTex, input.texcoord0.zw).a);
     float t = a + (1 - _MaskWipeControl) * _MaskEdgeSoftness - _MaskWipeControl;
     a = saturate(t / _MaskEdgeSoftness);
@@ -140,7 +191,12 @@ float4 PixShader(pixel_t input) : SV_Target
 
     // Alternative implementation to UnityGet2DClipping with support for softness
     #if UNITY_UI_CLIP_RECT
+<<<<<<< HEAD
     float2 maskZW = 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + (1 / scale));
+=======
+    half2 maskSoftness = half2(max(_UIMaskSoftnessX, _MaskSoftnessX), max(_UIMaskSoftnessY, _MaskSoftnessY));
+    float2 maskZW = 0.25 / (0.25 * maskSoftness + 1 / scale);
+>>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
     float2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(input.mask.xy)) * maskZW);
     faceColor *= m.x * m.y;
     #endif
