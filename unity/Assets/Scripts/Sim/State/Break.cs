@@ -208,7 +208,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
         //为什么设为0.4f？
         foreach (Rigidbody subRb in breakedObject.GetComponentsInChildren<Rigidbody>())
         {
-            subRb.velocity = rb.velocity * 0.4f;
+            subRb.linearVelocity = rb.linearVelocity * 0.4f;
             subRb.angularVelocity = rb.angularVelocity * 0.4f;
         }
         gameObject.SetActive(false);
