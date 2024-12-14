@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//³¡¾°°æ±¾¹ÜÀíµÄ³¡¾°×´Ì¬ĞÅÏ¢
+//åœºæ™¯ç‰ˆæœ¬ç®¡ç†çš„åœºæ™¯çŠ¶æ€ä¿¡æ¯
 [System.Serializable]
 public class SceneState
 {
@@ -11,37 +11,37 @@ public class SceneState
     public Quaternion agentRotation;
     public ObjectState[] objects; 
 
-    //Ã¿¸öÊÖ±ÛÆß¸ö¹Ø½Ú½Ç+2¸ö×¦×Ó½Ç¶È
-    //public List<float> jointsStates; // ´æ´¢ËùÓĞ¹Ø½ÚµÄ×´Ì¬
-    //public List<float> gripperStates; // ´æ´¢×¦×ÓµÄ×´Ì¬
+    //æ¯ä¸ªæ‰‹è‡‚ä¸ƒä¸ªå…³èŠ‚è§’+2ä¸ªçˆªå­è§’åº¦
+    //public List<float> jointsStates; // å­˜å‚¨æ‰€æœ‰å…³èŠ‚çš„çŠ¶æ€
+    //public List<float> gripperStates; // å­˜å‚¨çˆªå­çš„çŠ¶æ€
 }
 
-[System.Serializable] //¼ÓÁËÕâ¸ö²ÅÄÜ±»JsonUtility.ToJsonÕıÈ·ĞòÁĞ»¯
-//ÎïÌåµÄ×´Ì¬
+[System.Serializable] //åŠ äº†è¿™ä¸ªæ‰èƒ½è¢«JsonUtility.ToJsonæ­£ç¡®åºåˆ—åŒ–
+//ç‰©ä½“çš„çŠ¶æ€
 public class ObjectState
 {
-    public string name;//ÎïÌåÃû³Æ
-    public Vector3 position;//ÎïÌåÎ»ÖÃ
-    public Quaternion rotation;//ÎïÌå³¯Ïò
+    public string name;//ç‰©ä½“åç§°
+    public Vector3 position;//ç‰©ä½“ä½ç½®
+    public Quaternion rotation;//ç‰©ä½“æœå‘
     public bool isActive;
-    //breakÎïÌå¾ßÓĞµÄ×´Ì¬
+    //breakç‰©ä½“å…·æœ‰çš„çŠ¶æ€
     public BreakState breakState;
-    //cookÎïÌå¾ßÓĞµÄ×´Ì¬
+    //cookç‰©ä½“å…·æœ‰çš„çŠ¶æ€
     public CookState cookState;
-    //toggleÎïÌå×´Ì¬
+    //toggleç‰©ä½“çŠ¶æ€
     public ToggleState toggleState;
-    //openÎïÌå×´Ì¬
+    //openç‰©ä½“çŠ¶æ€
     public OpenState openState;
-    //fillÎïÌå×´Ì¬
+    //fillç‰©ä½“çŠ¶æ€
     public FillState fillState;
-    //usedupÎïÌå×´Ì¬
+    //usedupç‰©ä½“çŠ¶æ€
     public UsedUpState usedUpState;
-    //sliceÎïÌå×´Ì¬
+    //sliceç‰©ä½“çŠ¶æ€
     public SlicedState slicedState;
 }
 
 [System.Serializable]
-//breakÎïÌå¾ßÓĞµÄ×´Ì¬
+//breakç‰©ä½“å…·æœ‰çš„çŠ¶æ€
 public class BreakState
 {
 
@@ -52,7 +52,7 @@ public class BreakState
 }
 
 [System.Serializable]
-//cookÎïÌå¾ßÓĞµÄ×´Ì¬
+//cookç‰©ä½“å…·æœ‰çš„çŠ¶æ€
 public class CookState
 {
     public bool isCooked;
@@ -60,7 +60,7 @@ public class CookState
     public List<Material> materials;
 }
 
-//toggleµÄ×´Ì¬
+//toggleçš„çŠ¶æ€
 [System.Serializable]
 public class ToggleState
 {
@@ -72,7 +72,7 @@ public class ToggleState
 
 }
 
-//openableµÄ×´Ì¬
+//openableçš„çŠ¶æ€
 [System.Serializable]
 public class OpenState
 {
@@ -81,7 +81,7 @@ public class OpenState
 
 }
 
-//fillableµÄ×´Ì¬
+//fillableçš„çŠ¶æ€
 [System.Serializable]
 public class FillState
 {
@@ -90,14 +90,14 @@ public class FillState
     public float[] fillObjHeight;
 }
 
-//sliceµÄ×´Ì¬
+//sliceçš„çŠ¶æ€
 [System.Serializable]
 public class SliceState
 {
     public bool isSliced = false;
 }
 
-//usedupµÄ×´Ì¬
+//usedupçš„çŠ¶æ€
 [System.Serializable]
 
 public class UsedUpState
@@ -116,26 +116,26 @@ public class SlicedState
 
 public class jointsStates
 {
-    // ×óÊÖ±ÛµÄ¹Ø½Ú½Ç¶È
-    public float arm_left_link01; // ×óÊÖ±ÛµÚ1¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link02; // ×óÊÖ±ÛµÚ2¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link03; // ×óÊÖ±ÛµÚ3¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link04; // ×óÊÖ±ÛµÚ4¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link05; // ×óÊÖ±ÛµÚ5¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link06; // ×óÊÖ±ÛµÚ6¸ö¹Ø½Ú½Ç¶È
-    public float arm_left_link07; // ×óÊÖ±ÛµÚ7¸ö¹Ø½Ú½Ç¶È
-    public float hand_left_link02;   // ×óÊÖ±Û×ó¼Ğ×¦½Ç¶È
-    public float hand_left_link01;   // ×óÊÖ±ÛÓÒ¼Ğ×¦½Ç¶È
+    // å·¦æ‰‹è‡‚çš„å…³èŠ‚è§’åº¦
+    public float arm_left_link01; // å·¦æ‰‹è‡‚ç¬¬1ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link02; // å·¦æ‰‹è‡‚ç¬¬2ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link03; // å·¦æ‰‹è‡‚ç¬¬3ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link04; // å·¦æ‰‹è‡‚ç¬¬4ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link05; // å·¦æ‰‹è‡‚ç¬¬5ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link06; // å·¦æ‰‹è‡‚ç¬¬6ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_left_link07; // å·¦æ‰‹è‡‚ç¬¬7ä¸ªå…³èŠ‚è§’åº¦
+    public float hand_left_link02;   // å·¦æ‰‹è‡‚å·¦å¤¹çˆªè§’åº¦
+    public float hand_left_link01;   // å·¦æ‰‹è‡‚å³å¤¹çˆªè§’åº¦
 
-    // ÓÒÊÖ±ÛµÄ¹Ø½Ú½Ç¶È
-    public float arm_right_link01; // ÓÒÊÖ±ÛµÚ1¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link02; // ÓÒÊÖ±ÛµÚ2¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link03; // ÓÒÊÖ±ÛµÚ3¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link04; // ÓÒÊÖ±ÛµÚ4¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link05; // ÓÒÊÖ±ÛµÚ5¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link06; // ÓÒÊÖ±ÛµÚ6¸ö¹Ø½Ú½Ç¶È
-    public float arm_right_link07; // ÓÒÊÖ±ÛµÚ7¸ö¹Ø½Ú½Ç¶È
-    public float hand_right_link02;   // ÓÒÊÖ±Û×ó¼Ğ×¦½Ç¶È
-    public float hand_right_link01;   // ÓÒÊÖ±ÛÓÒ¼Ğ×¦½Ç¶È
+    // å³æ‰‹è‡‚çš„å…³èŠ‚è§’åº¦
+    public float arm_right_link01; // å³æ‰‹è‡‚ç¬¬1ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link02; // å³æ‰‹è‡‚ç¬¬2ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link03; // å³æ‰‹è‡‚ç¬¬3ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link04; // å³æ‰‹è‡‚ç¬¬4ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link05; // å³æ‰‹è‡‚ç¬¬5ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link06; // å³æ‰‹è‡‚ç¬¬6ä¸ªå…³èŠ‚è§’åº¦
+    public float arm_right_link07; // å³æ‰‹è‡‚ç¬¬7ä¸ªå…³èŠ‚è§’åº¦
+    public float hand_right_link02;   // å³æ‰‹è‡‚å·¦å¤¹çˆªè§’åº¦
+    public float hand_right_link01;   // å³æ‰‹è‡‚å³å¤¹çˆªè§’åº¦
 
 }

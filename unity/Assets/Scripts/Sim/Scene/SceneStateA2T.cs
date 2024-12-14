@@ -2,46 +2,46 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//ÓÃÓÚ·´À¡¸øpython¶ËµÄÌØ¶¨³¡¾°×´Ì¬ĞÅÏ¢
+//ç”¨äºåé¦ˆç»™pythonç«¯çš„ç‰¹å®šåœºæ™¯çŠ¶æ€ä¿¡æ¯
 [System.Serializable]
 public class SceneStateA2T
 {
     public int id;
     public ObjectStateA2T[] objects;
     public AgentStateA2T agent;
-    public Vector3[] reachablePositons;//´«ËÍµã£¿
+    public Vector3[] reachablePositons;//ä¼ é€ç‚¹ï¼Ÿ
 }
 
 [System.Serializable] 
-//ÎïÌåµÄ×´Ì¬
+//ç‰©ä½“çš„çŠ¶æ€
 public class ObjectStateA2T
 {
-    public string objectId;//ÎïÌåid
-    public string name;//ÎïÌåÃû³Æ
-    public string objectType;//ÎïÌåÀàĞÍ
-    public Vector3 position;//ÎïÌåÎ»ÖÃ
-    public Quaternion rotation;//ÎïÌå³¯Ïò
+    public string objectId;//ç‰©ä½“id
+    public string name;//ç‰©ä½“åç§°
+    public string objectType;//ç‰©ä½“ç±»å‹
+    public Vector3 position;//ç‰©ä½“ä½ç½®
+    public Quaternion rotation;//ç‰©ä½“æœå‘
     public bool visible;
-    public float distance;//ÎïÌåÖĞĞÄµã¾àagentÖĞĞÄµãµÄÅ·Ê½¾àÀë
-    public bool receptacle;//ÊÇ·ñÊÇÈİÆ÷
-    public bool toggleable;//ÊÇ·ñ¿ÉÇĞ»»
-    public bool isToggled;//ÊÇ·ñ´¦ÓÚ¿ª×´Ì¬
-    public bool breakable;//ÊÇ·ñ¿ÉÆÆ»µ
-    public bool isBroken;//ÊÇ·ñÒÑÆÆ»µ
-    public bool canFillWithLiquid;//ÊÇ·ñ¿ÉÌî³äÒºÌå
-    public bool isFilledWithLiquid;//ÊÇ·ñÒÑÌî³äÒºÌå
-    public bool canBeUsedUp;//ÊÇ·ñ¿É±»ÓÃÍê
-    public bool isUsedUp;//ÊÇ·ñÒÑÓÃÍê
-    public bool cookable;//ÊÇ·ñ¿ÉÅëâ¿
-    public bool isCooked;//ÊÇ·ñÒÑÅëâ¿
-    public bool sliceable;//ÊÇ·ñ¿ÉÇĞÆ¬
-    public bool isSliced;//ÊÇ·ñÒÑÇĞÆ¬
-    public bool openable;//ÊÇ·ñ¿É´ò¿ª
-    public bool isOpen;//ÊÇ·ñÒÑ´ò¿ª
-    public bool pickupable;//ÊÇ·ñ¿É¼ñÆğ
-    public bool isPickedUp;//ÊÇ·ñÒÑ¼ñÆğ
-    public List<string> receptacleObjectIds;//ÈİÆ÷ÄÚÎïÌåµÄid
-    public List<string> parentReceptacles;//°üº¬´ËÎïÌåµÄÈİÆ÷µÄid
+    public float distance;//ç‰©ä½“ä¸­å¿ƒç‚¹è·agentä¸­å¿ƒç‚¹çš„æ¬§å¼è·ç¦»
+    public bool receptacle;//æ˜¯å¦æ˜¯å®¹å™¨
+    public bool toggleable;//æ˜¯å¦å¯åˆ‡æ¢
+    public bool isToggled;//æ˜¯å¦å¤„äºå¼€çŠ¶æ€
+    public bool breakable;//æ˜¯å¦å¯ç ´å
+    public bool isBroken;//æ˜¯å¦å·²ç ´å
+    public bool canFillWithLiquid;//æ˜¯å¦å¯å¡«å……æ¶²ä½“
+    public bool isFilledWithLiquid;//æ˜¯å¦å·²å¡«å……æ¶²ä½“
+    public bool canBeUsedUp;//æ˜¯å¦å¯è¢«ç”¨å®Œ
+    public bool isUsedUp;//æ˜¯å¦å·²ç”¨å®Œ
+    public bool cookable;//æ˜¯å¦å¯çƒ¹é¥ª
+    public bool isCooked;//æ˜¯å¦å·²çƒ¹é¥ª
+    public bool sliceable;//æ˜¯å¦å¯åˆ‡ç‰‡
+    public bool isSliced;//æ˜¯å¦å·²åˆ‡ç‰‡
+    public bool openable;//æ˜¯å¦å¯æ‰“å¼€
+    public bool isOpen;//æ˜¯å¦å·²æ‰“å¼€
+    public bool pickupable;//æ˜¯å¦å¯æ¡èµ·
+    public bool isPickedUp;//æ˜¯å¦å·²æ¡èµ·
+    public List<string> receptacleObjectIds;//å®¹å™¨å†…ç‰©ä½“çš„id
+    public List<string> parentReceptacles;//åŒ…å«æ­¤ç‰©ä½“çš„å®¹å™¨çš„id
 
 }
 
@@ -51,8 +51,8 @@ public class AgentStateA2T
     public string name;
     public Vector3 position;
     public Quaternion rotation;
-    public string lastAction;//ÉÏÒ»´ÎÖ´ĞĞµÄ¶¯×÷
-    public bool lastActionSuccess;//ÉÏÒ»´ÎÖ´ĞĞ¶¯×÷ÊÇ·ñ³É¹¦,²»³É¹¦Ôò×´Ì¬²»»á·¢Éú¸Ä±ä
-    public string errorMessage;//´íÎóĞÅÏ¢
+    public string lastAction;//ä¸Šä¸€æ¬¡æ‰§è¡Œçš„åŠ¨ä½œ
+    public bool lastActionSuccess;//ä¸Šä¸€æ¬¡æ‰§è¡ŒåŠ¨ä½œæ˜¯å¦æˆåŠŸ,ä¸æˆåŠŸåˆ™çŠ¶æ€ä¸ä¼šå‘ç”Ÿæ”¹å˜
+    public string errorMessage;//é”™è¯¯ä¿¡æ¯
 }
 

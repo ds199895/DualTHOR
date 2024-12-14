@@ -2,69 +2,69 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5.0f; // ÒÆ¶¯ËÙ¶È
-    public float mouseSensitivity = 2.0f; // Êó±êÁéÃô¶È
-    public float verticalRotationLimit = 80.0f; // ´¹Ö±Ğı×ªÏŞÖÆ
+    public float moveSpeed = 5.0f; // ç§»åŠ¨é€Ÿåº¦
+    public float mouseSensitivity = 2.0f; // é¼ æ ‡çµæ•åº¦
+    public float verticalRotationLimit = 80.0f; // å‚ç›´æ—‹è½¬é™åˆ¶
 
     private CharacterController characterController;
-    private float rotationY = 0f; // ´¹Ö±Ğı×ª½Ç¶È
-    private float rotationX = 0f; // Ë®Æ½Ğı×ª½Ç¶È
-    private bool isCursorLocked = true; // ¹â±êËø¶¨×´Ì¬
+    private float rotationY = 0f; // å‚ç›´æ—‹è½¬è§’åº¦
+    private float rotationX = 0f; // æ°´å¹³æ—‹è½¬è§’åº¦
+    private bool isCursorLocked = true; // å…‰æ ‡é”å®šçŠ¶æ€
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked; // ³õÊ¼×´Ì¬Ëø¶¨¹â±ê
+        Cursor.lockState = CursorLockMode.Locked; // åˆå§‹çŠ¶æ€é”å®šå…‰æ ‡
     }
 
     void Update()
     {
-        // ¼ì²âÊÇ·ñ°´ÏÂ¡°~¡±¼ü½øĞĞ¹â±êËø¶¨×´Ì¬µÄÇĞ»»
-        if (Input.GetKeyDown(KeyCode.BackQuote)) // KeyCode.BackQuote ÊÇ¡°~¡±¼üµÄ¶ÔÓ¦¼üÖµ
+        // æ£€æµ‹æ˜¯å¦æŒ‰ä¸‹â€œ~â€é”®è¿›è¡Œå…‰æ ‡é”å®šçŠ¶æ€çš„åˆ‡æ¢
+        if (Input.GetKeyDown(KeyCode.BackQuote)) // KeyCode.BackQuote æ˜¯â€œ~â€é”®çš„å¯¹åº”é”®å€¼
         {
             if (isCursorLocked)
             {
-                Cursor.lockState = CursorLockMode.None; // ½âËø¹â±ê
-                isCursorLocked = false; // ¸üĞÂ×´Ì¬
+                Cursor.lockState = CursorLockMode.None; // è§£é”å…‰æ ‡
+                isCursorLocked = false; // æ›´æ–°çŠ¶æ€
             }
             else
             {
-                Cursor.lockState = CursorLockMode.Locked; // Ëø¶¨¹â±ê
-                isCursorLocked = true; // ¸üĞÂ×´Ì¬
+                Cursor.lockState = CursorLockMode.Locked; // é”å®šå…‰æ ‡
+                isCursorLocked = true; // æ›´æ–°çŠ¶æ€
             }
         }
 
-        // Èç¹û¹â±ê±»Ëø¶¨£¬ÔòÔÊĞíÒÆ¶¯
+        // å¦‚æœå…‰æ ‡è¢«é”å®šï¼Œåˆ™å…è®¸ç§»åŠ¨
         if (isCursorLocked)
         {
-            // »ñÈ¡ÊäÈë
+            // è·å–è¾“å…¥
             float moveX = Input.GetAxis("Horizontal");
             float moveZ = Input.GetAxis("Vertical");
 
-            // ´´½¨ÒÆ¶¯ÏòÁ¿
+            // åˆ›å»ºç§»åŠ¨å‘é‡
             Vector3 move = transform.right * moveX + transform.forward * moveZ;
 
-            // ÒÆ¶¯½ÇÉ«
+            // ç§»åŠ¨è§’è‰²
             characterController.Move(moveSpeed * Time.deltaTime * move);
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                // ±¼ÅÜ
+                // å¥”è·‘
                 characterController.Move(1.5f * moveSpeed * Time.deltaTime * move);
             }
 
-            // »ñÈ¡Êó±êÊäÈë
+            // è·å–é¼ æ ‡è¾“å…¥
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-            // ÒÆ¶¯½ÇÉ«µÄË®Æ½Ğı×ª
+            // ç§»åŠ¨è§’è‰²çš„æ°´å¹³æ—‹è½¬
             rotationX += mouseX;
             transform.eulerAngles = new Vector3(0, rotationX, 0);
 
-            // ´¹Ö±Ğı×ª£¬ÏŞÖÆĞı×ª½Ç¶È
+            // å‚ç›´æ—‹è½¬ï¼Œé™åˆ¶æ—‹è½¬è§’åº¦
             rotationY -= mouseY;
             rotationY = Mathf.Clamp(rotationY, -verticalRotationLimit, verticalRotationLimit);
 
-            // Ó¦ÓÃµ½ÉãÏñ»úµÄĞı×ª
+            // åº”ç”¨åˆ°æ‘„åƒæœºçš„æ—‹è½¬
             Camera.main.transform.localEulerAngles = new Vector3(rotationY, 0, 0);
         }
     }

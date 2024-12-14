@@ -10,42 +10,42 @@ public class ErrorMessage : MonoBehaviour
         errorMessage = new Dictionary<string, string[]>
         {
             { "Break", new string[] {
-                "Unable to grasp", //ÎŞ·¨×¥×¡
-                "Successfully grasped but slipped afterwards", //³É¹¦×¥×¡µ«ºóĞø»¬Âä
-                "Object is too heavy", //ÎïÌåÌ«ÖØ
-                "Grasping failed due to mechanical error", //×¥È¡Ê§°Ü£¬»úĞµ¹ÊÕÏ
-                "Object is out of reach" //ÎïÌå³¬³ö¿É×¥È¡·¶Î§
+                "Unable to grasp", //æ— æ³•æŠ“ä½
+                "Successfully grasped but slipped afterwards", //æˆåŠŸæŠ“ä½ä½†åç»­æ»‘è½
+                "Object is too heavy", //ç‰©ä½“å¤ªé‡
+                "Grasping failed due to mechanical error", //æŠ“å–å¤±è´¥ï¼Œæœºæ¢°æ•…éšœ
+                "Object is out of reach" //ç‰©ä½“è¶…å‡ºå¯æŠ“å–èŒƒå›´
             } },
             { "Open", new string[] {
-                "Object is already open", //ÎïÌåÒÑ´ò¿ª
-                "Object cannot be opened", //ÎïÌåÎŞ·¨´ò¿ª
-                "Successfully grasped but slipped afterwards"//³É¹¦×¥×¡µ«ºóĞø»¬Âä
+                "Object is already open", //ç‰©ä½“å·²æ‰“å¼€
+                "Object cannot be opened", //ç‰©ä½“æ— æ³•æ‰“å¼€
+                "Successfully grasped but slipped afterwards"//æˆåŠŸæŠ“ä½ä½†åç»­æ»‘è½
             } },
             { "Toggle", new string[] {
-                "Action not permitted", //²»ÔÊĞí½øĞĞ´Ë²Ù×÷
-                "Device is already in the desired state", //Éè±¸ÒÑ´¦ÓÚËùĞè×´Ì¬
-                "Operation failed due to mechanical issue" //ÓÉÓÚ»úĞµ¹ÊÕÏ£¬²Ù×÷Ê§°Ü
+                "Action not permitted", //ä¸å…è®¸è¿›è¡Œæ­¤æ“ä½œ
+                "Device is already in the desired state", //è®¾å¤‡å·²å¤„äºæ‰€éœ€çŠ¶æ€
+                "Operation failed due to mechanical issue" //ç”±äºæœºæ¢°æ•…éšœï¼Œæ“ä½œå¤±è´¥
             } },
             { "CookObject", new string[] {
-                "Cooker malfunction", //Åëâ¿Éè±¸¹ÊÕÏ
-                "Cooking process interrupted" //Åëâ¿¹ı³Ì±»ÖĞ¶Ï
+                "Cooker malfunction", //çƒ¹é¥ªè®¾å¤‡æ•…éšœ
+                "Cooking process interrupted" //çƒ¹é¥ªè¿‡ç¨‹è¢«ä¸­æ–­
             } },
             { "Fill", new string[] {
-                "Reached maximum capacity", //ÒÑ´ïµ½×î´óÈİÁ¿
-                "Filling process failed due to blockage" //Ìî³ä¹ı³ÌÒò×èÈû¶øÊ§°Ü
+                "Reached maximum capacity", //å·²è¾¾åˆ°æœ€å¤§å®¹é‡
+                "Filling process failed due to blockage" //å¡«å……è¿‡ç¨‹å› é˜»å¡è€Œå¤±è´¥
             } },
             { "SliceObject", new string[] {
-                "Slicing failed due to resistance", //ÇĞ¸îÊ§°Ü£¬ÓÉÓÚ×èÁ¦
-                "Invalid slicing position", //ÇĞ¸îÎ»ÖÃ´íÎó
-                "Object cannot be sliced" //ÎïÌå²»¿É±»ÇĞ¸î
+                "Slicing failed due to resistance", //åˆ‡å‰²å¤±è´¥ï¼Œç”±äºé˜»åŠ›
+                "Invalid slicing position", //åˆ‡å‰²ä½ç½®é”™è¯¯
+                "Object cannot be sliced" //ç‰©ä½“ä¸å¯è¢«åˆ‡å‰²
             } },
             { "UsedUp", new string[] {
-                "Object has been depleted", //ÎïÌåÒÑ±»ÏûºÄ
+                "Object has been depleted", //ç‰©ä½“å·²è¢«æ¶ˆè€—
             } },
             { "TP", new string[] {
-                "Target object does not have a valid TransferPoint", //Ä¿±êÎïÌåÃ»ÓĞÓĞĞ§µÄ´«ËÍµã
-                "Teleportation interrupted due to collision", //´«ËÍÒòÅö×²ÖĞ¶Ï
-                "Target object is not accessible" //Ä¿±êÎïÌå²»¿Éµ½´ï
+                "Target object does not have a valid TransferPoint", //ç›®æ ‡ç‰©ä½“æ²¡æœ‰æœ‰æ•ˆçš„ä¼ é€ç‚¹
+                "Teleportation interrupted due to collision", //ä¼ é€å› ç¢°æ’ä¸­æ–­
+                "Target object is not accessible" //ç›®æ ‡ç‰©ä½“ä¸å¯åˆ°è¾¾
             } },
             { "MoveAhead", new string[] {
                 "Movement blocked by obstacle",
@@ -80,7 +80,7 @@ public class ErrorMessage : MonoBehaviour
         };
     }
 
-    // ¸ù¾İ´íÎó´úÂë»ñÈ¡´íÎóĞÅÏ¢
+    // æ ¹æ®é”™è¯¯ä»£ç è·å–é”™è¯¯ä¿¡æ¯
     public string[] GetErrorMessage(string errorCode)
     {
         if (errorMessage.TryGetValue(errorCode, out string[] messages))

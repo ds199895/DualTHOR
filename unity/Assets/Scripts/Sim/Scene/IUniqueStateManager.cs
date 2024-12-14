@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//记录和加载物体状态的接口
+//璁板綍鍜屽姞杞界墿浣撶姸鎬佺殑鎺ュ彛
 public interface IUniqueStateManager
 {
     void SaveState(ObjectState state);

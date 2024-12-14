@@ -16,13 +16,13 @@ public enum SimObjPrimaryProperty : int // EACH SimObjPhysics MUST HAVE 1 Primar
 
     // these are to identify walls, floor, ceiling - these are not currently being used but might be in the future once
     // all scenes have their walls/floor/ceiling meshes split apart correctly (thanks Eli!)
-    //ÕâĞ©Î´À´¿ÉÄÜ»áÓÃµ½
+    //è¿™äº›æœªæ¥å¯èƒ½ä¼šç”¨åˆ°
     //Wall = 4,
     //Floor = 5,
     //Ceiling = 6,
 
     // Objaverse, uncategorized
-    //²»ÖªµÀÓĞÉ¶ÓÃ
+    //ä¸çŸ¥é“æœ‰å•¥ç”¨
     //Objaverse = 7,
 }
 
@@ -157,7 +157,7 @@ public enum SimObjType
     Kettle,
     Ladle,
     Lamp, // DO NOT USE: don't use this, use either FloorLamp or DeskLamp
-    Lettuce,//Éú²Ë
+    Lettuce,//ç”Ÿèœ
     LettuceSliced,
     LightSwitch,
     Lighter,
@@ -168,7 +168,7 @@ public enum SimObjType
     Mug,
     MugFilled, // not used in physics
     Newspaper,
-    Omelette,//¼åµ°
+    Omelette,//ç…è›‹
     Pan,
     PanLid,
     PaperTowel,
@@ -208,7 +208,7 @@ public enum SimObjType
     ToiletPaper,
     ToiletPaperHanger,
     ToiletPaperRoll, // DO NOT USE ANYMORE - ToiletPaper is now a single object that toggles states
-    Towel,//Ã«½í
+    Towel,//æ¯›å·¾
     VacuumCleaner,
     Vase,
     Wall,
