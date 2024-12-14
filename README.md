@@ -8,17 +8,8 @@
 
 
 ## 安装
-项目中有大文件，需要确保安装了Git LFS
-```bash
-git lfs install
-```
 ### 1. 克隆项目
-```git clone -b first_build https://github.com/AgentX-Agibot/agent-playground.git```
-
-默认情况下，Git LFS 会在克隆时自动下载所有被跟踪的大文件。如果你希望确保拉取完整的文件数据，可以运行：
-```bash
-git lfs pull
-```
+```git clone -b https://github.com/AgentX-Agibot/agent-playground.git```
 
 ### 2. 启动配置文件
 ---
@@ -29,22 +20,31 @@ git lfs pull
 ---
 
 #### 2. 安装所需库
-MacOS/Linux:
+
+宇树DDS（unitree_dds_wrapper）
+
+```
+conda create -n playground python=3.10.15
+conda activate playground
+# Install the Python version of the unitree_dds_wrapper.
+git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
+cd unitree_dds_wrapper/python
+pip install -e .
+```
+
+IK(inverse kinematics)
+```
+conda install pinocchio -c conda-forge
+pip install meshcat
+pip install casadi
+```
+
+其他依赖库安装
+
 ```bash
 cd python
 pip install -r requirements.txt
 ```
-
-Windows:
-```bash
-cd python
-pip install -r requirements.txt
-```
-windows下pinocchio需要使用conda安装
-  ```bash
-  conda install -c conda-forge pinocchio
-  ```
-
 ---
 
 #### 3. 启动 Agent Server
