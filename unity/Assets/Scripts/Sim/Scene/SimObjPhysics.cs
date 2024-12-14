@@ -24,16 +24,16 @@ public class SimObjPhysics : MonoBehaviour
 
     //[Header("Transfer Point")]
     [SerializeField]
-    private Transform transferPoint; // ç‰©ä½“çš„ä¼ é€ç‚¹
+    private Transform transferPoint; // ÎïÌåµÄ´«ËÍµã
 
     //[Header("Interactable Points")]
     [SerializeField]
-    private Transform[] interactablePoints; // ç‰©ä½“çš„å¯äº¤äº’ç‚¹
+    private Transform[] interactablePoints; // ÎïÌåµÄ¿É½»»¥µã
 
     //[Header("Visible Points")]
     [SerializeField]
-    private Transform[] visiblePoints; // ç‰©ä½“çš„ä¼ é€ç‚¹
-    // å¯æ”¾ç½®ç‰©ä½“çš„è§¦å‘ç›’
+    private Transform[] visiblePoints; // ÎïÌåµÄ´«ËÍµã
+    // ¿É·ÅÖÃÎïÌåµÄ´¥·¢ºĞ
     [SerializeField]
     private GameObject[] receptacleTriggerBoxes;
 
@@ -71,7 +71,7 @@ public class SimObjPhysics : MonoBehaviour
         InitializeProperties();
     }
 
-    //åˆå§‹åŒ–ä¼ é€ç‚¹
+    //³õÊ¼»¯´«ËÍµã
     private void InitializeTransferPoint()
     {
         Transform foundTransferPoint = transform.Find("TransferPoint");
@@ -81,11 +81,11 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'TransferPoint' çš„å­ç‰©ä½“ã€‚");
+            Debug.LogWarning($"{gameObject.name} Ã»ÓĞÕÒµ½ÃûÎª 'TransferPoint' µÄ×ÓÎïÌå¡£");
         }
     }
 
-    //åˆå§‹åŒ–å¯äº¤äº’ç‚¹
+    //³õÊ¼»¯¿É½»»¥µã
     private void InitializeInteractablePoints()
     {
         Transform foundInteractablePoint = transform.Find("InteractablePoints");
@@ -99,11 +99,11 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'InteractablePoints' çš„å­ç‰©ä½“ã€‚");
+            Debug.LogWarning($"{gameObject.name} Ã»ÓĞÕÒµ½ÃûÎª 'InteractablePoints' µÄ×ÓÎïÌå¡£");
         }
     }
     
-    //åˆå§‹åŒ–å¯çœ‹è§ç‚¹
+    //³õÊ¼»¯¿É¿´¼ûµã
     private void InitializeVisiblePoints()
     {
         GameObject visiblePointsObject = transform.Find("VisibilityPoints").gameObject;
@@ -117,7 +117,7 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'VisibilityPoints' çš„å­ç‰©ä½“ã€‚");
+            Debug.LogWarning($"{gameObject.name} Ã»ÓĞÕÒµ½ÃûÎª 'VisibilityPoints' µÄ×ÓÎïÌå¡£");
         }
     }
 
@@ -157,14 +157,14 @@ public class SimObjPhysics : MonoBehaviour
 
     //void OnDrawGizmos()
     //{
-    //    // æ£€æŸ¥å¯è§ç‚¹æ˜¯å¦å­˜åœ¨
+    //    // ¼ì²é¿É¼ûµãÊÇ·ñ´æÔÚ
     //    if (visiblePoints != null)
     //    {
-    //        Gizmos.color = Color.yellow; // è®¾ç½® Gizmos é¢œè‰²ä¸ºé»„è‰²
+    //        Gizmos.color = Color.yellow; // ÉèÖÃ Gizmos ÑÕÉ«Îª»ÆÉ«
     //        foreach (Transform point in visiblePoints)
     //        {
-    //            // ç»˜åˆ¶é»„è‰²æ­£æ–¹ä½“åœ¨å¯è§ç‚¹çš„ä½ç½®
-    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1fæ˜¯æ­£æ–¹ä½“å¤§å°ï¼Œå¯ä»¥æ ¹æ®éœ€è¦è°ƒæ•´
+    //            // »æÖÆ»ÆÉ«Õı·½ÌåÔÚ¿É¼ûµãµÄÎ»ÖÃ
+    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1fÊÇÕı·½Ìå´óĞ¡£¬¿ÉÒÔ¸ù¾İĞèÒªµ÷Õû
     //        }
     //    }
     //}

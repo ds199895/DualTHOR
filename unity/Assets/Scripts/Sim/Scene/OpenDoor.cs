@@ -3,11 +3,11 @@ using UnityEngine;
 public class OpenDoor : MonoBehaviour
 {
     [SerializeField] 
-    private Transform door; // å…³è”é—¨çš„ Transformï¼ˆçˆ¶ç‰©ä½“ï¼‰
+    private Transform door; // ¹ØÁªÃÅµÄ Transform£¨¸¸ÎïÌå£©
     [SerializeField] 
-    private float rotationAngle = 90f; // å¼€é—¨æ—¶æ—‹è½¬çš„è§’åº¦
+    private float rotationAngle = 90f; // ¿ªÃÅÊ±Ğı×ªµÄ½Ç¶È
     [SerializeField]
-    private bool isOpen = false; // é—¨çš„å½“å‰çŠ¶æ€
+    private bool isOpen = false; // ÃÅµÄµ±Ç°×´Ì¬
 
     private void OnTriggerEnter(Collider other)
     {
@@ -31,8 +31,8 @@ public class OpenDoor : MonoBehaviour
     {
         if (!isOpen)
         {
-            // æ—‹è½¬é—¨
-            door.Rotate(Vector3.up, rotationAngle); // å›´ç»• Y è½´æ—‹è½¬
+            // Ğı×ªÃÅ
+            door.Rotate(Vector3.up, rotationAngle); // Î§ÈÆ Y ÖáĞı×ª
             isOpen = true;
         }
     }
@@ -41,8 +41,8 @@ public class OpenDoor : MonoBehaviour
     {
         if (isOpen)
         {
-            // æ—‹è½¬é—¨å›å»
-            door.Rotate(Vector3.up, -rotationAngle); // å›´ç»• Y è½´æ—‹è½¬
+            // Ğı×ªÃÅ»ØÈ¥
+            door.Rotate(Vector3.up, -rotationAngle); // Î§ÈÆ Y ÖáĞı×ª
             isOpen = false;
         }
     }

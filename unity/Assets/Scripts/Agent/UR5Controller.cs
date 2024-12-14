@@ -69,7 +69,7 @@ public class UR5Controller : MonoBehaviour
     private void InitializeAdjustments()
     {
         int[] jointIndices = { 2, 3, 4, 5, 6, 7 };
-        string logMessage = "åˆå§‹åŒ–å…³èŠ‚è°ƒæ•´ä¿¡æ¯ï¼š\né»˜è®¤å€¼:\n";
+        string logMessage = "³õÊ¼»¯¹Ø½Úµ÷ÕûĞÅÏ¢£º\nÄ¬ÈÏÖµ:\n";
 
         for (int i = 0; i < jointIndices.Length; i++)
         {
@@ -86,9 +86,9 @@ public class UR5Controller : MonoBehaviour
             adjustmentAngle = NormalizeAngle(adjustmentAngle);
             adjustments[i].angle = adjustmentAngle;
 
-            logMessage += $"å…³èŠ‚ {i + 1} é»˜è®¤æ—‹è½¬: {defaultRotation}\n" +
-                          $"å…³èŠ‚ {i + 1} åˆå§‹æ—‹è½¬: {initialRotation}\n" +
-                          $"å…³èŠ‚ {i + 1} è°ƒæ•´è§’åº¦: {adjustmentAngle}\n";
+            logMessage += $"¹Ø½Ú {i + 1} Ä¬ÈÏĞı×ª: {defaultRotation}\n" +
+                          $"¹Ø½Ú {i + 1} ³õÊ¼Ğı×ª: {initialRotation}\n" +
+                          $"¹Ø½Ú {i + 1} µ÷Õû½Ç¶È: {adjustmentAngle}\n";
         }
 
         Debug.Log(logMessage);
@@ -120,11 +120,11 @@ public class UR5Controller : MonoBehaviour
     public void DisplayEndEffectorPose()
     {
         var endEffector = articulationChain[^1];
-        var output = $"æœ«ç«¯å…³èŠ‚åç§°: {endEffector.name}\n" +
-                     $"æœ«ç«¯å…³èŠ‚ä¸–ç•Œåæ ‡: {endEffector.transform.position:F3}\n" +
-                     $"æœ«ç«¯å…³èŠ‚ä¸–ç•Œæ—‹è½¬ (æ¬§æ‹‰è§’): {endEffector.transform.rotation.eulerAngles:F3}\n" +
-                     $"æœ«ç«¯å…³èŠ‚å±€éƒ¨åæ ‡: {endEffector.transform.localPosition:F3}\n" +
-                     $"æœ«ç«¯å…³èŠ‚å±€éƒ¨æ—‹è½¬ (æ¬§æ‹‰è§’): {endEffector.transform.localRotation.eulerAngles:F3}";
+        var output = $"Ä©¶Ë¹Ø½ÚÃû³Æ: {endEffector.name}\n" +
+                     $"Ä©¶Ë¹Ø½ÚÊÀ½ç×ø±ê: {endEffector.transform.position:F3}\n" +
+                     $"Ä©¶Ë¹Ø½ÚÊÀ½çĞı×ª (Å·À­½Ç): {endEffector.transform.rotation.eulerAngles:F3}\n" +
+                     $"Ä©¶Ë¹Ø½Ú¾Ö²¿×ø±ê: {endEffector.transform.localPosition:F3}\n" +
+                     $"Ä©¶Ë¹Ø½Ú¾Ö²¿Ğı×ª (Å·À­½Ç): {endEffector.transform.localRotation.eulerAngles:F3}";
 
         Debug.Log(output);
     }

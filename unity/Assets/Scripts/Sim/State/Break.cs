@@ -4,33 +4,33 @@ using UnityEngine;
 public class Break : MonoBehaviour, IUniqueStateManager
 {
     [SerializeField]
-    private string prefabToSwapTo; // 破碎后替换的预制体
+    private string prefabToSwapTo; // ������滻��Ԥ����
     [SerializeField]
     private float mass;
     [SerializeField]
-    private float impulseThreshold; // 破碎需要的阈值
+    private float impulseThreshold; // ������Ҫ����ֵ
     [SerializeField]
-    private float squeezeThreshold; // 捏的力度阈值
+    private float squeezeThreshold; // ���������ֵ
     [SerializeField]
-    private float highFrictionImpulseOffset = 2.0f;// 高摩擦区域下的冲击力阈值偏移
-    private float minImpulseThreshold; // 最小冲击力阈值
-    private float maxImpulseThreshold; // 最大冲击力阈值
+    private float highFrictionImpulseOffset = 2.0f;// ��Ħ�������µĳ������ֵƫ��
+    private float minImpulseThreshold; // ��С�������ֵ
+    private float maxImpulseThreshold; // ���������ֵ
     [SerializeField]
-    private float fallImpactForce ; // 下落时受到的冲击力
+    private float fallImpactForce ; // ����ʱ�ܵ��ĳ����
     [SerializeField]
-    private float currentSqueezeForce; // 当前捏的力度
+    private float currentSqueezeForce; // ��ǰ�������
 
     private SceneManager sceneManager;
 
     [SerializeField]
-    private bool broken; // 是否已经破碎
+    private bool broken; // �Ƿ��Ѿ�����
     [SerializeField]
-    private bool isUnbreakable; // 是否不可破碎
+    private bool isUnbreakable; // �Ƿ񲻿�����
     [SerializeField]
-    private bool isReadyToBreak = true; // 是否准备好破碎
+    private bool isReadyToBreak = true; // �Ƿ�׼��������
 
-    // 不会导致其他物体破碎的物体类型列表
-    //todo：后续还需要精简里面的物体类型
+    // ���ᵼ������������������������б�
+    //todo����������Ҫ�����������������
     private static readonly HashSet<SimObjType> TooSmallOrSoftToBreakOtherObjects = new()
     {
         SimObjType.TeddyBear,
@@ -92,7 +92,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
 
         if (!TryGetComponent<Rigidbody>(out var rb)) return;
         
-        // 计算冲击力
+        // ��������
         fallImpactForce = CalculateFallImpactForce(rb);
         mass= rb.mass;
         sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
@@ -100,15 +100,15 @@ public class Break : MonoBehaviour, IUniqueStateManager
 
     //private void Update()
     //{
-    //    // 处理捏的输入，假定使用Input.GetButton()方法来模拟捏的力度。
-    //    // 这里需要根据实际输入系统进行调整
+    //    // ����������룬�ٶ�ʹ��Input.GetButton()������ģ��������ȡ�
+    //    // ������Ҫ����ʵ������ϵͳ���е���
     //    if (Input.GetKeyDown(KeyCode.B))
     //    {
-    //        // 假设通过某种方式获取捏的力度，这里使用0-1范围的值作为示例
-    //        float squeezeValue = GetSqueezeInput(); // 你需要实现这个方法
+    //        // ����ͨ��ĳ�ַ�ʽ��ȡ������ȣ�����ʹ��0-1��Χ��ֵ��Ϊʾ��
+    //        float squeezeValue = GetSqueezeInput(); // ����Ҫʵ���������
     //        //print(squeezeValue);
-    //        // 根据捏的力度设置当前捏力
-    //        currentSqueezeForce = squeezeValue * 10.0f; // 可根据需要调整缩放因子
+    //        // ��������������õ�ǰ����
+    //        currentSqueezeForce = squeezeValue * 10.0f; // �ɸ�����Ҫ������������
     //        if(currentSqueezeForce > squeezeThreshold)
     //        {
     //            if (isReadyToBreak)
@@ -126,36 +126,36 @@ public class Break : MonoBehaviour, IUniqueStateManager
 
     public float CalculateFallImpactForce(Rigidbody rb)
     {
-        float gravity = Physics.gravity.y; // 获取重力加速度 (通常为 -9.81)
-        float height = transform.position.y / transform.parent.parent.localScale.y; // 还原高度
-        // 根据高度和重力计算最终速度
-        float finalVelocity = Mathf.Sqrt(-2 * gravity * height); // 注意重力是负值，所以需要取负号
-        // 计算冲击力
-        return (rb.mass * finalVelocity) / 0.1f; // 保持原来的调整因子
+        float gravity = Physics.gravity.y; // ��ȡ�������ٶ� (ͨ��Ϊ -9.81)
+        float height = transform.position.y / transform.parent.parent.localScale.y; // ��ԭ�߶�
+        // ���ݸ߶Ⱥ��������������ٶ�
+        float finalVelocity = Mathf.Sqrt(-2 * gravity * height); // ע�������Ǹ�ֵ��������Ҫȡ����
+        // ��������
+        return (rb.mass * finalVelocity) / 0.1f; // ����ԭ���ĵ�������
     }
     public float CalculateFallImpactForce(Rigidbody rb, Collider collider)
     {
-        float gravity = Physics.gravity.y; // 获取重力加速度 (通常为 -9.81)
-        float heightDifference = (transform.position.y - collider.bounds.max.y)/ transform.parent.parent.localScale.y; // 获取碰撞体下边界的y值
-        // 根据高度和重力计算最终速度
+        float gravity = Physics.gravity.y; // ��ȡ�������ٶ� (ͨ��Ϊ -9.81)
+        float heightDifference = (transform.position.y - collider.bounds.max.y)/ transform.parent.parent.localScale.y; // ��ȡ��ײ���±߽��yֵ
+        // ���ݸ߶Ⱥ��������������ٶ�
         float finalVelocity = Mathf.Sqrt(-2 * gravity * heightDifference);
-        // 计算冲击力
-        return (rb.mass * finalVelocity) / 0.1f; // 保持原来的调整因子
+        // ��������
+        return (rb.mass * finalVelocity) / 0.1f; // ����ԭ���ĵ�������
     }
     public float CalculateCollisionImpactForce(Collision col)
     {
-        // 获取碰撞的相对速度
+        // ��ȡ��ײ������ٶ�
         Vector3 collisionVelocity = col.relativeVelocity;
 
-        // 计算冲击力，使用物体的质量和碰撞时的速度
-        float impactForce =mass * collisionVelocity.magnitude; // 使用速度的大小
+        // ����������ʹ���������������ײʱ���ٶ�
+        float impactForce =mass * collisionVelocity.magnitude; // ʹ���ٶȵĴ�С
 
-        return impactForce; // 返回计算出的冲击力
+        return impactForce; // ���ؼ�����ĳ����
     }
 
     private void OnCollisionEnter(Collision col)
     {
-        //col.impulse.magnitude单位为牛顿/秒，N/s，表示一秒改变了多少动量
+        //col.impulse.magnitude��λΪţ��/�룬N/s����ʾһ��ı��˶��ٶ���
         float impactForce = CalculateCollisionImpactForce(col);
         //print("impactForce: " + impactForce);
         //float impactForce = CalculateFallImpactForce(GetComponent<Rigidbody>(), col.collider);
@@ -163,7 +163,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
         if (isUnbreakable || impactForce <= impulseThreshold) return;
         //if (isUnbreakable || fallImpactForce  <= impulseThreshold) return;
 
-        //如果碰撞物体在 TooSmalOrSoftToBreakOtherObjects 列表中，直接返回
+        //�����ײ������ TooSmalOrSoftToBreakOtherObjects �б��У�ֱ�ӷ���
         SimObjPhysics collidedObject = col.transform.GetComponentInParent<SimObjPhysics>();
         if (collidedObject != null && TooSmallOrSoftToBreakOtherObjects.Contains(collidedObject.Type))
         {
@@ -193,10 +193,10 @@ public class Break : MonoBehaviour, IUniqueStateManager
     public void BreakObject()
     {
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
-        //实例化新的预制体，并将其设置为当前物体的位置和旋转
+        //ʵ�����µ�Ԥ���壬����������Ϊ��ǰ�����λ�ú���ת
         if (!sceneManager.SimObjectsDict.TryGetValue(prefabToSwapTo, out GameObject breakedObject))
         {
-            return; // 如果未找到对应的对象，直接返回
+            return; // ���δ�ҵ���Ӧ�Ķ���ֱ�ӷ���
         }
         breakedObject.transform.SetPositionAndRotation(transform.position, transform.rotation);
         breakedObject.SetActive(true);
@@ -204,17 +204,17 @@ public class Break : MonoBehaviour, IUniqueStateManager
         breakdown.StartBreak();
         broken = true;
 
-        //将新物体的刚体速度和角速度设置为当前物体的速度和角速度
-        //为什么设为0.4f？
+        //��������ĸ����ٶȺͽ��ٶ�����Ϊ��ǰ������ٶȺͽ��ٶ�
+        //Ϊʲô��Ϊ0.4f��
         foreach (Rigidbody subRb in breakedObject.GetComponentsInChildren<Rigidbody>())
         {
-            subRb.velocity = rb.velocity * 0.4f;
+            subRb.linearVelocity = rb.linearVelocity * 0.4f;
             subRb.angularVelocity = rb.angularVelocity * 0.4f;
         }
         gameObject.SetActive(false);
     }
 
-    //当物体进入高摩擦区域时，增加冲击力阈值
+    //����������Ħ������ʱ�����ӳ������ֵ
     public void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("HighFriction"))
@@ -236,6 +236,6 @@ public class Break : MonoBehaviour, IUniqueStateManager
     private float GetSqueezeInput()
     {
 
-        return 1; // 只是示例，替换为真实捏力度获取逻辑
+        return 1; // ֻ��ʾ�����滻Ϊ��ʵ�����Ȼ�ȡ�߼�
     }
 }

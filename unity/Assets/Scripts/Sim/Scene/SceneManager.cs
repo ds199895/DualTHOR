@@ -18,31 +18,31 @@ public class SceneManager : MonoBehaviour
     TextMeshProUGUI stateIndexText;
     [SerializeField]
     TextMeshProUGUI maxStateIndexText;
-    [Header("åœºæ™¯ä¸­æ‰€æœ‰æ¨¡æ‹Ÿç‰©ä½“")]
+    [Header("³¡¾°ÖĞËùÓĞÄ£ÄâÎïÌå")]
     [SerializeField]
-    private List<GameObject> simObjects = new();//åœºæ™¯ä¸­æ‰€æœ‰æ¨¡æ‹Ÿç‰©ä½“ï¼ŒåŒ…æ‹¬ç ´ç¢å’Œåˆ‡ç¢åç”Ÿæˆçš„ç‰©ä½“ï¼Œç”¨äºunityç¼–è¾‘å™¨ä¸­å¯è§
-    [Header("åœºæ™¯ä¸­æ‰€æœ‰å¯äº¤äº’ç‰©ä½“")]
+    private List<GameObject> simObjects = new();//³¡¾°ÖĞËùÓĞÄ£ÄâÎïÌå£¬°üÀ¨ÆÆËéºÍÇĞËéºóÉú³ÉµÄÎïÌå£¬ÓÃÓÚunity±à¼­Æ÷ÖĞ¿É¼û
+    [Header("³¡¾°ÖĞËùÓĞ¿É½»»¥ÎïÌå")]
     [SerializeField]
-    private List<GameObject> interactableObjects = new();//åœºæ™¯ä¸­æ‰€æœ‰å¯äº¤äº’ç‰©ä½“
+    private List<GameObject> interactableObjects = new();//³¡¾°ÖĞËùÓĞ¿É½»»¥ÎïÌå
     //[SerializeField]
-    [Header("è§†é‡èŒƒå›´å†…èƒ½äº¤äº’ç‰©ä½“")]
+    [Header("ÊÓÒ°·¶Î§ÄÚÄÜ½»»¥ÎïÌå")]
 
-    public List<GameObject> canInteractableObjects = new();//è§†é‡èŒƒå›´å†…æ‰€æœ‰å¯äº¤äº’ç‰©ä½“
-    [Header("åœºæ™¯ä¸­æ‰€æœ‰å¯ä¼ é€ä½ç½®")]
+    public List<GameObject> canInteractableObjects = new();//ÊÓÒ°·¶Î§ÄÚËùÓĞ¿É½»»¥ÎïÌå
+    [Header("³¡¾°ÖĞËùÓĞ¿É´«ËÍÎ»ÖÃ")]
 
     [SerializeField]
-    private List<GameObject> transferPoints = new();//åœºæ™¯ä¸­æ‰€æœ‰å¯äº¤äº’ç‰©ä½“çš„ä¼ é€ä½ç½®
+    private List<GameObject> transferPoints = new();//³¡¾°ÖĞËùÓĞ¿É½»»¥ÎïÌåµÄ´«ËÍÎ»ÖÃ
     //[SerializeField]
-    [Header("è§†é‡èŒƒå›´å†…èƒ½äº¤äº’ç‰©ä½“çš„ä¼ é€ä½ç½®")]
+    [Header("ÊÓÒ°·¶Î§ÄÚÄÜ½»»¥ÎïÌåµÄ´«ËÍÎ»ÖÃ")]
 
-    public List<GameObject> canTransferPoints = new();//è§†é‡èŒƒå›´å†…å¯äº¤äº’ç‰©ä½“çš„ä¼ é€ä½ç½®
+    public List<GameObject> canTransferPoints = new();//ÊÓÒ°·¶Î§ÄÚ¿É½»»¥ÎïÌåµÄ´«ËÍÎ»ÖÃ
 
-    [Header("å¯äº¤äº’ç‰©ä½“çš„å¯æ“ä½œä½ç½®")]
+    [Header("¿É½»»¥ÎïÌåµÄ¿É²Ù×÷Î»ÖÃ")]
     [SerializeField]
-    private List<GameObject> interactablePoints = new();//åœºæ™¯ä¸­æ‰€æœ‰å¯äº¤äº’ç‰©ä½“çš„å¯æ“ä½œä½ç½®
+    private List<GameObject> interactablePoints = new();//³¡¾°ÖĞËùÓĞ¿É½»»¥ÎïÌåµÄ¿É²Ù×÷Î»ÖÃ
 
-    private readonly Dictionary<string, GameObject> simObjectsDict = new();//åœºæ™¯ä¸­æ‰€æœ‰æ¨¡æ‹Ÿç‰©ä½“å­—å…¸ï¼Œç”¨äºå¿«é€ŸæŸ¥æ‰¾
-    //private readonly Dictionary<string, GameObject> canInteractableObjectsDict = new();//åœºæ™¯ä¸­æ‰€æœ‰æ¨¡æ‹Ÿç‰©ä½“å­—å…¸ï¼Œç”¨äºå¿«é€ŸæŸ¥æ‰¾
+    private readonly Dictionary<string, GameObject> simObjectsDict = new();//³¡¾°ÖĞËùÓĞÄ£ÄâÎïÌå×Öµä£¬ÓÃÓÚ¿ìËÙ²éÕÒ
+    //private readonly Dictionary<string, GameObject> canInteractableObjectsDict = new();//³¡¾°ÖĞËùÓĞÄ£ÄâÎïÌå×Öµä£¬ÓÃÓÚ¿ìËÙ²éÕÒ
 
     public List<GameObject> TransferPoints => transferPoints;
     //public List<GameObject> CanTransferPoints => canTransferPoints;
@@ -54,19 +54,19 @@ public class SceneManager : MonoBehaviour
     private GetObjectsInView getObjectsInView;
     void Start()
     {
-        // æŸ¥æ‰¾å¹¶å¡«å……å¯äº¤äº’ç‰©ä½“åˆ—è¡¨
+        // ²éÕÒ²¢Ìî³ä¿É½»»¥ÎïÌåÁĞ±í
         FillList(simObjects, new[] { "Interactable", "DynamicAdd" });
-        // æŸ¥æ‰¾å¹¶å¡«å……å¯äº¤äº’ç‰©ä½“å­—å…¸
+        // ²éÕÒ²¢Ìî³ä¿É½»»¥ÎïÌå×Öµä
         FillDict(simObjectsDict, new[] { "Interactable", "DynamicAdd" });
         
 
-        // æŸ¥æ‰¾å¹¶å¡«å……å¯äº¤äº’ç‰©ä½“åˆ—è¡¨
+        // ²éÕÒ²¢Ìî³ä¿É½»»¥ÎïÌåÁĞ±í
         FillList(interactableObjects, new[] { "Interactable"});
 
-        // æŸ¥æ‰¾å¹¶å¡«å……ä¼ é€ä½ç½®åˆ—è¡¨
+        // ²éÕÒ²¢Ìî³ä´«ËÍÎ»ÖÃÁĞ±í
         FillList(transferPoints, new[] { "TransferPoint" });
 
-        // æŸ¥æ‰¾å¹¶å¡«å……å¯æ“ä½œä½ç½®åˆ—è¡¨
+        // ²éÕÒ²¢Ìî³ä¿É²Ù×÷Î»ÖÃÁĞ±í
         FillList(interactablePoints, new[] { "InteractablePoint" });
 
         GameObject[] dynamicAdds = GameObject.FindGameObjectsWithTag("DynamicAdd");
@@ -79,31 +79,31 @@ public class SceneManager : MonoBehaviour
     }
 
 
-    // å¡«å……åˆ—è¡¨çš„æ–¹æ³•
+    // Ìî³äÁĞ±íµÄ·½·¨
     private void FillList(List<GameObject> list, string[] tags)
     {
         foreach (string tag in tags)
         {
-            GameObject[] objects = GameObject.FindGameObjectsWithTag(tag); // æŸ¥æ‰¾æ‰€æœ‰å¸¦æœ‰å½“å‰æ ‡ç­¾çš„ç‰©ä½“
+            GameObject[] objects = GameObject.FindGameObjectsWithTag(tag); // ²éÕÒËùÓĞ´øÓĞµ±Ç°±êÇ©µÄÎïÌå
 
             foreach (var obj in objects)
             {
-                if (tag == "TransferPoint") // åˆ¤æ–­æ˜¯å¦æ˜¯ TransferPoint æ ‡ç­¾
+                if (tag == "TransferPoint") // ÅĞ¶ÏÊÇ·ñÊÇ TransferPoint ±êÇ©
                 {
-                    if (obj.transform.parent != null) // æ£€æŸ¥ç‰©ä½“æ˜¯å¦æœ‰çˆ¶ç‰©ä½“
+                    if (obj.transform.parent != null) // ¼ì²éÎïÌåÊÇ·ñÓĞ¸¸ÎïÌå
                     {
-                        list.Add(obj.transform.parent.gameObject); // æ·»åŠ çˆ¶ç‰©ä½“
+                        list.Add(obj.transform.parent.gameObject); // Ìí¼Ó¸¸ÎïÌå
                     }
                 }
                 else
                 {
-                    list.Add(obj); // æ·»åŠ å…¶ä»–æ ‡ç­¾çš„ç‰©ä½“æœ¬èº«
+                    list.Add(obj); // Ìí¼ÓÆäËû±êÇ©µÄÎïÌå±¾Éí
                 }
             }
         }
     }
 
-    // å¡«å……å­—å…¸çš„æ–¹æ³•
+    // Ìî³ä×ÖµäµÄ·½·¨
     private void FillDict(Dictionary<string, GameObject> dict, string[] tags)
     {
         foreach (string tag in tags)
@@ -153,8 +153,8 @@ public class SceneManager : MonoBehaviour
 
     public void SaveCurrentState()
     {
-        #region ä¿å­˜ç‰ˆæœ¬æ§åˆ¶çš„åœºæ™¯ä¿¡æ¯
-        // ä¿å­˜å½“å‰çŠ¶æ€
+        #region ±£´æ°æ±¾¿ØÖÆµÄ³¡¾°ĞÅÏ¢
+        // ±£´æµ±Ç°×´Ì¬
         SceneState state = new()
         {
             id = currentStateIndex + 1,
@@ -164,14 +164,14 @@ public class SceneManager : MonoBehaviour
         };
         stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // ä¿å­˜æ¯ä¸ª simObject çš„çŠ¶æ€
+        // ±£´æÃ¿¸ö simObject µÄ×´Ì¬
         for (int i = 0; i < simObjects.Count; i++)
         {
             state.objects[i] = SaveObjectState(simObjects[i]);
         }
         #endregion
 
-        #region ä¿å­˜è¿”å›ç»™pythonçš„åœºæ™¯ä¿¡æ¯
+        #region ±£´æ·µ»Ø¸øpythonµÄ³¡¾°ĞÅÏ¢
         SceneStateA2T stateA2T = new()
         {
             id = currentStateIndex + 1,
@@ -181,7 +181,7 @@ public class SceneManager : MonoBehaviour
                 name = agent.name,
                 position = agent.transform.position,
                 rotation = agent.transform.rotation,
-                lastAction = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastAction : "idle", // é»˜è®¤å€¼
+                lastAction = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastAction : "idle", // Ä¬ÈÏÖµ
                 lastActionSuccess = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastActionSuccess : false,
                 errorMessage = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.errorMessage : string.Empty
             },
@@ -194,7 +194,7 @@ public class SceneManager : MonoBehaviour
         }
         #endregion
 
-        // ç¡®ä¿å½“å‰çŠ¶æ€ç´¢å¼•ä¸è¶…è¿‡å†å²è®°å½•
+        // È·±£µ±Ç°×´Ì¬Ë÷Òı²»³¬¹ıÀúÊ·¼ÇÂ¼
         if (currentStateIndex < stateHistory.Count - 1)
         {
             stateHistory.RemoveRange(currentStateIndex + 1, stateHistory.Count - (currentStateIndex + 1));
@@ -203,13 +203,13 @@ public class SceneManager : MonoBehaviour
         stateHistory.Add(state);
         stateHistoryA2T.Add(stateA2T);
         maxStateIndexText.text= "MaxIndex:" + (stateHistory.Count-1).ToString();
-        // è¾“å‡ºåœºæ™¯çŠ¶æ€
+        // Êä³ö³¡¾°×´Ì¬
         //print(JsonUtility.ToJson(state));
         print(JsonUtility.ToJson(stateA2T));
         currentStateIndex++;
     }
 
-    // ä¿å­˜å•ä¸ªç‰©ä½“çš„çŠ¶æ€
+    // ±£´æµ¥¸öÎïÌåµÄ×´Ì¬
     private ObjectState SaveObjectState(GameObject obj)
     {
         ObjectState objectState = new()
@@ -220,17 +220,17 @@ public class SceneManager : MonoBehaviour
             isActive = obj.activeSelf,
         };
 
-        // ä¿å­˜å¯åºåˆ—åŒ–çŠ¶æ€
+        // ±£´æ¿ÉĞòÁĞ»¯×´Ì¬
         IUniqueStateManager[] savables = obj.GetComponents<IUniqueStateManager>();
         foreach (var savable in savables)
         {
-            savable.SaveState(objectState); // ä¿å­˜çŠ¶æ€
+            savable.SaveState(objectState); // ±£´æ×´Ì¬
         }
 
         return objectState;
     }
 
-    // ä¿å­˜å¯äº¤äº’ç‰©ä½“çš„çŠ¶æ€
+    // ±£´æ¿É½»»¥ÎïÌåµÄ×´Ì¬
     private ObjectStateA2T SaveInteractableObjectState(GameObject obj)
     {
         SimObjPhysics sop = obj.GetComponent<SimObjPhysics>();
@@ -304,24 +304,24 @@ public class SceneManager : MonoBehaviour
         }
     }
 
-    // åŠ è½½æŒ‡å®šç´¢å¼•çš„çŠ¶æ€
+    // ¼ÓÔØÖ¸¶¨Ë÷ÒıµÄ×´Ì¬
     public void LoadStateByIndex(string indexText)
     {
         if (int.TryParse(indexText, out int index))
         {
-            if (index >= 0 && index <= stateHistory.Count-1) // æ£€æŸ¥ç´¢å¼•æ˜¯å¦åœ¨æœ‰æ•ˆèŒƒå›´å†…
+            if (index >= 0 && index <= stateHistory.Count-1) // ¼ì²éË÷ÒıÊÇ·ñÔÚÓĞĞ§·¶Î§ÄÚ
             {
-                currentStateIndex = index; // ç´¢å¼•ä»0å¼€å§‹ï¼Œç”¨æˆ·è¾“å…¥ä»1å¼€å§‹
+                currentStateIndex = index; // Ë÷Òı´Ó0¿ªÊ¼£¬ÓÃ»§ÊäÈë´Ó1¿ªÊ¼
                 LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
             }
             else
             {
-                Debug.LogWarning("è¾“å…¥çš„ç´¢å¼•è¶…å‡ºèŒƒå›´ï¼");
+                Debug.LogWarning("ÊäÈëµÄË÷Òı³¬³ö·¶Î§£¡");
             }
         }
         else
         {
-            Debug.LogWarning("æ— æ•ˆçš„ç´¢å¼•è¾“å…¥ï¼");
+            Debug.LogWarning("ÎŞĞ§µÄË÷ÒıÊäÈë£¡");
         }
     }
 
@@ -329,11 +329,11 @@ public class SceneManager : MonoBehaviour
     {
         //string sceneStateJson = JsonUtility.ToJson(state);
         //print(sceneStateJson);
-        // æ›´æ–°åœºæ™¯çŠ¶æ€å’Œç›¸å…³ä¿¡æ¯
+        // ¸üĞÂ³¡¾°×´Ì¬ºÍÏà¹ØĞÅÏ¢
         agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
         stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // è¿˜åŸå…¶ä»–ç‰©ä½“çš„çŠ¶æ€
+        // »¹Ô­ÆäËûÎïÌåµÄ×´Ì¬
         foreach (ObjectState objectState in state.objects)
         {
             LoadObjectState(objectState);
@@ -346,12 +346,12 @@ public class SceneManager : MonoBehaviour
         //print(sceneStateJson);
         string sceneStateJsonA2T = JsonUtility.ToJson(stateA2T);
         print(sceneStateJsonA2T);
-        // æ›´æ–°åœºæ™¯çŠ¶æ€å’Œç›¸å…³ä¿¡æ¯
+        // ¸üĞÂ³¡¾°×´Ì¬ºÍÏà¹ØĞÅÏ¢
         agent.transform.position = state.agentPosition;
         agent.transform.rotation = state.agentRotation;
         stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // è¿˜åŸå…¶ä»–ç‰©ä½“çš„çŠ¶æ€
+        // »¹Ô­ÆäËûÎïÌåµÄ×´Ì¬
         foreach (ObjectState objectState in state.objects)
         {
             LoadObjectState(objectState);
@@ -360,20 +360,20 @@ public class SceneManager : MonoBehaviour
 
     private void LoadObjectState(ObjectState objectState)
     {
-        // æŸ¥æ‰¾åŠ¨æ€ç‰©ä½“
+        // ²éÕÒ¶¯Ì¬ÎïÌå
         if (simObjectsDict.TryGetValue(objectState.name, out GameObject obj))
         {
             obj.SetActive(objectState.isActive);
 
-            // å¤„ç†ç‰©ç†çŠ¶æ€
+            // ´¦ÀíÎïÀí×´Ì¬
             HandlePhysicsState(obj, objectState);
             //obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
 
-            // æ¢å¤çŠ¶æ€
+            // »Ö¸´×´Ì¬
             IUniqueStateManager[] savables = obj.GetComponents<IUniqueStateManager>();
             foreach (var savable in savables)
             {
-                savable.LoadState(objectState); // æ¢å¤çŠ¶æ€
+                savable.LoadState(objectState); // »Ö¸´×´Ì¬
             }
         }
     }
@@ -381,13 +381,13 @@ public class SceneManager : MonoBehaviour
     private void HandlePhysicsState(GameObject obj, ObjectState objectState)
     {
         SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
-        if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup) // ç¡®ä¿ simObj ä¸ä¸ºç©º
+        if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup) // È·±£ simObj ²»Îª¿Õ
         {
             if (obj.TryGetComponent<Rigidbody>(out Rigidbody rb))
             {
-                rb.isKinematic = true; // æš‚æ—¶å°†åˆšä½“è®¾ä¸ºè¿åŠ¨å­¦
+                rb.isKinematic = true; // ÔİÊ±½«¸ÕÌåÉèÎªÔË¶¯Ñ§
                 obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
-                rb.isKinematic = false; // æ¢å¤ç‰©ç†è¿åŠ¨
+                rb.isKinematic = false; // »Ö¸´ÎïÀíÔË¶¯
             }
         }
         else
@@ -420,7 +420,7 @@ public class SceneManager : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"æœªæ‰¾åˆ°IDä¸º {objectID} çš„ç‰©å“");
+        Debug.LogWarning($"Î´ÕÒµ½IDÎª {objectID} µÄÎïÆ·");
         return null;
     }
 
@@ -438,13 +438,13 @@ public class SceneManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"ç‰©å“ {objectID} æ²¡æœ‰å¯ç”¨çš„äº¤äº’ç‚¹");
+                    Debug.LogWarning($"ÎïÆ· {objectID} Ã»ÓĞ¿ÉÓÃµÄ½»»¥µã");
                     return null;
                 }
             }
         }
 
-        Debug.LogWarning($"æœªæ‰¾åˆ°IDä¸º {objectID} çš„ç‰©å“");
+        Debug.LogWarning($"Î´ÕÒµ½IDÎª {objectID} µÄÎïÆ·");
         return null;
     }
     
@@ -458,7 +458,7 @@ public class SceneManager : MonoBehaviour
 
             if (!isSuccessful && actionType != null)
             {
-                // å°è¯•è·å–å¯¹åº”åŠ¨ä½œçš„é”™è¯¯ä¿¡æ¯
+                // ³¢ÊÔ»ñÈ¡¶ÔÓ¦¶¯×÷µÄ´íÎóĞÅÏ¢
                 ErrorMessage errorMessageComponent = FindObjectOfType<ErrorMessage>();
                 if (errorMessageComponent != null && errorMessageComponent.errorMessage.ContainsKey(actionType))
                 {
@@ -467,12 +467,12 @@ public class SceneManager : MonoBehaviour
                 }
                 else
                 {
-                    currentAgent.errorMessage = "Error message not defined for this action."; // åŠ¨ä½œæ— å¯¹åº”é”™è¯¯ä¿¡æ¯
+                    currentAgent.errorMessage = "Error message not defined for this action."; // ¶¯×÷ÎŞ¶ÔÓ¦´íÎóĞÅÏ¢
                 }
             }
             else
             {
-                currentAgent.errorMessage = string.Empty; // æˆåŠŸæ—¶æ— é”™è¯¯ä¿¡æ¯
+                currentAgent.errorMessage = string.Empty; // ³É¹¦Ê±ÎŞ´íÎóĞÅÏ¢
             }
         }
         else

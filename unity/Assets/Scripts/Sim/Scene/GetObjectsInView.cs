@@ -5,11 +5,11 @@ using UnityEngine;
 public class GetObjectsInView : MonoBehaviour
 {
     [SerializeField]
-    private Camera targetCamera; // ç›¸æœº
+    private Camera targetCamera; // Ïà»ú
     [SerializeField]
-    private float viewDistance = 30f; // è§†é‡è·ç¦»
+    private float viewDistance = 30f; // ÊÓÒ°¾àÀë
     [SerializeField]
-    private List<GameObject> canInteractableObjects; // è®°å½•GameObjectçš„æ•°ç»„
+    private List<GameObject> canInteractableObjects; // ¼ÇÂ¼GameObjectµÄÊı×é
     private SceneManager sceneManager;
 
     
@@ -24,13 +24,13 @@ public class GetObjectsInView : MonoBehaviour
     }
 #endif
 
-    // ç»˜åˆ¶å°„çº¿ï¼Œæ–¹ä¾¿è°ƒè¯•
+    // »æÖÆÉäÏß£¬·½±ãµ÷ÊÔ
     private void DrawVisibleRays()
     {
         foreach (GameObject parent in canInteractableObjects)
         {
             SimObjPhysics simObjPhysics = parent.GetComponent<SimObjPhysics>();
-            //å°„çº¿å°„åˆ°å¯è§ç‚¹
+            //ÉäÏßÉäµ½¿É¼ûµã
             if (simObjPhysics != null && simObjPhysics.VisiblePoints != null)
             {
                 foreach (Transform visiblePoint in simObjPhysics.VisiblePoints)
@@ -38,19 +38,19 @@ public class GetObjectsInView : MonoBehaviour
                     Vector3 direction = visiblePoint.position - targetCamera.transform.position;
                     Ray ray = new Ray(targetCamera.transform.position, direction);
 
-                    // ç»˜åˆ¶å°„çº¿ï¼Œæ–¹ä¾¿è°ƒè¯•
+                    // »æÖÆÉäÏß£¬·½±ãµ÷ÊÔ
                     Debug.DrawLine(ray.origin, ray.origin + ray.direction * viewDistance, Color.red);
                 }
             }
-            //å°„çº¿å°„åˆ°ç‰©ä½“ä¸­å¿ƒ
+            //ÉäÏßÉäµ½ÎïÌåÖĞĞÄ
             //if (simObjPhysics != null)
             //{
-            //    // è·å–ç‰©ä½“çš„ä¸­å¿ƒç‚¹
+            //    // »ñÈ¡ÎïÌåµÄÖĞĞÄµã
             //    Vector3 objectCenter = simObjPhysics.transform.position;
             //    Vector3 direction = objectCenter - targetCamera.transform.position;
             //    Ray ray = new Ray(targetCamera.transform.position, direction);
 
-            //    // ç»˜åˆ¶å°„çº¿ï¼Œæ–¹ä¾¿è°ƒè¯•
+            //    // »æÖÆÉäÏß£¬·½±ãµ÷ÊÔ
             //    Debug.DrawLine(ray.origin, ray.origin + ray.direction * viewDistance, Color.red);
             //}
         }
@@ -58,7 +58,7 @@ public class GetObjectsInView : MonoBehaviour
     public void GetObjects()
     {
         canInteractableObjects.Clear();
-        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);//è®¡ç®—ç›¸æœºçš„è§†é”¥ä½“å¹³é¢ï¼ˆå…­ä¸ªï¼‰
+        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);//¼ÆËãÏà»úµÄÊÓ×¶ÌåÆ½Ãæ£¨Áù¸ö£©
         int layerMask = LayerMask.GetMask("SimObjVisible");
 
         Collider[] collidersInLayer = Physics.OverlapSphere(targetCamera.transform.position, viewDistance, layerMask);
@@ -76,16 +76,16 @@ public class GetObjectsInView : MonoBehaviour
                     {
                         if (IsVisible(interactableParent))
                         {
-                            canInteractableObjects.Add(interactableParent); // æ·»åŠ åˆ°é›†åˆä¸­
+                            canInteractableObjects.Add(interactableParent); // Ìí¼Óµ½¼¯ºÏÖĞ
                         }
-                        //canInteractableObjects.Add(interactableParent); // æ·»åŠ åˆ°é›†åˆä¸­
+                        //canInteractableObjects.Add(interactableParent); // Ìí¼Óµ½¼¯ºÏÖĞ
 
                     }
 
                 }
             }
         }
-        // å°†é›†åˆè½¬æ¢ä¸ºGameObjectæ•°ç»„
+        // ½«¼¯ºÏ×ª»»ÎªGameObjectÊı×é
         sceneManager.canInteractableObjects = canInteractableObjects;
         sceneManager.canTransferPoints= sceneManager.TransferPoints.Where(t => t.transform != null && canInteractableObjects.Contains(t)).ToList();
     }
@@ -96,41 +96,41 @@ public class GetObjectsInView : MonoBehaviour
     //    Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);
     //    //int layerMask = LayerMask.GetMask("SimObjVisible");
 
-    //    // è·å–æ‰€æœ‰å¤„ç†çš„ GameObject
+    //    // »ñÈ¡ËùÓĞ´¦ÀíµÄ GameObject
     //    GameObject[] allObjects = GameObject.FindGameObjectsWithTag("Interactable");
     //    print(allObjects.Length);
     //    foreach (GameObject obj in allObjects)
     //    {
-    //        // è·å–æ‰€æœ‰å­ç‰©ä½“çš„ MeshFilter
+    //        // »ñÈ¡ËùÓĞ×ÓÎïÌåµÄ MeshFilter
     //        MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
     //        foreach (MeshFilter meshFilter in meshFilters)
     //        {
-    //            // è·å–ç½‘æ ¼çš„åŒ…å›´ç›’
+    //            // »ñÈ¡Íø¸ñµÄ°üÎ§ºĞ
     //            Bounds bounds = meshFilter.mesh.bounds;
     //            bounds.center = meshFilter.transform.TransformPoint(bounds.center);
     //            bounds.Encapsulate(meshFilter.GetComponent<Renderer>().bounds);
 
-    //            // æ£€æŸ¥æ˜¯å¦ä¸ç›¸æœºè§†é‡ç›¸äº¤
+    //            // ¼ì²éÊÇ·ñÓëÏà»úÊÓÒ°Ïà½»
     //            if (GeometryUtility.TestPlanesAABB(planes, bounds))
     //            {
     //                Transform interactableParent = GetInteractableParent(obj.transform);
     //                if (interactableParent != null && !loggedInteractableParents.Contains(interactableParent))
     //                {
-    //                    loggedInteractableParents.Add(interactableParent); // æ·»åŠ åˆ°é›†åˆä¸­
+    //                    loggedInteractableParents.Add(interactableParent); // Ìí¼Óµ½¼¯ºÏÖĞ
     //                }
-    //                break; // ä¸€æ—¦æ‰¾åˆ°ä¸€ä¸ªç›¸äº¤çš„ç‰©ä½“ï¼Œå°±å¯ä»¥è·³å‡ºå¾ªç¯
+    //                break; // Ò»µ©ÕÒµ½Ò»¸öÏà½»µÄÎïÌå£¬¾Í¿ÉÒÔÌø³öÑ­»·
     //            }
     //        }
     //    }
 
-    //    // å°†é›†åˆè½¬æ¢ä¸ºGameObjectæ•°ç»„
+    //    // ½«¼¯ºÏ×ª»»ÎªGameObjectÊı×é
     //    canInteractableObjects = loggedInteractableParents.Select(t => t.gameObject).ToArray();
     //    sceneManager.canInteractableObjects = canInteractableObjects.ToList();
     //}
 
     private bool IsVisible(GameObject parent)
     {
-        // è·å–å½“å‰Interactableç‰©ä½“çš„VisiblePoints
+        // »ñÈ¡µ±Ç°InteractableÎïÌåµÄVisiblePoints
         SimObjPhysics simObjPhysics = parent.GetComponent<SimObjPhysics>();
         if (simObjPhysics != null && simObjPhysics.VisiblePoints != null)
         {
@@ -139,18 +139,18 @@ public class GetObjectsInView : MonoBehaviour
                 Vector3 direction = visiblePoint.position - targetCamera.transform.position;
                 Ray ray = new(targetCamera.transform.position, direction);
 
-                // æ£€æµ‹å°„çº¿æ˜¯å¦ä¸ç‰©ä½“ç›¸äº¤
+                // ¼ì²âÉäÏßÊÇ·ñÓëÎïÌåÏà½»
                 if (Physics.Raycast(ray, out RaycastHit hit, viewDistance))
                 {
                     if (hit.transform.IsChildOf(parent.transform) || hit.transform == parent)
                     {
                         //print("GetObjectsInView IsVisible: " + parent);
-                        return true; // æ‰¾åˆ°ä¸VisiblePointç›¸äº¤çš„å°„çº¿
+                        return true; // ÕÒµ½ÓëVisiblePointÏà½»µÄÉäÏß
                     }
                 }
             }
         }
-        return false; // æ²¡æœ‰æ‰¾åˆ°å¯è§ç‚¹
+        return false; // Ã»ÓĞÕÒµ½¿É¼ûµã
     }
 
 }

@@ -44,7 +44,7 @@ public class UnityClient : MonoBehaviour
                 client = new TcpClient();
                 Debug.Log("Attempting to connect to server at 127.0.0.1:5678...");
 
-                await client.ConnectAsync("127.0.0.1", 5678); // 寮傛杩炴帴
+                await client.ConnectAsync("127.0.0.1", 5678); // 异步连接
                 stream = client.GetStream();
 
                 Debug.Log("Connected to server successfully.");
@@ -77,7 +77,7 @@ public class UnityClient : MonoBehaviour
                 }
 
                 Debug.LogError($"Detailed exception: {se.GetType().Name} - {se.Message}");
-                await Task.Delay(5000); // 5 绉掑悗閲嶈瘯
+                await Task.Delay(5000); // 5 秒后重试
             }
             catch (ArgumentException ae)
             {
@@ -94,7 +94,7 @@ public class UnityClient : MonoBehaviour
                 {
                     Debug.LogError($"Inner Exception: {e.InnerException.GetType().Name} - {e.InnerException.Message}");
                 }
-                await Task.Delay(5000); // 5 绉掑悗閲嶈瘯
+                await Task.Delay(5000); // 5 秒后重试
             }
         }
     }
@@ -113,11 +113,11 @@ public class UnityClient : MonoBehaviour
                     string actionJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Debug.Log($"Received action from Python: {actionJson}");
 
-                    // 瑙ｆ瀽 JSON 鏁版嵁
+                    // 解析 JSON 数据
                     actionJson = PreprocessJson(actionJson);
                     ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
 
-                    // 纭繚 action 鏈夋晥
+                    // 确保 action 有效
                     if (string.IsNullOrEmpty(actionData.action))
                     {
                         Debug.LogError("ActionData does not contain a valid action.");
@@ -125,7 +125,7 @@ public class UnityClient : MonoBehaviour
                         return;
                     }
 
-                    // 鐗规畩澶勭悊 LoadSceneState 鍔ㄤ綔
+                    // 特殊处理 LoadSceneState 动作
                     if (actionData.action == "loadstate")
                     {
                         if (!string.IsNullOrEmpty(actionData.stateID))
@@ -142,7 +142,7 @@ public class UnityClient : MonoBehaviour
                     }
                     else
                     {
-                        // 澶勭悊鍏朵粬甯歌鍔ㄤ綔
+                        // 处理其他常规动作
                         agentMovement.ExecuteActionWithCallback(actionData, () =>
                         {
                             if (actionData.action == "undo" || actionData.action == "redo")
@@ -180,7 +180,7 @@ public class UnityClient : MonoBehaviour
                 Vector3 currentPosition = transform.position;
                 SceneStateA2T currentSceneState = sceneManager.GetCurrentSceneStateA2T();
 
-                // 纭繚 objectsStates 琚纭簭鍒楀寲
+                // 确保 objectsStates 被正确序列化
                 string sceneStateJson = JsonUtility.ToJson(currentSceneState);
                 string feedback = $"Executed {action}, x1position: {currentPosition}, sceneState: {sceneStateJson}";
 

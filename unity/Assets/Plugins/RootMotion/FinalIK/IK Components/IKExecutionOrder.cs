@@ -25,11 +25,7 @@ namespace RootMotion.FinalIK {
 		private bool animatePhysics {
 			get {
 				if (animator == null) return false;
-<<<<<<< HEAD
-				return animator.updateMode == AnimatorUpdateMode.AnimatePhysics;
-=======
 				return animator.updateMode == AnimatorUpdateMode.Fixed;
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			}
 		}
 

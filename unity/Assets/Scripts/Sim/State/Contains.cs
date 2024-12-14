@@ -5,14 +5,14 @@ using UnityEngine;
 public class Contains : MonoBehaviour
 {
     [SerializeField]
-    private List<GameObject> currentlyContains = new(); //å½“å‰å®¹å™¨å†…åŒ…å«çš„å¯¹è±¡åˆ—è¡¨ã€‚
+    private List<GameObject> currentlyContains = new(); //µ±Ç°ÈİÆ÷ÄÚ°üº¬µÄ¶ÔÏóÁĞ±í¡£
 
     [SerializeField]
-    private GameObject myParent; //å®¹å™¨å¯¹è±¡çš„çˆ¶å¯¹è±¡å¼•ç”¨ã€‚
+    private GameObject myParent; //ÈİÆ÷¶ÔÏóµÄ¸¸¶ÔÏóÒıÓÃ¡£
 
     public List<GameObject> CurrentlyContains { get { return currentlyContains; } }
 
-    //è·å–å®¹å™¨å¯¹è±¡çš„çˆ¶å¯¹è±¡å¼•ç”¨ã€‚
+    //»ñÈ¡ÈİÆ÷¶ÔÏóµÄ¸¸¶ÔÏóÒıÓÃ¡£
     void OnEnable()
     {
         if (myParent == null)
@@ -31,7 +31,7 @@ public class Contains : MonoBehaviour
     }
 #endif
 
-    //ç¬¬äºŒä¸ªå‚æ•°æ˜¯ä¸æ˜¯ç¬¬ä¸€ä¸ªå‚æ•°çš„çˆ¶ç‰©ä½“ï¼Œä»è€Œæ’é™¤æ‰çˆ¶ç‰©ä½“çš„ç¢°æ’ä½“
+    //µÚ¶ş¸ö²ÎÊıÊÇ²»ÊÇµÚÒ»¸ö²ÎÊıµÄ¸¸ÎïÌå£¬´Ó¶øÅÅ³ıµô¸¸ÎïÌåµÄÅö×²Ìå
     private bool HasAncestor(GameObject child, GameObject potentialAncestor)
     {
         if (child == potentialAncestor)
@@ -48,15 +48,15 @@ public class Contains : MonoBehaviour
         }
     }
 
-    //è¿”å›å½“å‰åœ¨ç¢°æ’ä½“å†…çš„æ‰€æœ‰æ¸¸æˆç‰©ä½“çš„åˆ—è¡¨ã€‚é€šè¿‡ Physics.OverlapBox() è·å–é‡å çš„ç¢°æ’ä½“ï¼Œå¹¶ä¸”è¿‡æ»¤æ‰è§¦å‘å™¨å’Œå¯èƒ½çš„é‡å¤å¯¹è±¡ã€‚
+    //·µ»Øµ±Ç°ÔÚÅö×²ÌåÄÚµÄËùÓĞÓÎÏ·ÎïÌåµÄÁĞ±í¡£Í¨¹ı Physics.OverlapBox() »ñÈ¡ÖØµşµÄÅö×²Ìå£¬²¢ÇÒ¹ıÂËµô´¥·¢Æ÷ºÍ¿ÉÄÜµÄÖØ¸´¶ÔÏó¡£
     public List<GameObject> CurrentlyContainedGameObjects()
     {
         List<GameObject> objs = new();
         BoxCollider b = this.GetComponent<BoxCollider>();
 
-        //ä¸–ç•Œåæ ‡
+        //ÊÀ½ç×ø±ê
         Vector3 worldCenter = b.transform.TransformPoint(b.center);
-        //ä¸–ç•Œç¼©æ”¾çš„ä¸€åŠå°ºå¯¸
+        //ÊÀ½çËõ·ÅµÄÒ»°ë³ß´ç
         Vector3 worldHalfExtents = new(
             b.size.x * b.transform.lossyScale.x / 2,
             b.size.y * b.transform.lossyScale.y / 2,
@@ -76,7 +76,7 @@ public class Contains : MonoBehaviour
                         if (!sop.parentReceptacleObjects.Contains(myParent)){
                             sop.parentReceptacleObjects.Add(myParent);
                         }
-                        //å°†åŒ…å«çš„å¯¹è±¡æ·»åŠ åˆ°å½“å‰å®¹å™¨å†…ã€‚
+                        //½«°üº¬µÄ¶ÔÏóÌí¼Óµ½µ±Ç°ÈİÆ÷ÄÚ¡£
                         if (sop.transform.gameObject.GetComponent<Contains>())
                         {
                             List<GameObject> nestedObjs = sop.transform.gameObject.GetComponent<Contains>().CurrentlyContains;
@@ -117,7 +117,7 @@ public class Contains : MonoBehaviour
         return CurrentlyContainedGameObjects().Count > 0;
     }
 
-    //è¿”å›å½“å‰å®¹å™¨å†…åŒ…å«çš„ SimObjPhysics åˆ—è¡¨ã€‚
+    //·µ»Øµ±Ç°ÈİÆ÷ÄÚ°üº¬µÄ SimObjPhysics ÁĞ±í¡£
     public List<SimObjPhysics> CurrentlyContainedObjects()
     {
         List<SimObjPhysics> toSimObjPhysics = new();
@@ -130,7 +130,7 @@ public class Contains : MonoBehaviour
         return toSimObjPhysics;
     }
 
-    //è¿”å›å½“å‰å®¹å™¨å†…åŒ…å«çš„å¯¹è±¡ ID åˆ—è¡¨ã€‚
+    //·µ»Øµ±Ç°ÈİÆ÷ÄÚ°üº¬µÄ¶ÔÏó ID ÁĞ±í¡£
     public List<string> CurrentlyContainedObjectIDs()
     {
         List<string> ids = new();

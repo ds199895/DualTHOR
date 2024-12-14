@@ -3,39 +3,39 @@ using System.Collections.Generic;
 
 public class DebugLogger : MonoBehaviour
 {
-    private Queue<string> logMessages = new Queue<string>(); // ä¿å­˜æ—¥å¿—ä¿¡æ¯çš„é˜Ÿåˆ—
-    public int maxMessages = 10; // æœ€å¤šæ˜¾ç¤ºçš„æ—¥å¿—æ¡æ•°
-    public GUIStyle textStyle;   // å¯é€‰ï¼šè‡ªå®šä¹‰å­—ä½“æ ·å¼
-    private Vector2 scrollPosition; // ç”¨äºæ»šåŠ¨è§†å›¾çš„å½“å‰ä½ç½®
+    private Queue<string> logMessages = new Queue<string>(); // ±£´æÈÕÖ¾ĞÅÏ¢µÄ¶ÓÁĞ
+    public int maxMessages = 10; // ×î¶àÏÔÊ¾µÄÈÕÖ¾ÌõÊı
+    public GUIStyle textStyle;   // ¿ÉÑ¡£º×Ô¶¨Òå×ÖÌåÑùÊ½
+    private Vector2 scrollPosition; // ÓÃÓÚ¹ö¶¯ÊÓÍ¼µÄµ±Ç°Î»ÖÃ
 
     void Awake()
     {
-        // æ³¨å†Œ Unity æ—¥å¿—äº‹ä»¶
+        // ×¢²á Unity ÈÕÖ¾ÊÂ¼ş
         Application.logMessageReceived += HandleLog;
 
-        // åˆå§‹åŒ–æ ·å¼ï¼Œç¡®ä¿æ¶ˆæ¯æ¢è¡Œ
+        // ³õÊ¼»¯ÑùÊ½£¬È·±£ÏûÏ¢»»ĞĞ
         if (textStyle == null)
         {
             textStyle = new GUIStyle();
-            textStyle.wordWrap = true; // å¯ç”¨è‡ªåŠ¨æ¢è¡Œ
-            textStyle.normal.textColor = Color.white; // è®¾ç½®æ–‡å­—é¢œè‰²ä¸ºç™½è‰²
-            textStyle.fontSize = 14; // å¯é€‰ï¼šè®¾ç½®å­—ä½“å¤§å°
+            textStyle.wordWrap = true; // ÆôÓÃ×Ô¶¯»»ĞĞ
+            textStyle.normal.textColor = Color.white; // ÉèÖÃÎÄ×ÖÑÕÉ«Îª°×É«
+            textStyle.fontSize = 14; // ¿ÉÑ¡£ºÉèÖÃ×ÖÌå´óĞ¡
         }
     }
 
     void OnDestroy()
     {
-        // å–æ¶ˆæ³¨å†Œ Unity æ—¥å¿—äº‹ä»¶
+        // È¡Ïû×¢²á Unity ÈÕÖ¾ÊÂ¼ş
         Application.logMessageReceived -= HandleLog;
     }
 
-    // å¤„ç†æ—¥å¿—ä¿¡æ¯å¹¶æ·»åŠ åˆ°é˜Ÿåˆ—ä¸­
+    // ´¦ÀíÈÕÖ¾ĞÅÏ¢²¢Ìí¼Óµ½¶ÓÁĞÖĞ
     private void HandleLog(string logString, string stackTrace, LogType type)
     {
         string message = $"[{type}] {logString}";
         logMessages.Enqueue(message);
 
-        // é™åˆ¶æ—¥å¿—ä¿¡æ¯æ•°é‡
+        // ÏŞÖÆÈÕÖ¾ĞÅÏ¢ÊıÁ¿
         if (logMessages.Count > maxMessages)
         {
             logMessages.Dequeue();
@@ -44,15 +44,15 @@ public class DebugLogger : MonoBehaviour
 
     void OnGUI()
     {
-        // è®¾ç½® GUI åŒºåŸŸå’ŒèƒŒæ™¯æ ·å¼
-        GUILayout.BeginVertical("box", GUILayout.ExpandHeight(true)); // åœ¨æ¡†å†…æ˜¾ç¤ºæ—¥å¿—
+        // ÉèÖÃ GUI ÇøÓòºÍ±³¾°ÑùÊ½
+        GUILayout.BeginVertical("box", GUILayout.ExpandHeight(true)); // ÔÚ¿òÄÚÏÔÊ¾ÈÕÖ¾
 
-        // æ·»åŠ æ»šåŠ¨è§†å›¾ä»¥ä¾¿æŸ¥çœ‹å¤§é‡æ—¥å¿—
+        // Ìí¼Ó¹ö¶¯ÊÓÍ¼ÒÔ±ã²é¿´´óÁ¿ÈÕÖ¾
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(200));
 
         foreach (string logMessage in logMessages)
         {
-            // ä½¿ç”¨å¯ç”¨è‡ªåŠ¨æ¢è¡Œçš„æ–‡æœ¬åŒºåŸŸæ˜¾ç¤ºæ—¥å¿—
+            // Ê¹ÓÃÆôÓÃ×Ô¶¯»»ĞĞµÄÎÄ±¾ÇøÓòÏÔÊ¾ÈÕÖ¾
             GUILayout.TextArea(logMessage, textStyle);
         }
 

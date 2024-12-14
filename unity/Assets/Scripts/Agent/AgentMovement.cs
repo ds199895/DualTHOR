@@ -9,29 +9,29 @@ public class AgentMovement : MonoBehaviour
 {
     public SceneManager sceneManager;
     public float moveSpeed = 1.0f;
-    public float rotationSpeed = 90.0f;  // æ¯ç§’æ—‹è½¬çš„è§’åº¦
+    public float rotationSpeed = 90.0f;  // Ã¿ÃëĞı×ªµÄ½Ç¶È
     public GripperController gripperController; 
     public ArticulationBody[] articulationChain;
-    public float stiffness = 10000f;    // åˆšåº¦
-    public float damping = 100f;       // é˜»å°¼
-    public float forceLimit = 1000f;  // åŠ›é™åˆ¶
-    public float speed = 30f;         // é€Ÿåº¦ï¼Œå•ä½ï¼šåº¦/ç§’
-    public float torque = 100f;       // æ‰­çŸ©ï¼Œå•ä½ï¼šNm
-    public float acceleration = 10f;  // åŠ é€Ÿåº¦
+    public float stiffness = 10000f;    // ¸Õ¶È
+    public float damping = 100f;       // ×èÄá
+    public float forceLimit = 1000f;  // Á¦ÏŞÖÆ
+    public float speed = 30f;         // ËÙ¶È£¬µ¥Î»£º¶È/Ãë
+    public float torque = 100f;       // Å¤¾Ø£¬µ¥Î»£ºNm
+    public float acceleration = 10f;  // ¼ÓËÙ¶È
 
     public Transform target;
     private Vector3 lastTargetPosition;
-    private float positionChangeThreshold = 0.0001f; // ä½ç½®å˜åŒ–é˜ˆå€¼
+    private float positionChangeThreshold = 0.0001f; // Î»ÖÃ±ä»¯ãĞÖµ
     public IKClient ikClient;  
-    public Transform pickPositionL;  // å¤¹å–ä½ç½®
-    public Transform placePositionL; // æ”¾ç½®ä½ç½®
-    public Transform pickPositionR;  // å¤¹å–ä½ç½®
-    public Transform placePositionR; // æ”¾ç½®ä½ç½®
-    public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // åˆå§‹å€¼
-    public List<ArticulationBody> leftArmJoints;  // å·¦è‡‚å…³èŠ‚
-    public List<ArticulationBody> rightArmJoints; // å³è‡‚å…³èŠ‚
+    public Transform pickPositionL;  // ¼ĞÈ¡Î»ÖÃ
+    public Transform placePositionL; // ·ÅÖÃÎ»ÖÃ
+    public Transform pickPositionR;  // ¼ĞÈ¡Î»ÖÃ
+    public Transform placePositionR; // ·ÅÖÃÎ»ÖÃ
+    public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // ³õÊ¼Öµ
+    public List<ArticulationBody> leftArmJoints;  // ×ó±Û¹Ø½Ú
+    public List<ArticulationBody> rightArmJoints; // ÓÒ±Û¹Ø½Ú
 
-    private bool hasMovedToPosition = false; // toggleå‡½æ•°ä¸­æ ‡è®°æ˜¯å¦å·²ç»åˆ°è¾¾ç›®æ ‡ä½ç½®
+    private bool hasMovedToPosition = false; // toggleº¯ÊıÖĞ±ê¼ÇÊÇ·ñÒÑ¾­µ½´ïÄ¿±êÎ»ÖÃ
     private bool isTargetAnglesUpdated = false;
 
 
@@ -39,12 +39,12 @@ public class AgentMovement : MonoBehaviour
     private bool isManualControlEnabled = false;
     private float manualMoveSpeed = 5.0f;
     private float manualRotateSpeed = 60.0f;
-    private float sprintMultiplier = 3f; // åŠ é€Ÿå€æ•°
+    private float sprintMultiplier = 3f; // ¼ÓËÙ±¶Êı
     private float mouseSensitivity = 2.0f;
     private float verticalRotation = 0f;
-    private Transform cameraTransform; // ç›¸æœºTransform
-    private float maxVerticalAngle = 80f; // æœ€å¤§ä¿¯ä»°è§’åº¦
-    private bool isMouseUnlocked = false; // æ ‡è®°æ˜¯å¦æŒ‰ä¸‹äº†ESCä»¥è§£é”é¼ æ ‡
+    private Transform cameraTransform; // Ïà»úTransform
+    private float maxVerticalAngle = 80f; // ×î´ó¸©Ñö½Ç¶È
+    private bool isMouseUnlocked = false; // ±ê¼ÇÊÇ·ñ°´ÏÂÁËESCÒÔ½âËøÊó±ê
 
     [System.Serializable]
     public class JointAdjustment
@@ -104,34 +104,34 @@ public class AgentMovement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            StartCoroutine(ResetJoint(true)); // åŒæ ·ï¼Œtrueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+            StartCoroutine(ResetJoint(true)); // Í¬Ñù£¬true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            string targetObjectID = "Kitchen_Cup_01"; // æ›¿æ¢ä¸ºç›®æ ‡ç‰©å“çš„ ID
+            string targetObjectID = "Kitchen_Cup_01"; // Ìæ»»ÎªÄ¿±êÎïÆ·µÄ ID
             TP(targetObjectID);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            StartCoroutine(Pick("Kitchen_Cup_01", true)); // trueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+            StartCoroutine(Pick("Kitchen_Cup_01", true)); // true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         }
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            StartCoroutine(Place("Kitchen_Cup_01", true)); // åŒæ ·ï¼Œtrueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+            StartCoroutine(Place("Kitchen_Cup_01", true)); // Í¬Ñù£¬true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            StartCoroutine(Pick("Kitchen_Cup_01", false)); // trueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+            StartCoroutine(Pick("Kitchen_Cup_01", false)); // true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            StartCoroutine(Place("Kitchen_Cup_01", false)); // åŒæ ·ï¼Œtrueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+            StartCoroutine(Place("Kitchen_Cup_01", false)); // Í¬Ñù£¬true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         }
 
 
         if (Input.GetKeyDown(KeyCode.Alpha7))
         {
-            string targetObjectID = "Kitchen_Faucet_01"; // æ›¿æ¢ä¸ºç›®æ ‡ç‰©å“çš„ ID
+            string targetObjectID = "Kitchen_Faucet_01"; // Ìæ»»ÎªÄ¿±êÎïÆ·µÄ ID
             TP(targetObjectID);
         }
         if (Input.GetKeyDown(KeyCode.Alpha8))
@@ -145,7 +145,7 @@ public class AgentMovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.J))
         {
-            string targetObjectID = "Kitchen_Fridge_01"; // æ›¿æ¢ä¸ºç›®æ ‡ç‰©å“çš„ ID
+            string targetObjectID = "Kitchen_Fridge_01"; // Ìæ»»ÎªÄ¿±êÎïÆ·µÄ ID
             TP(targetObjectID);
         }
         if (Input.GetKeyDown(KeyCode.K))
@@ -158,7 +158,7 @@ public class AgentMovement : MonoBehaviour
         }
         //if (Input.GetKeyDown(KeyCode.Alpha5))
         //{
-        //    string targetObjectID = "Kitchen_StoveKnob_01"; // æ›¿æ¢ä¸ºç›®æ ‡ç‰©å“çš„ ID
+        //    string targetObjectID = "Kitchen_StoveKnob_01"; // Ìæ»»ÎªÄ¿±êÎïÆ·µÄ ID
         //    TP(targetObjectID);
         //}
         //if (Input.GetKeyDown(KeyCode.Alpha6))
@@ -167,20 +167,20 @@ public class AgentMovement : MonoBehaviour
         //}
         //if (Input.GetKeyDown(KeyCode.Alpha7))
         //{
-        //    string targetObjectID = "Kitchen_Cabinet_02"; // æ›¿æ¢ä¸ºç›®æ ‡ç‰©å“çš„ ID
+        //    string targetObjectID = "Kitchen_Cabinet_02"; // Ìæ»»ÎªÄ¿±êÎïÆ·µÄ ID
         //    TP(targetObjectID);
         //}
         //if (Input.GetKeyDown(KeyCode.Alpha8))
         //{
-        //    StartCoroutine(Open("Kitchen_Cabinet_02")); // åŒæ ·ï¼Œ
+        //    StartCoroutine(Open("Kitchen_Cabinet_02")); // Í¬Ñù£¬
         //}
         //if (Input.GetKeyDown(KeyCode.Alpha0))
         //{
-        //    StartCoroutine(ResetJoint(false)); // åŒæ ·ï¼Œtrueè¡¨ç¤ºä½¿ç”¨å·¦è‡‚ï¼Œfalseè¡¨ç¤ºä½¿ç”¨å³è‡‚
+        //    StartCoroutine(ResetJoint(false)); // Í¬Ñù£¬true±íÊ¾Ê¹ÓÃ×ó±Û£¬false±íÊ¾Ê¹ÓÃÓÒ±Û
         //}
 
 
-        if (Input.GetKeyDown(KeyCode.Z))        // Zé”®åˆ‡æ¢æ‰‹åŠ¨æ§åˆ¶
+        if (Input.GetKeyDown(KeyCode.Z))        // Z¼üÇĞ»»ÊÖ¶¯¿ØÖÆ
         {
             isManualControlEnabled = !isManualControlEnabled;
             Cursor.visible = !isManualControlEnabled;
@@ -189,28 +189,28 @@ public class AgentMovement : MonoBehaviour
             if (isManualControlEnabled)
             {
                 DisableArticulationBodies();
-                isMouseUnlocked = false; // ç¡®ä¿è¿›å…¥æ§åˆ¶æ¨¡å¼æ—¶é¼ æ ‡é”å®š
+                isMouseUnlocked = false; // È·±£½øÈë¿ØÖÆÄ£Ê½Ê±Êó±êËø¶¨
             }
             else
             {
                 EnableArticulationBodies();
             }
         }
-        // ESCé”®é€€å‡ºæ‰‹åŠ¨æ§åˆ¶ä½†ä¸æ¢å¤ArticulationBodies
+        // ESC¼üÍË³öÊÖ¶¯¿ØÖÆµ«²»»Ö¸´ArticulationBodies
         if (isManualControlEnabled && Input.GetKeyDown(KeyCode.Escape))
         {
             isMouseUnlocked = true;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-        // ç‚¹å‡»å±å¹•é‡æ–°è¿›å…¥æ‰‹åŠ¨æ§åˆ¶
+        // µã»÷ÆÁÄ»ÖØĞÂ½øÈëÊÖ¶¯¿ØÖÆ
         if (isMouseUnlocked && Input.GetMouseButtonDown(0))
         {
             isMouseUnlocked = false;
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
-        // æ‰‹åŠ¨æ§åˆ¶
+        // ÊÖ¶¯¿ØÖÆ
         if (isManualControlEnabled && !isMouseUnlocked) ManualControl();
     }
     public void initGame()
@@ -219,7 +219,7 @@ public class AgentMovement : MonoBehaviour
 
         if (articulationChain == null || articulationChain.Length == 0)
         {
-            Debug.LogError("æœªæ‰¾åˆ°ä»»ä½•å…³èŠ‚ï¼Œè¯·ç¡®ä¿è¯¥å¯¹è±¡å…·æœ‰ ArticulationBody ç»„ä»¶ï¼");
+            Debug.LogError("Î´ÕÒµ½ÈÎºÎ¹Ø½Ú£¬ÇëÈ·±£¸Ã¶ÔÏó¾ßÓĞ ArticulationBody ×é¼ş£¡");
             return;
         }
 
@@ -236,10 +236,10 @@ public class AgentMovement : MonoBehaviour
 
     public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action callback)
     {
-        // è·å–æ–¹æ³•
+        // »ñÈ¡·½·¨
         MethodInfo method = typeof(AgentMovement).GetMethod(actionData.action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
-        // å¦‚æœæ–¹æ³•ä¸å­˜åœ¨ï¼Œæ‰§è¡Œå›è°ƒå¹¶è¿”å›
+        // Èç¹û·½·¨²»´æÔÚ£¬Ö´ĞĞ»Øµ÷²¢·µ»Ø
         if (method == null)
         {
             Debug.LogWarning($"Unknown action: {actionData.action}");
@@ -247,10 +247,10 @@ public class AgentMovement : MonoBehaviour
             return;
         }
 
-        // æ›´æ–° lastAction
+        // ¸üĞÂ lastAction
         sceneManager?.UpdateLastAction(actionData.action);
 
-        // ä½¿ç”¨ä¼ å…¥çš„ successRate æ¥æ‰§è¡Œæ¦‚ç‡åˆ¤æ–­
+        // Ê¹ÓÃ´«ÈëµÄ successRate À´Ö´ĞĞ¸ÅÂÊÅĞ¶Ï
         bool isSuccessful = Probability(actionData.successRate);
         sceneManager?.UpdateLastActionSuccess(isSuccessful, actionData.action);
 
@@ -263,17 +263,17 @@ public class AgentMovement : MonoBehaviour
 
         try
         {
-            // æ„é€ å‚æ•°å¹¶æ‰§è¡Œæ–¹æ³•
+            // ¹¹Ôì²ÎÊı²¢Ö´ĞĞ·½·¨
             object[] args = ConstructArguments(method.GetParameters(), actionData);
 
             if (method.ReturnType == typeof(IEnumerator))
             {
-                // å¦‚æœæ˜¯åç¨‹æ–¹æ³•ï¼Œå¯åŠ¨åç¨‹å¹¶åœ¨ç»“æŸæ—¶è°ƒç”¨å›è°ƒ
+                // Èç¹ûÊÇĞ­³Ì·½·¨£¬Æô¶¯Ğ­³Ì²¢ÔÚ½áÊøÊ±µ÷ÓÃ»Øµ÷
                 StartCoroutine(ExecuteCoroutineAction(method, args, callback));
             }
             else
             {
-                // éåç¨‹æ–¹æ³•ï¼Œç«‹å³è°ƒç”¨å¹¶è§¦å‘å›è°ƒ
+                // ·ÇĞ­³Ì·½·¨£¬Á¢¼´µ÷ÓÃ²¢´¥·¢»Øµ÷
                 method.Invoke(this, args);
                 callback?.Invoke();
             }
@@ -293,7 +293,7 @@ public class AgentMovement : MonoBehaviour
 
         try
         {
-            coroutine = (IEnumerator)method.Invoke(this, args); // å¯åŠ¨åç¨‹æ–¹æ³•
+            coroutine = (IEnumerator)method.Invoke(this, args); // Æô¶¯Ğ­³Ì·½·¨
         }
         catch (Exception ex)
         {
@@ -302,14 +302,14 @@ public class AgentMovement : MonoBehaviour
 
         if (coroutine != null)
         {
-            yield return StartCoroutine(coroutine); // ç­‰å¾…åç¨‹æ‰§è¡Œå®Œæˆ
+            yield return StartCoroutine(coroutine); // µÈ´ıĞ­³ÌÖ´ĞĞÍê³É
         }
         else
         {
             Debug.LogError($"Coroutine method returned null: {method.Name}");
         }
 
-        callback?.Invoke(); // åç¨‹ç»“æŸåè§¦å‘å›è°ƒ
+        callback?.Invoke(); // Ğ­³Ì½áÊøºó´¥·¢»Øµ÷
     }
     private object[] ConstructArguments(ParameterInfo[] parameters, UnityClient.ActionData actionData)
     {
@@ -319,24 +319,24 @@ public class AgentMovement : MonoBehaviour
 
         foreach (var param in parameters)
         {
-            // æ ¹æ®å‚æ•°åç§°æ˜¾å¼æ˜ å°„
+            // ¸ù¾İ²ÎÊıÃû³ÆÏÔÊ½Ó³Éä
             switch (param.Name.ToLower())
             {
                 case "stateid":
-                    args.Add(actionData.stateID); // æ˜ å°„åˆ° stateID
+                    args.Add(actionData.stateID); // Ó³Éäµ½ stateID
                     break;
                 case "objectid":
-                    args.Add(actionData.objectID); // æ˜ å°„åˆ° objectID
+                    args.Add(actionData.objectID); // Ó³Éäµ½ objectID
                     break;
                 case "isleftarm":
-                    args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // æ˜ å°„åˆ° arm
+                    args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // Ó³Éäµ½ arm
                     break;
                 case "magnitude":
-                    args.Add(actionData.Magnitude); // æ˜ å°„åˆ° Magnitude
+                    args.Add(actionData.Magnitude); // Ó³Éäµ½ Magnitude
                     break;
                 default:
                     Debug.LogWarning($"Unsupported parameter: {param.Name} of type {param.ParameterType.Name}");
-                    args.Add(null); // é»˜è®¤å€¼
+                    args.Add(null); // Ä¬ÈÏÖµ
                     break;
             }
         }
@@ -347,45 +347,45 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Toggle(string objectID, bool isLeftArm)
     {
-        // è·å–ç›®æ ‡äº¤äº’ç‚¹å’Œ Toggle è„šæœ¬
+        // »ñÈ¡Ä¿±ê½»»¥µãºÍ Toggle ½Å±¾
         Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
         CanToggleOnOff toggleScript = interactPoint?.GetComponentInParent<CanToggleOnOff>();
 
-        // å¦‚æœå°šæœªåˆ°è¾¾ç›®æ ‡ä½ç½®ï¼Œæ‰§è¡Œç§»åŠ¨
+        // Èç¹ûÉĞÎ´µ½´ïÄ¿±êÎ»ÖÃ£¬Ö´ĞĞÒÆ¶¯
         if (!hasMovedToPosition && interactPoint != null)
         {
             yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
-            hasMovedToPosition = true; // æ ‡è®°ä¸ºå·²åˆ°è¾¾
+            hasMovedToPosition = true; // ±ê¼ÇÎªÒÑµ½´ï
         }
 
-        // åˆ‡æ¢å¼€å…³
+        // ÇĞ»»¿ª¹Ø
         toggleScript?.Toggle();
         yield return new WaitForSeconds(1f);
     }
 
     public IEnumerator Open(string objectID, bool isLeftArm)
     {
-        // è·å–ç›®æ ‡äº¤äº’ç‚¹å’Œ Open è„šæœ¬
+        // »ñÈ¡Ä¿±ê½»»¥µãºÍ Open ½Å±¾
         Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
         CanOpen_Object openScript = interactPoint?.GetComponentInParent<CanOpen_Object>();
 
-        // å¦‚æœå°šæœªåˆ°è¾¾ç›®æ ‡ä½ç½®ï¼Œæ‰§è¡Œç§»åŠ¨
+        // Èç¹ûÉĞÎ´µ½´ïÄ¿±êÎ»ÖÃ£¬Ö´ĞĞÒÆ¶¯
         if (!hasMovedToPosition && interactPoint != null)
         {
             yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
-            hasMovedToPosition = true; // æ ‡è®°ä¸ºå·²åˆ°è¾¾
+            hasMovedToPosition = true; // ±ê¼ÇÎªÒÑµ½´ï
         }
 
-        // æ‰“å¼€å¯¹è±¡
+        // ´ò¿ª¶ÔÏó
         openScript?.Interact();
         yield return new WaitForSeconds(1f);
     }
 
     public void TP(string objectID)
     {
-        // æŸ¥æ‰¾ç‰©å“çš„ TransferPoint
+        // ²éÕÒÎïÆ·µÄ TransferPoint
         Transform transferPoint = SceneManager.GetTransferPointByObjectID(objectID);
 
         if (transferPoint == null)
@@ -394,15 +394,15 @@ public class AgentMovement : MonoBehaviour
             return;
         }
 
-        // ç¦ç”¨æœºå™¨äººæ‰€æœ‰å…³èŠ‚çš„ ArticulationBody
+        // ½ûÓÃ»úÆ÷ÈËËùÓĞ¹Ø½ÚµÄ ArticulationBody
         DisableArticulationBodies();
 
-        // ç›´æ¥ä¿®æ”¹æœºå™¨äººçš„ä½ç½®å’Œæ—‹è½¬
+        // Ö±½ÓĞŞ¸Ä»úÆ÷ÈËµÄÎ»ÖÃºÍĞı×ª
         Debug.Log($"Robot directly transported to {objectID}'s TransferPoint: {transferPoint.position}");
         transform.position = transferPoint.position;
         transform.rotation = transferPoint.rotation;
 
-        // å¯ç”¨æœºå™¨äººæ‰€æœ‰å…³èŠ‚çš„ ArticulationBody
+        // ÆôÓÃ»úÆ÷ÈËËùÓĞ¹Ø½ÚµÄ ArticulationBody
         EnableArticulationBodies();
 
         Debug.Log($"Robot successfully transported to {objectID}'s TransferPoint");
@@ -415,64 +415,64 @@ public class AgentMovement : MonoBehaviour
 
         if (pickPosition == null)
         {
-            Debug.LogError($"æœªæ‰¾åˆ°IDä¸º {objectID} çš„ç‰©å“çš„é»˜è®¤äº¤äº’ç‚¹ï¼Œæ— æ³•æ‰§è¡ŒPickåŠ¨ä½œ");
+            Debug.LogError($"Î´ÕÒµ½IDÎª {objectID} µÄÎïÆ·µÄÄ¬ÈÏ½»»¥µã£¬ÎŞ·¨Ö´ĞĞPick¶¯×÷");
             yield break;
         }
 
         Vector3 abovePickPosition = pickPosition.position + offset;
 
-        // ç§»åŠ¨åˆ°å¤¹å–ä½ç½®ä¸Šæ–¹
-        Debug.Log($"ç§»åŠ¨åˆ°{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹å–ä½ç½®ä¸Šæ–¹: {abovePickPosition}");
+        // ÒÆ¶¯µ½¼ĞÈ¡Î»ÖÃÉÏ·½
+        Debug.Log($"ÒÆ¶¯µ½{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼ĞÈ¡Î»ÖÃÉÏ·½: {abovePickPosition}");
         yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
         yield return new WaitForSeconds(1f);
 
-        // æ‰“å¼€å¤¹çˆªå‡†å¤‡å¤¹å–
-        Debug.Log($"æ‰“å¼€{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹çˆªå‡†å¤‡å¤¹å–");
+        // ´ò¿ª¼Ğ×¦×¼±¸¼ĞÈ¡
+        Debug.Log($"´ò¿ª{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼Ğ×¦×¼±¸¼ĞÈ¡");
         gripperController.SetGripper(isLeftArm, true);
         yield return new WaitForSeconds(1f);
 
-        // ä¸‹é™åˆ°å¤¹å–ä½ç½®
-        Debug.Log($"ä¸‹é™åˆ°{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹å–ä½ç½®: {pickPosition.position}");
+        // ÏÂ½µµ½¼ĞÈ¡Î»ÖÃ
+        Debug.Log($"ÏÂ½µµ½{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼ĞÈ¡Î»ÖÃ: {pickPosition.position}");
         yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
         yield return new WaitForSeconds(1f);
 
-        // å¤¹ç´§ç‰©ä½“
-        Debug.Log($"{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹ç´§ç‰©ä½“");
+        // ¼Ğ½ôÎïÌå
+        Debug.Log($"{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼Ğ½ôÎïÌå");
         gripperController.SetGripper(isLeftArm, false);
         yield return new WaitForSeconds(1f);
 
-        Debug.Log($"ç§»åŠ¨åˆ°{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹å–ä½ç½®ä¸Šæ–¹: {abovePickPosition}");
+        Debug.Log($"ÒÆ¶¯µ½{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼ĞÈ¡Î»ÖÃÉÏ·½: {abovePickPosition}");
         yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
         yield return new WaitForSeconds(1f);
     }
 
     public IEnumerator Place(string objectID, bool isLeftArm)
     {
-        // æ ¹æ®æ˜¯å¦æ˜¯å·¦è‡‚è®¾ç½®åç§»é‡
+        // ¸ù¾İÊÇ·ñÊÇ×ó±ÛÉèÖÃÆ«ÒÆÁ¿
         Vector3 offset = isLeftArm ? new Vector3(0, 0.1f, -0.13f) : new Vector3(0, 0.1f, 0.13f);
         Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
 
         if (pickPosition == null)
         {
-            Debug.LogError($"æœªæ‰¾åˆ°IDä¸º {objectID} çš„ç‰©å“çš„é»˜è®¤äº¤äº’ç‚¹ï¼Œæ— æ³•æ‰§è¡ŒPlaceåŠ¨ä½œ");
+            Debug.LogError($"Î´ÕÒµ½IDÎª {objectID} µÄÎïÆ·µÄÄ¬ÈÏ½»»¥µã£¬ÎŞ·¨Ö´ĞĞPlace¶¯×÷");
             yield break;
         }
 
-        Vector3 placePosition = pickPosition.position + offset; // åŸºäºPickçš„ä½ç½®åç§»
+        Vector3 placePosition = pickPosition.position + offset; // »ùÓÚPickµÄÎ»ÖÃÆ«ÒÆ
 
-        // ç§»åŠ¨åˆ°æ”¾ç½®ä½ç½®
-        Debug.Log($"ç§»åŠ¨è‡³{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}æ”¾ç½®ä½ç½®: {placePosition}");
+        // ÒÆ¶¯µ½·ÅÖÃÎ»ÖÃ
+        Debug.Log($"ÒÆ¶¯ÖÁ{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}·ÅÖÃÎ»ÖÃ: {placePosition}");
         yield return MoveToPosition(placePosition, isLeftArm);
         yield return new WaitForSeconds(1f);
 
-        // æ‰“å¼€å¤¹çˆªæ”¾ç½®ç‰©ä½“
-        Debug.Log($"æ‰“å¼€{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å¤¹çˆªæ”¾ç½®ç‰©ä½“");
+        // ´ò¿ª¼Ğ×¦·ÅÖÃÎïÌå
+        Debug.Log($"´ò¿ª{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¼Ğ×¦·ÅÖÃÎïÌå");
         gripperController.SetGripper(isLeftArm, true);
         yield return new WaitForSeconds(1f);
     }
     public IEnumerator ResetJoint(bool isLeftArm)
     {
-        Debug.Log($"{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å…³èŠ‚æ­£åœ¨é‡ç½®åˆ°åˆå§‹ä½ç½®...");
+        Debug.Log($"{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¹Ø½ÚÕıÔÚÖØÖÃµ½³õÊ¼Î»ÖÃ...");
 
         List<float> initialAngles = new List<float>();
         var adjustments = isLeftArm ? this.adjustments : rightAdjustments;
@@ -486,9 +486,9 @@ public class AgentMovement : MonoBehaviour
 
         yield return StartCoroutine(SmoothUpdateJointAngles(initialAngles, 2f, isLeftArm));
 
-        Debug.Log($"{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}å…³èŠ‚å·²æˆåŠŸé‡ç½®ï¼");
+        Debug.Log($"{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}¹Ø½ÚÒÑ³É¹¦ÖØÖÃ£¡");
 
-        hasMovedToPosition = false; // æ ‡è®°ä¸ºå·²åˆ°è¾¾
+        hasMovedToPosition = false; // ±ê¼ÇÎªÒÑµ½´ï
 
     }
 
@@ -498,14 +498,14 @@ public class AgentMovement : MonoBehaviour
         var defaultRotations = isLeftArm ? this.defaultRotations : rightDefaultRotations;
         var adjustments = isLeftArm ? this.adjustments : rightAdjustments;
 
-        string logMessage = $"{(isLeftArm ? "å·¦è‡‚" : "å³è‡‚")}åˆå§‹åŒ–å…³èŠ‚è°ƒæ•´ä¿¡æ¯ï¼š\né»˜è®¤å€¼:\n";
+        string logMessage = $"{(isLeftArm ? "×ó±Û" : "ÓÒ±Û")}³õÊ¼»¯¹Ø½Úµ÷ÕûĞÅÏ¢£º\nÄ¬ÈÏÖµ:\n";
 
         for (int i = 0; i < joints.Count; i++)
         {
             var joint = joints[i];
             Vector3 initialRotation = joint.transform.localRotation.eulerAngles;
 
-            // è§„èŒƒåŒ–è¯»å–åˆ°çš„è§’åº¦
+            // ¹æ·¶»¯¶ÁÈ¡µ½µÄ½Ç¶È
             initialRotation.x = NormalizeAngle(initialRotation.x);
             initialRotation.y = NormalizeAngle(initialRotation.y);
             initialRotation.z = NormalizeAngle(initialRotation.z);
@@ -518,43 +518,43 @@ public class AgentMovement : MonoBehaviour
             adjustmentAngle = NormalizeAngle(adjustmentAngle);
             adjustments[i].angle = adjustmentAngle;
 
-            logMessage += $"å…³èŠ‚ {i + 1} é»˜è®¤æ—‹è½¬: {defaultRotation}\n" +
-                          $"å…³èŠ‚ {i + 1} åˆå§‹æ—‹è½¬: {initialRotation}\n" +
-                          $"å…³èŠ‚ {i + 1} è°ƒæ•´è§’åº¦: {adjustmentAngle}\n";
+            logMessage += $"¹Ø½Ú {i + 1} Ä¬ÈÏĞı×ª: {defaultRotation}\n" +
+                          $"¹Ø½Ú {i + 1} ³õÊ¼Ğı×ª: {initialRotation}\n" +
+                          $"¹Ø½Ú {i + 1} µ÷Õû½Ç¶È: {adjustmentAngle}\n";
         }
 
         Debug.Log(logMessage);
     }
 
 
-    private void UpdateTargetJointAngles(List<float> updatedAngles)//äº‹ä»¶
+    private void UpdateTargetJointAngles(List<float> updatedAngles)//ÊÂ¼ş
     {
         targetJointAngles = updatedAngles;
-        isTargetAnglesUpdated = true; // æ ‡è®°è§’åº¦å·²æ›´æ–°
+        isTargetAnglesUpdated = true; // ±ê¼Ç½Ç¶ÈÒÑ¸üĞÂ
     }
 
     private IEnumerator MoveToPosition(Vector3 position, bool isLeftArm)
     {
-        // è¯·æ±‚è®¡ç®—ç›®æ ‡è§’åº¦
+        // ÇëÇó¼ÆËãÄ¿±ê½Ç¶È
         ikClient.ProcessTargetPosition(position, isLeftArm);
 
-        // ç­‰å¾…ç›®æ ‡è§’åº¦æ›´æ–°
+        // µÈ´ıÄ¿±ê½Ç¶È¸üĞÂ
         yield return new WaitUntil(() => isTargetAnglesUpdated);
 
-        //Debug.Log("MoveToPosition ä¸­çš„ç›®æ ‡è§’åº¦: " + string.Join(", ", targetJointAngles));
+        //Debug.Log("MoveToPosition ÖĞµÄÄ¿±ê½Ç¶È: " + string.Join(", ", targetJointAngles));
 
-        // é‡ç½®æ ‡è®°
+        // ÖØÖÃ±ê¼Ç
         isTargetAnglesUpdated = false;
 
         yield return StartCoroutine(SmoothUpdateJointAngles(targetJointAngles, 2f, isLeftArm));
 
-        // æ¸…ç†çŠ¶æ€ï¼Œé˜²æ­¢åç»­åŠ¨ä½œå—å½±å“
+        // ÇåÀí×´Ì¬£¬·ÀÖ¹ºóĞø¶¯×÷ÊÜÓ°Ïì
         targetJointAngles.Clear();
     }
 
     public IEnumerator SmoothUpdateJointAngles(List<float> targetJointAngles, float duration, bool isLeftArm)
     {
-        //Debug.Log("è¿›å…¥ SmoothUpdateJointAngles æ—¶çš„ç›®æ ‡è§’åº¦: " + string.Join(", ", targetJointAngles));
+        //Debug.Log("½øÈë SmoothUpdateJointAngles Ê±µÄÄ¿±ê½Ç¶È: " + string.Join(", ", targetJointAngles));
 
         List<float> startAngles = new List<float>();
         var joints = isLeftArm ? leftArmJoints : rightArmJoints;
@@ -576,7 +576,7 @@ public class AgentMovement : MonoBehaviour
             {
                 var joint = joints[i];
                 var drive = joint.xDrive;
-                //å…³èŠ‚1å’Œ5æ˜¯Yè½´ï¼Œä¸”åå‘è°ƒæ•´
+                //¹Ø½Ú1ºÍ5ÊÇYÖá£¬ÇÒ·´Ïòµ÷Õû
                 float adjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
 
                 float interpolatedAngle = Mathf.Lerp(startAngles[i], adjustedAngle, t);
@@ -584,7 +584,7 @@ public class AgentMovement : MonoBehaviour
                 drive.target = NormalizeAngle(interpolatedAngle);
                 joint.xDrive = drive;
 
-                //Debug.Log($"æ’å€¼ä¸­: å…³èŠ‚ {i + 1}, åˆå§‹={startAngles[i]}, è°ƒæ•´åç›®æ ‡={adjustedAngle}, æ’å€¼={interpolatedAngle}, xDrive={drive.target}");
+                //Debug.Log($"²åÖµÖĞ: ¹Ø½Ú {i + 1}, ³õÊ¼={startAngles[i]}, µ÷ÕûºóÄ¿±ê={adjustedAngle}, ²åÖµ={interpolatedAngle}, xDrive={drive.target}");
             }
 
             yield return null;
@@ -600,12 +600,12 @@ public class AgentMovement : MonoBehaviour
             drive.target = finalAdjustedAngle;
             joint.xDrive = drive;
 
-            //Debug.Log($"å…³èŠ‚ {i + 1} æœ€ç»ˆç›®æ ‡è§’åº¦ (åº¦): {finalAdjustedAngle}");
+            //Debug.Log($"¹Ø½Ú {i + 1} ×îÖÕÄ¿±ê½Ç¶È (¶È): {finalAdjustedAngle}");
         }
     }
 
 
-    // å¹³æ»‘ç§»åŠ¨çš„åç¨‹ï¼Œæ”¹ä¸ºä½¿ç”¨å±€éƒ¨åæ ‡ç³»çš„æ–¹å‘
+    // Æ½»¬ÒÆ¶¯µÄĞ­³Ì£¬¸ÄÎªÊ¹ÓÃ¾Ö²¿×ø±êÏµµÄ·½Ïò
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
         DisableArticulationBodies();
@@ -622,22 +622,22 @@ public class AgentMovement : MonoBehaviour
             yield return null;
         }
 
-        transform.position = targetPosition; // ç¡®ä¿åˆ°è¾¾ç›®æ ‡ä½ç½®
+        transform.position = targetPosition; // È·±£µ½´ïÄ¿±êÎ»ÖÃ
         EnableArticulationBodies();
     }
 
-    // å¹³æ»‘æ—‹è½¬çš„åç¨‹ï¼Œä½¿ç”¨å±€éƒ¨åæ ‡ç³»çš„æ–¹å‘
+    // Æ½»¬Ğı×ªµÄĞ­³Ì£¬Ê¹ÓÃ¾Ö²¿×ø±êÏµµÄ·½Ïò
     private IEnumerator SmoothRotate(Vector3 rotationAxis, float magnitude, float duration)
     {
         DisableArticulationBodies();
 
-        // ä½¿ç”¨æ—‹è½¬è§’åº¦é€æ­¥ç´¯åŠ æ–¹å¼
+        // Ê¹ÓÃĞı×ª½Ç¶ÈÖğ²½ÀÛ¼Ó·½Ê½
         float targetAngle = rotationSpeed * magnitude;
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
         {
-            float stepAngle = (targetAngle / duration) * Time.deltaTime; // æŒ‰æ¯å¸§å¢é‡è°ƒæ•´æ—‹è½¬è§’åº¦
+            float stepAngle = (targetAngle / duration) * Time.deltaTime; // °´Ã¿Ö¡ÔöÁ¿µ÷ÕûĞı×ª½Ç¶È
             transform.Rotate(rotationAxis, stepAngle, Space.Self);
 
             elapsedTime += Time.deltaTime;
@@ -705,7 +705,7 @@ public class AgentMovement : MonoBehaviour
         EnableArticulationBodies();
     }
 
-    // è°ƒç”¨ SceneManager çš„ LoadStateByIndex æ–¹æ³•
+    // µ÷ÓÃ SceneManager µÄ LoadStateByIndex ·½·¨
     public void LoadState(string stateID)
     {
         Debug.Log($"Attempting to load scene state with ID: {stateID}");
@@ -735,46 +735,46 @@ public class AgentMovement : MonoBehaviour
     }
     private bool Probability(float successRate)
     {
-        return UnityEngine.Random.value < successRate; // ä½¿ç”¨ä¼ å…¥çš„ successRate è¿›è¡Œåˆ¤æ–­
+        return UnityEngine.Random.value < successRate; // Ê¹ÓÃ´«ÈëµÄ successRate ½øĞĞÅĞ¶Ï
     }
     private void ManualControl()
     {
-        // ALTé”®æŒ‰ä¸‹æ—¶æ˜¾ç¤ºé¼ æ ‡ç”¨äºUIäº¤äº’
+        // ALT¼ü°´ÏÂÊ±ÏÔÊ¾Êó±êÓÃÓÚUI½»»¥
         if (Input.GetKey(KeyCode.LeftAlt))
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-        else if (!isMouseUnlocked) // ALTé‡Šæ”¾åé‡æ–°é”å®šé¼ æ ‡
+        else if (!isMouseUnlocked) // ALTÊÍ·ÅºóÖØĞÂËø¶¨Êó±ê
         {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
 
-        // è·å–åŸºç¡€ç§»åŠ¨è¾“å…¥
+        // »ñÈ¡»ù´¡ÒÆ¶¯ÊäÈë
         Vector3 moveDirection = new Vector3(
             Input.GetKey(KeyCode.D) ? 1 : Input.GetKey(KeyCode.A) ? -1 : 0,
             0,
             Input.GetKey(KeyCode.W) ? 1 : Input.GetKey(KeyCode.S) ? -1 : 0
         );
 
-        // è®¡ç®—å®é™…ç§»åŠ¨é€Ÿåº¦ï¼ˆæŒ‰ä½ShiftåŠ é€Ÿï¼‰
+        // ¼ÆËãÊµ¼ÊÒÆ¶¯ËÙ¶È£¨°´×¡Shift¼ÓËÙ£©
         float currentSpeed = manualMoveSpeed * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1.0f);
 
-        // åº”ç”¨ç§»åŠ¨
+        // Ó¦ÓÃÒÆ¶¯
         if (moveDirection != Vector3.zero)
             transform.position += transform.TransformDirection(moveDirection.normalized) * currentSpeed * Time.deltaTime;
 
-        // è·å–é¼ æ ‡è¾“å…¥
+        // »ñÈ¡Êó±êÊäÈë
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-        // æ›´æ–°å‚ç›´æ—‹è½¬è§’åº¦
-        verticalRotation -= mouseY; // æ³¨æ„è¿™é‡Œæ˜¯å‡å·ï¼Œå› ä¸ºUnityçš„åæ ‡ç³»ç»Ÿä¸­å‘ä¸Šæ˜¯æ­£æ–¹å‘
+        // ¸üĞÂ´¹Ö±Ğı×ª½Ç¶È
+        verticalRotation -= mouseY; // ×¢ÒâÕâÀïÊÇ¼õºÅ£¬ÒòÎªUnityµÄ×ø±êÏµÍ³ÖĞÏòÉÏÊÇÕı·½Ïò
         verticalRotation = Mathf.Clamp(verticalRotation, -maxVerticalAngle, maxVerticalAngle);
 
-        // åº”ç”¨æ—‹è½¬
-        transform.Rotate(Vector3.up * mouseX, Space.World); // æ•´ä¸ªç‰©ä½“çš„æ°´å¹³æ—‹è½¬
-        cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0); // åªæ—‹è½¬ç›¸æœºçš„ä¸Šä¸‹è§†è§’
+        // Ó¦ÓÃĞı×ª
+        transform.Rotate(Vector3.up * mouseX, Space.World); // Õû¸öÎïÌåµÄË®Æ½Ğı×ª
+        cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0); // Ö»Ğı×ªÏà»úµÄÉÏÏÂÊÓ½Ç
     }
 }

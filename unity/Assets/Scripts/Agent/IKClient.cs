@@ -11,23 +11,23 @@ public class IKClient : MonoBehaviour
     private string url = "http://192.168.31.212:5000/ik";
     public AgentMovement agentMovement;
     private List<float> initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
-    public Transform ur5BaseLeft; // å·¦è‡‚çš„åŸºåº§
-    private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // å·¦è‡‚çš„åç§»é‡ï¼ˆå¤¹çˆªä¸­å¿ƒä¸æœ«ç«¯å…³èŠ‚ï¼‰
-    public Transform ur5BaseRight; // å³è‡‚çš„åŸºåº§
-    private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // å³è‡‚çš„åç§»é‡ï¼ˆå¤¹çˆªä¸­å¿ƒä¸æœ«ç«¯å…³èŠ‚ï¼‰
+    public Transform ur5BaseLeft; // ×ó±ÛµÄ»ù×ù
+    private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // ×ó±ÛµÄÆ«ÒÆÁ¿£¨¼Ğ×¦ÖĞĞÄÓëÄ©¶Ë¹Ø½Ú£©
+    public Transform ur5BaseRight; // ÓÒ±ÛµÄ»ù×ù
+    private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // ÓÒ±ÛµÄÆ«ÒÆÁ¿£¨¼Ğ×¦ÖĞĞÄÓëÄ©¶Ë¹Ø½Ú£©
 
     public event Action<List<float>> OnTargetJointAnglesUpdated;
 
-    // æ¥æ”¶å’Œå¤„ç†ç›®æ ‡ä½ç½®
+    // ½ÓÊÕºÍ´¦ÀíÄ¿±êÎ»ÖÃ
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
         Vector3 offset = isLeftArm ? offsetLeft : offsetRight;
         Transform baseTransform = isLeftArm ? ur5BaseLeft : ur5BaseRight;
 
-        // è½¬æ¢ç›®æ ‡ä½ç½®åˆ°åŸºåº§åæ ‡ç³»
+        // ×ª»»Ä¿±êÎ»ÖÃµ½»ù×ù×ø±êÏµ
         Vector3 targetPositionRelative = ConvertToBaseCoordinates(newTargetPosition + offset, baseTransform);
 
-        // æ„å»º translation æ•°æ®
+        // ¹¹½¨ translation Êı¾İ
         List<float> translation = new List<float>
         {
             targetPositionRelative.z,
@@ -35,7 +35,7 @@ public class IKClient : MonoBehaviour
             targetPositionRelative.y
         };
 
-        // æ„å»º JSON æ•°æ®å­—å…¸
+        // ¹¹½¨ JSON Êı¾İ×Öµä
         var data = new Dictionary<string, object>
         {
             { "joint_id", 6 },
@@ -55,11 +55,11 @@ public class IKClient : MonoBehaviour
             { "initial_q", initial_q }
         };
 
-            // å‘é€åå‘è¿åŠ¨å­¦è¯·æ±‚
+            // ·¢ËÍ·´ÏòÔË¶¯Ñ§ÇëÇó
             StartCoroutine(SendIKRequest(data));
     }
 
-    // å‘é€åå‘è¿åŠ¨å­¦è¯·æ±‚çš„åç¨‹
+    // ·¢ËÍ·´ÏòÔË¶¯Ñ§ÇëÇóµÄĞ­³Ì
     private IEnumerator SendIKRequest(Dictionary<string, object> data)
     {
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -69,23 +69,23 @@ public class IKClient : MonoBehaviour
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
 
-            //Debug.Log("å‘é€çš„ JSON æ•°æ®: " + jsonData);
+            //Debug.Log("·¢ËÍµÄ JSON Êı¾İ: " + jsonData);
 
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                //Debug.Log("è¯·æ±‚æˆåŠŸï¼Œå“åº”æ•°æ®: " + request.downloadHandler.text);
+                //Debug.Log("ÇëÇó³É¹¦£¬ÏìÓ¦Êı¾İ: " + request.downloadHandler.text);
                 ProcessResponse(request.downloadHandler.text);
             }
             else
             {
-                Debug.LogError("IKè¯·æ±‚å¤±è´¥ï¼Œå“åº”ä»£ç ï¼š" + request.responseCode);
+                Debug.LogError("IKÇëÇóÊ§°Ü£¬ÏìÓ¦´úÂë£º" + request.responseCode);
             }
         }
     }
 
-    // å¤„ç†æœåŠ¡å™¨å“åº”
+    // ´¦Àí·şÎñÆ÷ÏìÓ¦
     private void ProcessResponse(string jsonResponse)
     {
         JObject result = JObject.Parse(jsonResponse);
@@ -94,24 +94,24 @@ public class IKClient : MonoBehaviour
         {
             List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
             OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
-            Debug.Log("IKè§’åº¦: " + string.Join(", ", jointAnglesDegrees));
+            Debug.Log("IK½Ç¶È: " + string.Join(", ", jointAnglesDegrees));
         }
         else
         {
-            Debug.Log("IKè®¡ç®—å¤±è´¥");
+            Debug.Log("IK¼ÆËãÊ§°Ü");
         }
     }
 
-    // å°†ç›®æ ‡ä½ç½®è½¬æ¢ä¸ºåŸºåº§åæ ‡ç³»
+    // ½«Ä¿±êÎ»ÖÃ×ª»»Îª»ù×ù×ø±êÏµ
     Vector3 ConvertToBaseCoordinates(Vector3 targetPosition, Transform baseTransform)
     {
         Vector3 relativePosition = targetPosition - baseTransform.position;
         Vector3 result = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
-        //Debug.Log("ç›¸å¯¹äºåŸºåº§çš„ç›®æ ‡ä½ç½®: " + result);
+        //Debug.Log("Ïà¶ÔÓÚ»ù×ùµÄÄ¿±êÎ»ÖÃ: " + result);
         return result;
     }
 
-    // å°†å¼§åº¦è½¬æ¢ä¸ºå½’ä¸€åŒ–çš„è§’åº¦
+    // ½«»¡¶È×ª»»Îª¹éÒ»»¯µÄ½Ç¶È
     private List<float> ConvertToDegrees(List<float> jointAnglesRadians)
     {
         List<float> jointAnglesDegrees = new List<float>();
@@ -121,7 +121,7 @@ public class IKClient : MonoBehaviour
             degree = agentMovement.NormalizeAngle(degree);
             jointAnglesDegrees.Add(degree);
         }
-        //Debug.Log("å…³èŠ‚è§’åº¦ï¼ˆå¼§åº¦è½¬æ¢ä¸ºåº¦ï¼‰: " + string.Join(", ", jointAnglesDegrees));
+        //Debug.Log("¹Ø½Ú½Ç¶È£¨»¡¶È×ª»»Îª¶È£©: " + string.Join(", ", jointAnglesDegrees));
         return jointAnglesDegrees;
     }
 }

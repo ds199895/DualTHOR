@@ -7,26 +7,15 @@ Shader "TextMeshPro/Mobile/Distance Field (Surface)" {
 
 Properties {
 	_FaceTex			("Fill Texture", 2D) = "white" {}
-<<<<<<< HEAD
-	[HDR]_FaceColor		("Fill Color", Color) = (1,1,1,1)
-	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
-
-	[HDR]_OutlineColor	("Outline Color", Color) = (0,0,0,1)
-=======
 	_FaceColor		    ("Fill Color", Color) = (1,1,1,1)
 	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
 
 	_OutlineColor	    ("Outline Color", Color) = (0,0,0,1)
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 	_OutlineTex			("Outline Texture", 2D) = "white" {}
 	_OutlineWidth		("Outline Thickness", Range(0, 1)) = 0
 	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
 
-<<<<<<< HEAD
-	[HDR]_GlowColor		("Color", Color) = (0, 1, 0, 0.5)
-=======
 	_GlowColor		    ("Color", Color) = (0, 1, 0, 0.5)
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 	_GlowOffset			("Offset", Range(-1,1)) = 0
 	_GlowInner			("Inner", Range(0,1)) = 0.05
 	_GlowOuter			("Outer", Range(0,1)) = 0.05
@@ -110,12 +99,8 @@ SubShader {
 		#pragma multi_compile_shadowcaster
 		#include "UnityCG.cginc"
 
-<<<<<<< HEAD
-		struct v2f {
-=======
 		struct v2f
 		{
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 			V2F_SHADOW_CASTER;
 			float2	uv			: TEXCOORD1;
 			float2	uv2			: TEXCOORD3;

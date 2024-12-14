@@ -7,8 +7,8 @@ using System.Linq;
 [Serializable]
 public class HighlightConfig
 {
-    public Color TextStrongColor; //è¡¨ç¤ºä¸»è¦æ–‡æœ¬çš„é¢œè‰²
-    public Color TextFaintColor;//é«˜äº®æ–‡æœ¬çš„æ·¡è‰²
+    public Color TextStrongColor; //±íÊ¾Ö÷ÒªÎÄ±¾µÄÑÕÉ«
+    public Color TextFaintColor;//¸ßÁÁÎÄ±¾µÄµ­É«
     public Color SoftOutlineColor;
     public float SoftOutlineThickness;
     public Color WithinReachOutlineColor;
@@ -17,37 +17,37 @@ public class HighlightConfig
 public class ObjectHightLightController : MonoBehaviour
 {
     [SerializeField]
-    private Transform player; // è§’è‰² Transform
+    private Transform player; // ½ÇÉ« Transform
     [SerializeField]
-    private Vector3 offset; // æ‘„åƒæœºä¸è§’è‰²ä¹‹é—´çš„åç§»é‡
+    private Vector3 offset; // ÉãÏñ»úÓë½ÇÉ«Ö®¼äµÄÆ«ÒÆÁ¿
     [SerializeField]
-    private float MinHighlightDistance = 1f; // æœ€å°é«˜äº®è·ç¦»
+    private float MinHighlightDistance = 1f; // ×îĞ¡¸ßÁÁ¾àÀë
     [SerializeField]
-    private bool DisplayTargetText = true;//è¡¨ç¤ºæ˜¯å¦æ˜¾ç¤ºç›®æ ‡æ–‡æœ¬çš„å¸ƒå°”å˜é‡ã€‚
+    private bool DisplayTargetText = true;//±íÊ¾ÊÇ·ñÏÔÊ¾Ä¿±êÎÄ±¾µÄ²¼¶û±äÁ¿¡£
     [SerializeField]
-    private TextMeshProUGUI TargetText;//ç›®æ ‡æ–‡æœ¬å¯¹è±¡ï¼Œç”¨äºæ˜¾ç¤ºå½“å‰é«˜äº®å¯¹è±¡çš„åç§°ã€‚
+    private TextMeshProUGUI TargetText;//Ä¿±êÎÄ±¾¶ÔÏó£¬ÓÃÓÚÏÔÊ¾µ±Ç°¸ßÁÁ¶ÔÏóµÄÃû³Æ¡£
     [SerializeField]
-    private TextMeshProUGUI CrosshairText;//åå­—å‡†æ˜Ÿæ–‡æœ¬å¯¹è±¡ã€‚
+    private TextMeshProUGUI CrosshairText;//Ê®×Ö×¼ĞÇÎÄ±¾¶ÔÏó¡£
     [SerializeField]
     private HighlightConfig HighlightParams = new()
     {
         TextStrongColor = new Color(1.0f, 1.0f, 1.0f, 1.0f),
-        TextFaintColor = new Color(197.0f / 255, 197.0f / 255, 197.0f / 255, 228.0f / 255),//è¾ƒæ·¡çš„ç°è‰²ï¼ŒåŒæ—¶è®¾ç½®äº†é€æ˜åº¦ï¼Œå› æ­¤æ˜¾ç¤ºæ•ˆæœæ˜¯åŠé€æ˜çš„æ·¡ç°è‰²ã€‚
-        //æ·¡ç°è‰²ï¼Œä¸”æœ‰è¾ƒä½çš„é€æ˜åº¦ï¼Œé€‚åˆäºåˆ›å»ºæŸ”å’Œçš„è½®å»“æ•ˆæœ
+        TextFaintColor = new Color(197.0f / 255, 197.0f / 255, 197.0f / 255, 228.0f / 255),//½Ïµ­µÄ»ÒÉ«£¬Í¬Ê±ÉèÖÃÁËÍ¸Ã÷¶È£¬Òò´ËÏÔÊ¾Ğ§¹ûÊÇ°ëÍ¸Ã÷µÄµ­»ÒÉ«¡£
+        //µ­»ÒÉ«£¬ÇÒÓĞ½ÏµÍµÄÍ¸Ã÷¶È£¬ÊÊºÏÓÚ´´½¨ÈáºÍµÄÂÖÀªĞ§¹û
         SoftOutlineColor = new Color(0.66f, 0.66f, 0.66f, 0.1f),
-        //å‚æ•°å®šä¹‰äº†æŸ”å’Œè½®å»“çš„åšåº¦ã€‚ä»¥ç¡®ä¿åœ¨è§†è§‰ä¸Šä¸æ˜¾å¾—è¿‡äºçªå…€ï¼Œè€Œæ˜¯æŸ”å’Œåœ°åŒ…è£¹åœ¨æ–‡æœ¬å‘¨å›´
+        //²ÎÊı¶¨ÒåÁËÈáºÍÂÖÀªµÄºñ¶È¡£ÒÔÈ·±£ÔÚÊÓ¾õÉÏ²»ÏÔµÃ¹ıÓÚÍ»Ø££¬¶øÊÇÈáºÍµØ°ü¹üÔÚÎÄ±¾ÖÜÎ§
         SoftOutlineThickness = 0.001f,
         //
         WithinReachOutlineColor = new Color(1, 1, 1, 0.3f),
         //
         WithinReachOutlineThickness = 0.005f,
-    };//é«˜äº®å‚æ•°é…ç½®ï¼ŒåŒ…æ‹¬é¢œè‰²å’Œåšåº¦ã€‚
+    };//¸ßÁÁ²ÎÊıÅäÖÃ£¬°üÀ¨ÑÕÉ«ºÍºñ¶È¡£
     [SerializeField]
-    private Camera m_Camera; // æ‘„åƒæœºç»„ä»¶
+    private Camera m_Camera; // ÉãÏñ»ú×é¼ş
     [SerializeField]
-    private GameObject hand; // æ‰‹æŒç‰©ä½“å¯¹è±¡
+    private GameObject hand; // ÊÖ³ÖÎïÌå¶ÔÏó
     //[SerializeField]
-    private SimObjPhysics highlightedObject; // é«˜äº®å¯¹è±¡
+    private SimObjPhysics highlightedObject; // ¸ßÁÁ¶ÔÏó
     private void Start()
     {
         //m_Camera = Camera.main;
@@ -65,33 +65,33 @@ public class ObjectHightLightController : MonoBehaviour
 
     void LateUpdate()
     {
-        // è®¾ç½®æ‘„åƒæœºä½ç½®
+        // ÉèÖÃÉãÏñ»úÎ»ÖÃ
         transform.position = player.position + offset;
     }
 
 
     private void UpdateHighlightedObject()
     {
-        // è·å–ç›¸æœºçš„ä¸­å¤®ç‚¹å‘å‡ºçš„å°„çº¿
+        // »ñÈ¡Ïà»úµÄÖĞÑëµã·¢³öµÄÉäÏß
         Ray ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
 
-        // layerMaskï¼šç”¨äºå°„çº¿æ£€æµ‹çš„å±‚çº§æ©ç ã€‚
+        // layerMask£ºÓÃÓÚÉäÏß¼ì²âµÄ²ã¼¶ÑÚÂë¡£
         int layerMask = LayerMask.GetMask(
             "SimObjVisible"
         );
 
-        // æ£€æµ‹ä¸å°„çº¿æ˜¯å¦ä¸ç¢°æ’ä½“ç›¸äº¤
+        // ¼ì²âÓëÉäÏßÊÇ·ñÓëÅö×²ÌåÏà½»
         if (Physics.Raycast(ray, out RaycastHit hit, MinHighlightDistance, layerMask))
         {
             HandleHitObject(hit);
         }
-        // å¦‚æœæ£€æµ‹åˆ°äº†ç‰©ä½“ä½†è¶…å‡ºäº†æœ€å°é«˜äº®è·ç¦»
+        // Èç¹û¼ì²âµ½ÁËÎïÌåµ«³¬³öÁË×îĞ¡¸ßÁÁ¾àÀë
         else if (Physics.Raycast(ray, out RaycastHit outerHit, float.MaxValue, layerMask))
         {
             SetTargetText(outerHit.transform.CompareTag("Interactable") ? outerHit.transform.GetComponent<SimObjPhysics>().ObjectID : "", false);
            
         }
-        // å½“æ²¡æœ‰å‘½ä¸­ç‰©ä½“æ—¶ï¼Œæ¸…ç©ºç›®æ ‡æ–‡æœ¬
+        // µ±Ã»ÓĞÃüÖĞÎïÌåÊ±£¬Çå¿ÕÄ¿±êÎÄ±¾
         else
         {
             //ClearTargetText();
@@ -103,7 +103,7 @@ public class ObjectHightLightController : MonoBehaviour
     private void HandleHitObject(RaycastHit hit)
     {
         Debug.DrawLine(hit.point, m_Camera.transform.position, Color.red);
-        //print(hit.transform.name);//è¾“å‡ºç‰©ä½“ç¥–å…ˆçš„åç§°
+        //print(hit.transform.name);//Êä³öÎïÌå×æÏÈµÄÃû³Æ
         if (hit.transform.CompareTag("Interactable"))
         {
             if (hit.transform.TryGetComponent<SimObjPhysics>(out SimObjPhysics simObj))
@@ -145,9 +145,9 @@ public class ObjectHightLightController : MonoBehaviour
         }
     }
 
-    private bool isHoldingObject = false; // ç”¨äºè·Ÿè¸ªæ˜¯å¦æŠ“ç€ç‰©ä½“
-    private SimObjPhysics heldObject = null; // ç”¨äºä¿å­˜å½“å‰æŠ“ä½çš„ç‰©ä½“
-    private Rigidbody heldObjectRigidbody = null; // ç”¨äºä¿å­˜æŠ“ä½ç‰©ä½“çš„åˆšä½“
+    private bool isHoldingObject = false; // ÓÃÓÚ¸ú×ÙÊÇ·ñ×¥×ÅÎïÌå
+    private SimObjPhysics heldObject = null; // ÓÃÓÚ±£´æµ±Ç°×¥×¡µÄÎïÌå
+    private Rigidbody heldObjectRigidbody = null; // ÓÃÓÚ±£´æ×¥×¡ÎïÌåµÄ¸ÕÌå
     private void TryPickOrInteractObject()
     {
         if (highlightedObject == null) return;
@@ -189,9 +189,9 @@ public class ObjectHightLightController : MonoBehaviour
     }
 
 
-    //è®¾ç½®ç›®æ ‡æ–‡æœ¬ï¼Œæ ¹æ®å¯¹è±¡æ˜¯å¦åœ¨å¯äº¤äº’èŒƒå›´å†…åˆ‡æ¢æ–‡æœ¬é¢œè‰²ã€‚
-    //textï¼šç›®æ ‡æ–‡æœ¬çš„å†…å®¹ã€‚
-    //withinReachï¼šè¡¨ç¤ºå¯¹è±¡æ˜¯å¦åœ¨å¯äº¤äº’èŒƒå›´å†…çš„å¸ƒå°”å˜é‡ï¼Œé»˜è®¤ä¸º falseã€‚
+    //ÉèÖÃÄ¿±êÎÄ±¾£¬¸ù¾İ¶ÔÏóÊÇ·ñÔÚ¿É½»»¥·¶Î§ÄÚÇĞ»»ÎÄ±¾ÑÕÉ«¡£
+    //text£ºÄ¿±êÎÄ±¾µÄÄÚÈİ¡£
+    //withinReach£º±íÊ¾¶ÔÏóÊÇ·ñÔÚ¿É½»»¥·¶Î§ÄÚµÄ²¼¶û±äÁ¿£¬Ä¬ÈÏÎª false¡£
     
     private void SetTargetText(string text, bool withinReach = false)
     {
@@ -206,7 +206,7 @@ public class ObjectHightLightController : MonoBehaviour
             CrosshairText.text = "+";
         }
 
-        //ä»¥ä¾¿åªæ˜¾ç¤ºå¯¹è±¡ç±»å‹çš„åç§°ï¼Œè€Œä¸æ˜¯å®Œæ•´çš„å¯¹è±¡ ID
+        //ÒÔ±ãÖ»ÏÔÊ¾¶ÔÏóÀàĞÍµÄÃû³Æ£¬¶ø²»ÊÇÍêÕûµÄ¶ÔÏó ID
         if (DisplayTargetText)
         {
             TargetText.text = text.Split('|')[0];
