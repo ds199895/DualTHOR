@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # 获取当前脚本目录
 script_dir = os.path.dirname(os.path.abspath(__file__))
-urdf_filename = os.path.join(script_dir, "../unity/Assets/UR5/ur_description/urdf/ur5_robot.urdf")
+urdf_filename = os.path.join(script_dir, "../unity/Assets/robot_descriptions/UR5/ur_description/urdf/ur5_robot.urdf")
 urdf_filename = os.path.normpath(urdf_filename)  # 标准化路径
 
 print(f"URDF file path: {urdf_filename}")

@@ -44,7 +44,7 @@ namespace RootMotion.Demos {
 		protected virtual void Update() {
 			if (Time.deltaTime == 0f) return;
 
-            animatePhysics = animator.updateMode == AnimatorUpdateMode.AnimatePhysics;
+            animatePhysics = animator.updateMode == AnimatorUpdateMode.Fixed;
 
 			// Jumping
 			if (characterController.animState.jump) {

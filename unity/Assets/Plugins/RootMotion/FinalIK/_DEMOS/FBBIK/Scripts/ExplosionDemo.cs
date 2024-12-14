@@ -51,7 +51,7 @@ namespace RootMotion.Demos {
 				Vector3 direction = r.position - transform.position;
 				direction.y = 0f;
 				float explosionForce = explosionForceByDistance.Evaluate(direction.magnitude);
-				r.velocity = (direction.normalized + (Vector3.up * upForce)) * explosionForce * forceMlp;
+				r.linearVelocity = (direction.normalized + (Vector3.up * upForce)) * explosionForce * forceMlp;
 			}
 
 			if (weight < 0.5f && character.isGrounded) {

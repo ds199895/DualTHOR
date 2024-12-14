@@ -22,8 +22,8 @@ namespace RootMotion.Demos {
         public float spherecastRadius = 0.1f; // The radius of sperecasting
         public LayerMask groundLayers; // The walkable layers
 
-        private PhysicMaterial zeroFrictionMaterial;
-		private PhysicMaterial highFrictionMaterial;
+        private PhysicsMaterial zeroFrictionMaterial;
+		private PhysicsMaterial highFrictionMaterial;
 		protected Rigidbody r;
 		protected const float half = 0.5f;
 		protected float originalHeight;
@@ -49,14 +49,14 @@ namespace RootMotion.Demos {
 			originalCenter = capsule.center;
 
 			// Physics materials
-			zeroFrictionMaterial = new PhysicMaterial();
+			zeroFrictionMaterial = new PhysicsMaterial();
 			zeroFrictionMaterial.dynamicFriction = 0f;
 			zeroFrictionMaterial.staticFriction = 0f;
-			zeroFrictionMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
+			zeroFrictionMaterial.frictionCombine = PhysicsMaterialCombine.Minimum;
 			zeroFrictionMaterial.bounciness = 0f;
-			zeroFrictionMaterial.bounceCombine = PhysicMaterialCombine.Minimum;
+			zeroFrictionMaterial.bounceCombine = PhysicsMaterialCombine.Minimum;
 
-			highFrictionMaterial = new PhysicMaterial();
+			highFrictionMaterial = new PhysicsMaterial();
 
 			// Making sure rigidbody rotation is fixed
 			r.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
