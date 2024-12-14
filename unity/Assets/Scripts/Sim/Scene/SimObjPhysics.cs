@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,16 +24,16 @@ public class SimObjPhysics : MonoBehaviour
 
     //[Header("Transfer Point")]
     [SerializeField]
-    private Transform transferPoint; // ÎïÌåµÄ´«ËÍµã
+    private Transform transferPoint; // ç‰©ä½“çš„ä¼ é€ç‚¹
 
     //[Header("Interactable Points")]
     [SerializeField]
-    private Transform[] interactablePoints; // ÎïÌåµÄ¿É½»»¥µã
+    private Transform[] interactablePoints; // ç‰©ä½“çš„å¯äº¤äº’ç‚¹
 
     //[Header("Visible Points")]
     [SerializeField]
-    private Transform[] visiblePoints; // ÎïÌåµÄ´«ËÍµã
-    // ¿É·ÅÖÃÎïÌåµÄ´¥·¢ºÐ
+    private Transform[] visiblePoints; // ç‰©ä½“çš„ä¼ é€ç‚¹
+    // å¯æ”¾ç½®ç‰©ä½“çš„è§¦å‘ç›’
     [SerializeField]
     private GameObject[] receptacleTriggerBoxes;
 
@@ -72,7 +71,7 @@ public class SimObjPhysics : MonoBehaviour
         InitializeProperties();
     }
 
-    //³õÊ¼»¯´«ËÍµã
+    //åˆå§‹åŒ–ä¼ é€ç‚¹
     private void InitializeTransferPoint()
     {
         Transform foundTransferPoint = transform.Find("TransferPoint");
@@ -82,11 +81,11 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'TransferPoint' µÄ×ÓÎïÌå¡£");
+            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'TransferPoint' çš„å­ç‰©ä½“ã€‚");
         }
     }
 
-    //³õÊ¼»¯¿É½»»¥µã
+    //åˆå§‹åŒ–å¯äº¤äº’ç‚¹
     private void InitializeInteractablePoints()
     {
         Transform foundInteractablePoint = transform.Find("InteractablePoints");
@@ -100,11 +99,11 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'InteractablePoints' µÄ×ÓÎïÌå¡£");
+            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'InteractablePoints' çš„å­ç‰©ä½“ã€‚");
         }
     }
     
-    //³õÊ¼»¯¿É¿´¼ûµã
+    //åˆå§‹åŒ–å¯çœ‹è§ç‚¹
     private void InitializeVisiblePoints()
     {
         GameObject visiblePointsObject = transform.Find("VisibilityPoints").gameObject;
@@ -118,7 +117,7 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'VisibilityPoints' µÄ×ÓÎïÌå¡£");
+            Debug.LogWarning($"{gameObject.name} æ²¡æœ‰æ‰¾åˆ°åä¸º 'VisibilityPoints' çš„å­ç‰©ä½“ã€‚");
         }
     }
 
@@ -158,188 +157,15 @@ public class SimObjPhysics : MonoBehaviour
 
     //void OnDrawGizmos()
     //{
-    //    // ¼ì²é¿É¼ûµãÊÇ·ñ´æÔÚ
+    //    // æ£€æŸ¥å¯è§ç‚¹æ˜¯å¦å­˜åœ¨
     //    if (visiblePoints != null)
     //    {
-    //        Gizmos.color = Color.yellow; // ÉèÖÃ Gizmos ÑÕÉ«Îª»ÆÉ«
+    //        Gizmos.color = Color.yellow; // è®¾ç½® Gizmos é¢œè‰²ä¸ºé»„è‰²
     //        foreach (Transform point in visiblePoints)
     //        {
-    //            // »æÖÆ»ÆÉ«Õý·½ÌåÔÚ¿É¼ûµãµÄÎ»ÖÃ
-    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1fÊÇÕý·½Ìå´óÐ¡£¬¿ÉÒÔ¸ù¾ÝÐèÒªµ÷Õû
+    //            // ç»˜åˆ¶é»„è‰²æ­£æ–¹ä½“åœ¨å¯è§ç‚¹çš„ä½ç½®
+    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1fæ˜¯æ­£æ–¹ä½“å¤§å°ï¼Œå¯ä»¥æ ¹æ®éœ€è¦è°ƒæ•´
     //        }
     //    }
     //}
 }
-=======
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class SimObjPhysics : MonoBehaviour
-{
-    [Header("Unique String ID of this Object In Scene")]
-    [SerializeField]
-    private string objectID = string.Empty;
-
-    [Header("Object Type")]
-    [SerializeField]
-    private SimObjType type = SimObjType.Undefined;
-
-    [Header("Primary Property (Must Have only 1)")]
-    [SerializeField]
-    private SimObjPrimaryProperty primaryProperty;
-
-    [Header("Additional Properties (Can Have Multiple)")]
-    [SerializeField]
-    private SimObjSecondaryProperty[] secondaryProperties;
-
-
-
-    //[Header("Transfer Point")]
-    [SerializeField]
-    private Transform transferPoint; // ÎïÌåµÄ´«ËÍµã
-
-    //[Header("Interactable Points")]
-    [SerializeField]
-    private Transform[] interactablePoints; // ÎïÌåµÄ¿É½»»¥µã
-
-    //[Header("Visible Points")]
-    [SerializeField]
-    private Transform[] visiblePoints; // ÎïÌåµÄ´«ËÍµã
-    // ¿É·ÅÖÃÎïÌåµÄ´¥·¢ºÐ
-    [SerializeField]
-    private GameObject[] receptacleTriggerBoxes;
-
-
-    public List<GameObject> parentReceptacleObjects;
-
-
-    public bool IsReceptacle { get; private set; }
-    public bool IsPickupable { get; private set; }
-    public bool IsMoveable { get; private set; }
-    public bool IsStatic { get; private set; }
-    public bool IsToggleable { get; private set; }
-    public bool IsOpenable { get; private set; }
-    public bool IsBreakable { get; private set; }
-    public bool IsFillable { get; private set; }
-    public bool IsDirtyable { get; private set; }
-    public bool IsCookable { get; private set; }
-    public bool IsSliceable { get; private set; }
-    public bool CanBeUsedUp { get; private set; }
-
-    public string ObjectID => objectID;
-    public SimObjType Type => type;
-    public SimObjPrimaryProperty PrimaryProperty => primaryProperty;
-    public SimObjSecondaryProperty[] SecondaryProperties => secondaryProperties;
-    public Transform TransferPoint => transferPoint;
-    public Transform[] InteractablePoints => interactablePoints;
-    public Transform[] VisiblePoints => visiblePoints;
-
-    void Start()
-    {
-        objectID = gameObject.name;
-        InitializeTransferPoint();
-        InitializeInteractablePoints();
-        InitializeVisiblePoints();
-        InitializeProperties();
-    }
-
-    //³õÊ¼»¯´«ËÍµã
-    private void InitializeTransferPoint()
-    {
-        Transform foundTransferPoint = transform.Find("TransferPoint");
-        if (foundTransferPoint != null)
-        {
-            transferPoint = foundTransferPoint;
-        }
-        else
-        {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'TransferPoint' µÄ×ÓÎïÌå¡£");
-        }
-    }
-
-    //³õÊ¼»¯¿É½»»¥µã
-    private void InitializeInteractablePoints()
-    {
-        Transform foundInteractablePoint = transform.Find("InteractablePoints");
-        if (foundInteractablePoint != null)
-        {
-            interactablePoints = new Transform[foundInteractablePoint.childCount];
-            for (int i = 0; i < foundInteractablePoint.childCount; i++)
-            {
-                interactablePoints[i] = foundInteractablePoint.GetChild(i);
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'InteractablePoints' µÄ×ÓÎïÌå¡£");
-        }
-    }
-    
-    //³õÊ¼»¯¿É¿´¼ûµã
-    private void InitializeVisiblePoints()
-    {
-        GameObject visiblePointsObject = transform.Find("VisibilityPoints").gameObject;
-        if (visiblePointsObject != null)
-        {
-            visiblePoints = new Transform[visiblePointsObject.transform.childCount];
-            for (int i = 0; i < visiblePointsObject.transform.childCount; i++)
-            {
-                visiblePoints[i] = visiblePointsObject.transform.GetChild(i);
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{gameObject.name} Ã»ÓÐÕÒµ½ÃûÎª 'VisibilityPoints' µÄ×ÓÎïÌå¡£");
-        }
-    }
-
-    private void InitializeProperties()
-    {
-        IsReceptacle = Array.IndexOf(secondaryProperties, SimObjSecondaryProperty.Receptacle) > -1 && receptacleTriggerBoxes != null;
-        IsPickupable = primaryProperty == SimObjPrimaryProperty.CanPickup;
-        IsMoveable = primaryProperty == SimObjPrimaryProperty.Moveable;
-        IsStatic = primaryProperty == SimObjPrimaryProperty.Static;
-        IsToggleable = GetComponent<CanToggleOnOff>() != null;
-        IsOpenable = GetComponent<CanOpen_Object>() != null;
-        IsBreakable = GetComponentInChildren<Break>() != null;
-        IsFillable = GetComponent<Fill>() != null;
-        IsCookable = GetComponent<CookObject>() != null;
-        IsSliceable = GetComponent<SliceObject>() != null;
-        CanBeUsedUp = GetComponent<UsedUp>() != null;
-    }
-    public bool HasSecondaryProperty(SimObjSecondaryProperty prop)
-    {
-        return Array.Exists(secondaryProperties, element => element == prop);
-    }
-
-    public List<string> ParentReceptacleObjectsIds()
-    {
-        List<string> objectIds = new();
-
-        foreach (GameObject receptacle in parentReceptacleObjects)
-        {
-            if (receptacle.TryGetComponent<SimObjPhysics>(out SimObjPhysics sop))
-            {
-                objectIds.Add(sop.ObjectID);
-            }
-        }
-
-        return objectIds;
-    }
-
-    //void OnDrawGizmos()
-    //{
-    //    // ¼ì²é¿É¼ûµãÊÇ·ñ´æÔÚ
-    //    if (visiblePoints != null)
-    //    {
-    //        Gizmos.color = Color.yellow; // ÉèÖÃ Gizmos ÑÕÉ«Îª»ÆÉ«
-    //        foreach (Transform point in visiblePoints)
-    //        {
-    //            // »æÖÆ»ÆÉ«Õý·½ÌåÔÚ¿É¼ûµãµÄÎ»ÖÃ
-    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1fÊÇÕý·½Ìå´óÐ¡£¬¿ÉÒÔ¸ù¾ÝÐèÒªµ÷Õû
-    //        }
-    //    }
-    //}
-}
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb

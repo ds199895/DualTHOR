@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +23,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
-        // È·±£ËùÓĞÏà»úÆôÓÃ
+        // ç¡®ä¿æ‰€æœ‰ç›¸æœºå¯ç”¨
         EnableAllCameras();
     }
 
@@ -32,29 +31,29 @@ public class CameraController : MonoBehaviour
     {
         HandleEscAndMouseInput();
 
-        // ¼ì²éÊÇ·ñÆôÓÃFreeCamÄ£Ê½
+        // æ£€æŸ¥æ˜¯å¦å¯ç”¨FreeCamæ¨¡å¼
         if (Input.GetKeyDown(KeyCode.Alpha0)) ActivateFreeMode();
 
         if (isFreeMode && isCameraControlEnabled) FreeCamControl();
 
-        // °´ÏÂ 'P' ¼üÊ±±£´æËùÓĞÏà»úÍ¼Ïñ
+        // æŒ‰ä¸‹ 'P' é”®æ—¶ä¿å­˜æ‰€æœ‰ç›¸æœºå›¾åƒ
         if (Input.GetKeyDown(KeyCode.P)) SaveAllCameraImages();
     }
 
     private void EnableAllCameras()
     {
-        // ÆôÓÃËùÓĞÏà»ú£¬È·±£Í¬Ê±äÖÈ¾
+        // å¯ç”¨æ‰€æœ‰ç›¸æœºï¼Œç¡®ä¿åŒæ—¶æ¸²æŸ“
         egocentricCam.enabled = true;
         frontCam.enabled = true;
         leftSideCam.enabled = true;
         rightSideCam.enabled = true;
         behindCam.enabled = true;
-        freeCam.enabled = false; // Ä¬ÈÏÇé¿öÏÂ²»ÆôÓÃFreeCam
+        freeCam.enabled = false; // é»˜è®¤æƒ…å†µä¸‹ä¸å¯ç”¨FreeCam
     }
 
     void ActivateFreeMode()
     {
-        // ½öÆôÓÃ×ÔÓÉÏà»úÄ£Ê½
+        // ä»…å¯ç”¨è‡ªç”±ç›¸æœºæ¨¡å¼
         EnableAllCameras();
         freeCam.enabled = true;
         isFreeMode = true;
@@ -68,20 +67,20 @@ public class CameraController : MonoBehaviour
 
         if (Cursor.lockState == CursorLockMode.None) return;
 
-        // »ù±¾ÒÆ¶¯£¨Ç°ºó×óÓÒ£©
+        // åŸºæœ¬ç§»åŠ¨ï¼ˆå‰åå·¦å³ï¼‰
         Vector3 move = freeCam.transform.right * Input.GetAxis("Horizontal") +
                        freeCam.transform.forward * Input.GetAxis("Vertical");
 
-        // Ìí¼Ó´¹Ö±ÒÆ¶¯¿ØÖÆ
+        // æ·»åŠ å‚ç›´ç§»åŠ¨æ§åˆ¶
         float verticalMove = 0f;
         if (Input.GetKey(KeyCode.Space)) verticalMove += 1f;
         if (Input.GetKey(KeyCode.LeftControl)) verticalMove -= 1f;
         move += Vector3.up * verticalMove;
 
-        // Ó¦ÓÃÒÆ¶¯
+        // åº”ç”¨ç§»åŠ¨
         freeCam.transform.position += moveSpeed * Time.deltaTime * move * (Input.GetKey(KeyCode.LeftShift) ? 2f : 1f);
 
-        // Ïà»úĞı×ª
+        // ç›¸æœºæ—‹è½¬
         rotationX += Input.GetAxis("Mouse X") * mouseSensitivity;
         rotationY = Mathf.Clamp(rotationY - Input.GetAxis("Mouse Y") * mouseSensitivity, -verticalRotationLimit, verticalRotationLimit);
         freeCam.transform.localEulerAngles = new Vector3(rotationY, rotationX, 0);
@@ -111,7 +110,7 @@ public class CameraController : MonoBehaviour
         Cursor.visible = visible;
     }
 
-    // ±£´æËùÓĞÏà»úÍ¼Ïñµ½±¾µØ
+    // ä¿å­˜æ‰€æœ‰ç›¸æœºå›¾åƒåˆ°æœ¬åœ°
     public void SaveAllCameraImages()
     {
         SaveCameraImage(egocentricCam.targetTexture, "EgocentricCam");
@@ -123,15 +122,15 @@ public class CameraController : MonoBehaviour
 
     private void SaveCameraImage(RenderTexture renderTexture, string cameraName)
     {
-        // Éú³ÉUUID²¢¹¹½¨ÎÄ¼şÃû
+        // ç”ŸæˆUUIDå¹¶æ„å»ºæ–‡ä»¶å
         string uuid = Guid.NewGuid().ToString();
         string fileName = $"{cameraName}_{uuid}.png";
         string filePath = Path.Combine(Application.dataPath, "SavedImages", fileName);
 
-        // È·±£±£´æÄ¿Â¼´æÔÚ
+        // ç¡®ä¿ä¿å­˜ç›®å½•å­˜åœ¨
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-        // ½«RenderTextureÄÚÈİ±£´æµ½PNGÎÄ¼ş
+        // å°†RenderTextureå†…å®¹ä¿å­˜åˆ°PNGæ–‡ä»¶
         Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
         RenderTexture currentRT = RenderTexture.active;
         RenderTexture.active = renderTexture;
@@ -145,152 +144,4 @@ public class CameraController : MonoBehaviour
         Destroy(texture);
         Debug.Log($"Saved {cameraName} image to {filePath}");
     }
-=======
-using System;
-using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-
-public class CameraController : MonoBehaviour
-{
-    public Camera egocentricCam;
-    public Camera frontCam;
-    public Camera leftSideCam;
-    public Camera rightSideCam;
-    public Camera behindCam;
-    public Camera freeCam;
-
-    public float moveSpeed = 10.0f;
-    public float mouseSensitivity = 2.0f;
-    public float verticalRotationLimit = 80.0f;
-
-    private bool isFreeMode = false;
-    private bool isCameraControlEnabled = true;
-    private float rotationY = 0f;
-    private float rotationX = 0f;
-
-    void Start()
-    {
-        // È·±£ËùÓĞÏà»úÆôÓÃ
-        EnableAllCameras();
-    }
-
-    void Update()
-    {
-        HandleEscAndMouseInput();
-
-        // ¼ì²éÊÇ·ñÆôÓÃFreeCamÄ£Ê½
-        if (Input.GetKeyDown(KeyCode.Alpha0)) ActivateFreeMode();
-
-        if (isFreeMode && isCameraControlEnabled) FreeCamControl();
-
-        // °´ÏÂ 'P' ¼üÊ±±£´æËùÓĞÏà»úÍ¼Ïñ
-        if (Input.GetKeyDown(KeyCode.P)) SaveAllCameraImages();
-    }
-
-    private void EnableAllCameras()
-    {
-        // ÆôÓÃËùÓĞÏà»ú£¬È·±£Í¬Ê±äÖÈ¾
-        egocentricCam.enabled = true;
-        frontCam.enabled = true;
-        leftSideCam.enabled = true;
-        rightSideCam.enabled = true;
-        behindCam.enabled = true;
-        freeCam.enabled = false; // Ä¬ÈÏÇé¿öÏÂ²»ÆôÓÃFreeCam
-    }
-
-    void ActivateFreeMode()
-    {
-        // ½öÆôÓÃ×ÔÓÉÏà»úÄ£Ê½
-        EnableAllCameras();
-        freeCam.enabled = true;
-        isFreeMode = true;
-        isCameraControlEnabled = true;
-        SetCursorState(CursorLockMode.Locked, false);
-    }
-
-    void FreeCamControl()
-    {
-        HandleCursorVisibility();
-
-        if (Cursor.lockState == CursorLockMode.None) return;
-
-        // »ù±¾ÒÆ¶¯£¨Ç°ºó×óÓÒ£©
-        Vector3 move = freeCam.transform.right * Input.GetAxis("Horizontal") +
-                       freeCam.transform.forward * Input.GetAxis("Vertical");
-
-        // Ìí¼Ó´¹Ö±ÒÆ¶¯¿ØÖÆ
-        float verticalMove = 0f;
-        if (Input.GetKey(KeyCode.Space)) verticalMove += 1f;
-        if (Input.GetKey(KeyCode.LeftControl)) verticalMove -= 1f;
-        move += Vector3.up * verticalMove;
-
-        // Ó¦ÓÃÒÆ¶¯
-        freeCam.transform.position += moveSpeed * Time.deltaTime * move * (Input.GetKey(KeyCode.LeftShift) ? 2f : 1f);
-
-        // Ïà»úĞı×ª
-        rotationX += Input.GetAxis("Mouse X") * mouseSensitivity;
-        rotationY = Mathf.Clamp(rotationY - Input.GetAxis("Mouse Y") * mouseSensitivity, -verticalRotationLimit, verticalRotationLimit);
-        freeCam.transform.localEulerAngles = new Vector3(rotationY, rotationX, 0);
-    }
-
-    private void HandleEscAndMouseInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape)) ToggleCameraControl();
-        if (!isCameraControlEnabled && Input.GetMouseButtonDown(0)) ToggleCameraControl();
-    }
-
-    private void HandleCursorVisibility()
-    {
-        if (Input.GetKeyDown(KeyCode.LeftAlt)) SetCursorState(CursorLockMode.None, true);
-        else if (Input.GetKeyUp(KeyCode.LeftAlt)) SetCursorState(CursorLockMode.Locked, false);
-    }
-
-    void ToggleCameraControl()
-    {
-        isCameraControlEnabled = !isCameraControlEnabled;
-        SetCursorState(isCameraControlEnabled ? CursorLockMode.Locked : CursorLockMode.None, !isCameraControlEnabled);
-    }
-
-    void SetCursorState(CursorLockMode lockMode, bool visible)
-    {
-        Cursor.lockState = lockMode;
-        Cursor.visible = visible;
-    }
-
-    // ±£´æËùÓĞÏà»úÍ¼Ïñµ½±¾µØ
-    public void SaveAllCameraImages()
-    {
-        SaveCameraImage(egocentricCam.targetTexture, "EgocentricCam");
-        SaveCameraImage(frontCam.targetTexture, "FrontCam");
-        SaveCameraImage(leftSideCam.targetTexture, "LeftSideCam");
-        SaveCameraImage(rightSideCam.targetTexture, "RightSideCam");
-        SaveCameraImage(behindCam.targetTexture, "BehindCam");
-    }
-
-    private void SaveCameraImage(RenderTexture renderTexture, string cameraName)
-    {
-        // Éú³ÉUUID²¢¹¹½¨ÎÄ¼şÃû
-        string uuid = Guid.NewGuid().ToString();
-        string fileName = $"{cameraName}_{uuid}.png";
-        string filePath = Path.Combine(Application.dataPath, "SavedImages", fileName);
-
-        // È·±£±£´æÄ¿Â¼´æÔÚ
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-        // ½«RenderTextureÄÚÈİ±£´æµ½PNGÎÄ¼ş
-        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
-        RenderTexture currentRT = RenderTexture.active;
-        RenderTexture.active = renderTexture;
-        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-        texture.Apply();
-        RenderTexture.active = currentRT;
-
-        byte[] pngData = texture.EncodeToPNG();
-        File.WriteAllBytes(filePath, pngData);
-
-        Destroy(texture);
-        Debug.Log($"Saved {cameraName} image to {filePath}");
-    }
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb
 }

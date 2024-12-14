@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using UnityEngine;
 
 public static class PropertyValidator
@@ -11,17 +10,3 @@ public static class PropertyValidator
         }
     }
 }
-=======
-using UnityEngine;
-
-public static class PropertyValidator
-{
-    public static void ValidateProperty(GameObject obj, SimObjSecondaryProperty property)
-    {
-        if (!obj.GetComponent<SimObjPhysics>().HasSecondaryProperty(property))
-        {
-            Debug.LogError($"{obj.name} is missing the {property} secondary property!");
-        }
-    }
-}
->>>>>>> 0c14a5c8d787bef23f3133ad2b2203f5035105bb

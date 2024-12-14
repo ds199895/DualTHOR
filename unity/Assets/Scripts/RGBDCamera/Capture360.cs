@@ -7,10 +7,10 @@ public class Capture360 : MonoBehaviour
 
     void Start()
     {
-        // È·±£Ïà»ú´æÔÚ²¢×¼±¸ºÃ½øĞĞ²¶»ñ
+        // ç¡®ä¿ç›¸æœºå­˜åœ¨å¹¶å‡†å¤‡å¥½è¿›è¡Œæ•è·
         if (cameraToCapture != null)
         {
-            // ´´½¨Ò»¸öĞÂµÄÁ¢ÌåäÖÈ¾Á¢·½Í¼£¬´«ÈëÏà»ú
+            // åˆ›å»ºä¸€ä¸ªæ–°çš„ç«‹ä½“æ¸²æŸ“ç«‹æ–¹å›¾ï¼Œä¼ å…¥ç›¸æœº
             cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
             cameraToCapture.RenderToCubemap(cubemap);
         }

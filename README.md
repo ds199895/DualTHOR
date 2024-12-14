@@ -15,8 +15,11 @@
 ---
 
 #### 1. Python 环境
-确保已安装 Python 版本 `3.10.15`。
-
+创建虚拟环境 Python 版本 `3.10.15`。
+```
+conda create -n playground python=3.10.15
+conda activate playground
+```
 ---
 
 #### 2. 安装所需库
