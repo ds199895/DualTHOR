@@ -4,17 +4,18 @@ import subprocess
 import time
 import os
 import stat
-import oss2
 import zipfile
 import json
 from tqdm import tqdm
+import tos
+from tos import DataTransferType
 
-# 阿里云OSS配置
-OSS_ACCESS_KEY_ID = 'LTAI5tARvTM8nnzURdDCx1DS'
-OSS_ACCESS_KEY_SECRET = 'l2RwAZ8xHj1OkH4KYT1lPYN1ojyJ0n'
-OSS_ENDPOINT = 'http://oss-cn-beijing.aliyuncs.com'
-OSS_BUCKET_NAME = 'agent-playground'
-OSS_OBJECT_NAME = 'your-object-name'
+# 火山引擎TOS配置
+TOS_ACCESS_KEY = 'AKLTMWJkNmZiMmRmODhiNGNlNTk1Nzc3NDJmNTBiNThjNGM'
+TOS_SECRET_KEY = 'Wm1JNE1HWmxNalZpTXpZd05ESmtOVGxsWm1ZellqZGxaV1JrWTJJd1lUTQ=='
+TOS_ENDPOINT = 'tos-cn-beijing.volces.com'  # 例如：'tos-cn-beijing.volces.com'
+TOS_REGION='cn-beijing'
+TOS_BUCKET_NAME = 'unity-agent-playground'
 
 # 根据操作系统选择 Unity 可执行文件路径
 if platform.system() == "Windows":
@@ -28,42 +29,42 @@ else:
 
 # 根据操作系统选择 Unity 可执行文件路径
 if platform.system() == "Windows":
-    UNITY_OSS_FOLDER= "scenes/Win"
+    UNITY_TOS_FOLDER= "scenes/Win"
     UNITY_LOCAL_FOLDER=Path(__file__).parent.parent / "unity" / "Build" / "Win"
 elif platform.system() == "Darwin":  # macOS
-    UNITY_OSS_FOLDER = "scenes/Mac"
+    UNITY_TOS_FOLDER = "scenes/Mac"
     UNITY_LOCAL_FOLDER=Path(__file__).parent.parent / "unity" / "Build" / "Mac"
 elif platform.system() == "Linux":
-    UNITY_OSS_FOLDER = "scenes/Linux"
+    UNITY_TOS_FOLDER = "scenes/Linux"
     UNITY_LOCAL_FOLDER=Path(__file__).parent.parent / "unity" / "Build" / "Linux"
 else:
     raise Exception("Unsupported operating system")
 
-class OssProgress(object):
+class TosProgress(object):
     """
     用于显示下载进度的类
     """
     def __init__(self, total_size, desc):
         self.pbar = tqdm(total=total_size, unit='B', unit_scale=True, desc=desc)
+        self.last_consumed = 0
     
-    def update(self, consumed_bytes, total_bytes, *args):
+    def __call__(self, consumed_bytes, total_bytes, rw_once_bytes, type: DataTransferType):
         """
-        OSS的进度回调函数，需要接收三个参数：
-        consumed_bytes: 已经下载的字节数
-        total_bytes: 总字节数
-        args: 其他参数
+        TOS的进度回调函数
         """
-        # 计算这次更新的增量
-        if not hasattr(self, 'last_consumed'):
-            self.last_consumed = 0
         increment = consumed_bytes - self.last_consumed
         self.last_consumed = consumed_bytes
-        
-        # 更新进度条
         self.pbar.update(increment)
     
     def close(self):
         self.pbar.close()
+
+# def get_tos_client():
+#     """
+#     创建TOS客户端
+#     """
+#     credential = StaticCredential(TOS_ACCESS_KEY, TOS_SECRET_KEY)
+#     return TosClientV2(TOS_ENDPOINT, credential)
 
 def get_local_version(local_dir):
     """
@@ -79,67 +80,74 @@ def get_local_version(local_dir):
         print(f"读取本地版本信息失败: {e}")
     return None
 
-def get_oss_version(bucket, oss_folder):
+def get_tos_version(client, tos_folder):
     """
-    获取OSS上的版本号，如果不存在则返回None
+    获取TOS上的版本号，如果不存在则返回None
     """
     try:
-        version_path = f"{oss_folder}/version.json"
-        version_content = bucket.get_object(version_path).read()
+        version_path = f"{tos_folder}/version.json"
+        response = client.get_object(TOS_BUCKET_NAME, version_path)
+        version_content = response.read()
         version_data = json.loads(version_content)
         return version_data.get('version')
-    except oss2.exceptions.NoSuchKey:
-        print("OSS上不存在version.json文件")
-        return None
     except Exception as e:
-        print(f"获取OSS版本信息失败: {e}")
+        print(f"获取TOS版本信息失败: {e}")
         return None
 
-def download_folder_from_oss(local_dir, oss_folder):
+def percentage(consumed_bytes, total_bytes, rw_once_bytes, type: DataTransferType):
+    if total_bytes:
+        rate = int(100 * float(consumed_bytes) / float(total_bytes))
+        print("rate:{}, consumed_bytes:{}, total_bytes:{}, rw_once_bytes:{}, type:{}".format(
+            rate, consumed_bytes, total_bytes, rw_once_bytes, type))
+
+def download_folder_from_tos(local_dir, tos_folder):
     """
-    从阿里云OSS下载zip文件并解压到指定目录。
-    先检查版本，只有当OSS上的版本比本地新时才下载。
+    从火山引擎TOS下载zip文件并解压到指定目录。
+    先检查版本，只有当TOS上的版本比本地新时才下载。
     
     Args:
         local_dir: 解压目标目录
-        oss_folder: OSS中zip文件所在的文件夹
+        tos_folder: TOS中zip文件所在的文件夹
     """
     try:
-        auth = oss2.Auth(OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET)
-        bucket = oss2.Bucket(auth, OSS_ENDPOINT, OSS_BUCKET_NAME)
+        # 创建 TosClientV2 对象
+        client = tos.TosClientV2(TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_ENDPOINT, TOS_REGION)
         
         # 检查版本
         local_version = get_local_version(local_dir)
-        oss_version = get_oss_version(bucket, oss_folder)
+        tos_version = get_tos_version(client, tos_folder)
         
-        if oss_version is None:
-            print("无法获取OSS版本信息，跳过下载")
+        if tos_version is None:
+            print("无法获取TOS版本信息，跳过下载")
             return
             
-        if local_version is not None and local_version >= oss_version:
+        if local_version is not None and local_version >= tos_version:
             print(f"本地版本({local_version})已是最新，无需更新")
             return
             
-        print(f"发现新版本({oss_version})，开始更新...")
+        print(f"发现新版本({tos_version})，开始更新...")
         
-        # 构建zip文件的OSS路径和本地临时路径
+        # 构建zip文件的TOS路径和本地临时路径
         zip_name = f"{platform.system().lower()}_unity.zip"
-        oss_zip_path = f"{oss_folder}/{zip_name}"
+        tos_zip_path = f"{tos_folder}/{zip_name}"
         temp_zip_path = os.path.join(os.path.dirname(local_dir), zip_name)
         
         # 获取文件大小
-        object_meta = bucket.head_object(oss_zip_path)
+        object_meta = client.head_object(TOS_BUCKET_NAME, tos_zip_path)
         total_size = object_meta.content_length
         
         # 下载zip文件（带进度条）
-        print(f"开始下载压缩包: {oss_zip_path}")
-        progress_callback = OssProgress(total_size, "下载进度")
+        print(f"开始下载压缩包: {tos_zip_path}")
+        progress_callback = TosProgress(total_size, "下载进度")
         
         try:
-            bucket.get_object_to_file(
-                oss_zip_path, 
+            client.download_file(
+                TOS_BUCKET_NAME, 
+                tos_zip_path, 
                 temp_zip_path,
-                progress_callback=progress_callback.update
+                part_size=1024 * 1024 * 20,  # 分片大小
+                task_num=3,  # 线程数
+                data_transfer_listener=progress_callback  # 进度条
             )
         finally:
             progress_callback.close()
@@ -153,9 +161,7 @@ def download_folder_from_oss(local_dir, oss_folder):
         # 解压文件（带进度条）
         print(f"开始解压文件到: {local_dir}")
         with zipfile.ZipFile(temp_zip_path, 'r') as zip_ref:
-            # 获取压缩包中的所有文件
             file_list = zip_ref.namelist()
-            # 创建解压进度条
             with tqdm(total=len(file_list), desc="解压进度") as pbar:
                 for file in file_list:
                     zip_ref.extract(file, local_dir)
@@ -164,18 +170,30 @@ def download_folder_from_oss(local_dir, oss_folder):
         print("文件解压完成")
         
         # 下载并保存新的version.json
-        version_path = f"{oss_folder}/version.json"
+        version_path = f"{tos_folder}/version.json"
         local_version_file = os.path.join(local_dir, "version.json")
-        bucket.get_object_to_file(version_path, local_version_file)
+        client.download_file(
+            TOS_BUCKET_NAME,
+            version_path,
+            local_version_file
+        )
         print("版本信息已更新")
         
         # 删除临时zip文件
         os.remove(temp_zip_path)
         print("临时压缩包已删除")
         
+    except tos.exceptions.TosClientError as e:
+        print('fail with client error, message:{}, cause: {}'.format(e.message, e.cause))
+    except tos.exceptions.TosServerError as e:
+        print('fail with server error, code: {}'.format(e.code))
+        print('error with request id: {}'.format(e.request_id))
+        print('error with message: {}'.format(e.message))
+        print('error with http code: {}'.format(e.status_code))
+        print('error with ec: {}'.format(e.ec))
+        print('error with request url: {}'.format(e.request_url))
     except Exception as e:
-        print(f"下载或解压失败: {e}")
-        raise
+        print('fail with unknown error: {}'.format(e))
 
 def set_executable_permissions():
     """
@@ -198,7 +216,7 @@ def start_unity(wait_time=5):
     """
     try:
         # 下载文件
-        download_folder_from_oss(UNITY_LOCAL_FOLDER,UNITY_OSS_FOLDER)
+        download_folder_from_tos(UNITY_LOCAL_FOLDER,UNITY_TOS_FOLDER)
 
         # 在启动前设置权限
         if not set_executable_permissions():

@@ -100,19 +100,24 @@ class VuerTeleop:
         self.right_retargeting = right_retargeting_config.build()
     
     def step(self):
+        # 从图像处理器中获取头部、左手腕、右手腕、左手和右手的矩阵
         head_mat, left_wrist_mat, right_wrist_mat, left_hand_mat, right_hand_mat = self.processor.process(self.tv)
+        
+        # 提取头部旋转矩阵
         head_rmat = head_mat[:3, :3]
 
-        left_wrist_mat[2, 3] +=0.45
-        right_wrist_mat[2,3] +=0.45
-        left_wrist_mat[0, 3] +=0.20
-        right_wrist_mat[0,3] +=0.20
+        # 调整左手腕和右手腕的z轴和x轴位置
+        left_wrist_mat[2, 3] += 0.45
+        right_wrist_mat[2, 3] += 0.45
+        left_wrist_mat[0, 3] += 0.20
+        right_wrist_mat[0, 3] += 0.20
 
+        # 使用重定向配置计算左手和右手的关节位置
         left_qpos = self.left_retargeting.retarget(left_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
         right_qpos = self.right_retargeting.retarget(right_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
 
+        # 返回头部旋转矩阵、左手腕矩阵、右手腕矩阵、左手关节位置和右手关节位置
         return head_rmat, left_wrist_mat, right_wrist_mat, left_qpos, right_qpos
-
 
 if __name__ == '__main__':
     manager = Manager()

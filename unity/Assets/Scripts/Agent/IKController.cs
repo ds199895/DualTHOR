@@ -31,6 +31,8 @@ public class IKController : MonoBehaviour
     public Transform leftTargetPose;
     public Transform rightTargetPose;
 
+    public Transform baseTransform;
+
     // 插值相关参数
     private float[] currentJointAngles;
     private float[] targetJointAngles;
@@ -71,6 +73,16 @@ public class IKController : MonoBehaviour
         }
     }
 
+
+    // 将目标位置转换为基座坐标系
+    Vector3 ConvertToBaseCoordinates(Vector3 targetPosition, Transform baseTransform)
+    {
+        Vector3 relativePosition = targetPosition - baseTransform.position;
+        Vector3 result = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
+        //Debug.Log("相对于基座的目标位置: " + result);
+        return result;
+    }
+    
     private void UpdateJointInterpolation()
     {
         if (currentInterpolationTime >= interpolationTime)
@@ -95,11 +107,15 @@ public class IKController : MonoBehaviour
 
     IEnumerator SendIKRequest()
     {
+        // 转换目标位置到基座坐标系
+        float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
+        float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
+
         // 构建请求数据
         var request = new IKRequest
         {
-            left_pose = TransformToMatrix(leftTargetPose),
-            right_pose = TransformToMatrix(rightTargetPose),
+            left_pose = left_target_matrix,
+            right_pose = right_target_matrix,
             motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
             motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
         };
@@ -140,24 +156,51 @@ public class IKController : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"请求失败: {www.error}");
+                Debug.LogError($"请求失败: {www.error}. URL: {serverUrl}");
             }
         }
     }
 
-    private float[][] TransformToMatrix(Transform transform)
+    private float[][] TransformToMatrix(Vector3 position, Quaternion rotation)
     {
-        Matrix4x4 matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
-        float[][] result = new float[4][];
-        for (int i = 0; i < 4; i++)
+        Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, Vector3.one);
+        return new float[][]
         {
-            result[i] = new float[4];
-            for (int j = 0; j < 4; j++)
-            {
-                result[i][j] = matrix[i, j];
-            }
-        }
-        return result;
+            new float[] { matrix.m00, matrix.m01, matrix.m02, matrix.m03 },
+            new float[] { matrix.m10, matrix.m11, matrix.m12, matrix.m13 },
+            new float[] { matrix.m20, matrix.m21, matrix.m22, matrix.m23 },
+            new float[] { matrix.m30, matrix.m31, matrix.m32, matrix.m33 }
+        };
+    }
+
+    private float[][] ConvertTargetToBaseMatrix(Transform targetPose, Transform baseTransform)
+    {
+        // 将目标位置转换为基座坐标系
+        Vector3 relativePosition = targetPose.position - baseTransform.position;
+        Vector3 basePosition = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
+
+        // 使用IKClient中的方式构建translation
+        List<float> translation = new List<float>
+        {
+            basePosition.z,
+            -basePosition.x,
+            basePosition.y
+        };
+
+        // 将目标旋转转换为基座坐标系
+        Quaternion baseRotation = Quaternion.Inverse(baseTransform.rotation) * targetPose.rotation;
+
+        // 将Quaternion转换为Matrix4x4
+        Matrix4x4 rotationMatrix = Matrix4x4.Rotate(baseRotation);
+
+        // 生成4x4变换矩阵
+        return new float[][]
+        {
+            new float[] { rotationMatrix.m00, rotationMatrix.m01, rotationMatrix.m02, translation[0] },
+            new float[] { rotationMatrix.m10, rotationMatrix.m11, rotationMatrix.m12, translation[1] },
+            new float[] { rotationMatrix.m20, rotationMatrix.m21, rotationMatrix.m22, translation[2] },
+            new float[] { 0, 0, 0, 1 }
+        };
     }
 
     // 辅助方法：标准化角度到 [-180, 180] 范围

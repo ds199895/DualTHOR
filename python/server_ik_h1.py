@@ -6,44 +6,61 @@ from flask import Flask, request, jsonify
 import os
 import time
 from copy import deepcopy
-
+from robot_control.robot_arm_ik import Arm_IK
 app = Flask(__name__)
 
 class H1_IK_Solver:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
-
-        # 获取当前脚本目录
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        urdf_filename = os.path.join(script_dir, "../unity/Assets/robot_descriptions/H1/urdf/h1_description/h1_with_hand.urdf")
-        urdf_filename = os.path.normpath(urdf_filename)
-        print(f"URDF file path: {urdf_filename}")
-
         # 加载机器人模型
-        self.robot = pin.RobotWrapper.BuildFromURDF(urdf_filename, os.path.dirname(urdf_filename))
-        print("model name: " + self.robot.model.name)
+        # self.robot = pin.RobotWrapper.BuildFromURDF(urdf_filename, os.path.dirname(urdf_filename))
+        self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_description/urdf/h1_with_hand.urdf', '../assets/h1_description/') # for test
 
-        # 需要锁定的关节列表
+        print(self.robot.model)
         self.mixed_jointsToLockIDs = [  
-            "right_hip_roll_joint", "right_hip_pitch_joint", "right_knee_joint",
-            "left_hip_roll_joint", "left_hip_pitch_joint", "left_knee_joint",
-            "torso_joint", "left_hip_yaw_joint", "right_hip_yaw_joint",
-            "left_ankle_joint", "right_ankle_joint",
-            "L_index_proximal_joint", "L_index_intermediate_joint",
-            "L_middle_proximal_joint", "L_middle_intermediate_joint",
-            "L_ring_proximal_joint", "L_ring_intermediate_joint",
-            "L_pinky_proximal_joint", "L_pinky_intermediate_joint",
-            "L_thumb_proximal_yaw_joint", "L_thumb_proximal_pitch_joint",
-            "L_thumb_intermediate_joint", "L_thumb_distal_joint",
-            "R_index_proximal_joint", "R_index_intermediate_joint",
-            "R_middle_proximal_joint", "R_middle_intermediate_joint",
-            "R_ring_proximal_joint", "R_ring_intermediate_joint",
-            "R_pinky_proximal_joint", "R_pinky_intermediate_joint",
-            "R_thumb_proximal_yaw_joint", "R_thumb_proximal_pitch_joint",
-            "R_thumb_intermediate_joint", "R_thumb_distal_joint",
-            "left_hand_joint", "right_hand_joint"    
-        ]
+                                        "right_hip_roll_joint",
+                                        "right_hip_pitch_joint",
+                                        "right_knee_joint",
+                                        "left_hip_roll_joint",
+                                        "left_hip_pitch_joint",
+                                        "left_knee_joint",
+                                        "torso_joint",
+                                        "left_hip_yaw_joint",
+                                        "right_hip_yaw_joint",
 
+                                        "left_ankle_joint",
+                                        "right_ankle_joint",
+
+                                        "L_index_proximal_joint",
+                                        "L_index_intermediate_joint",
+                                        "L_middle_proximal_joint",
+                                        "L_middle_intermediate_joint",
+                                        "L_ring_proximal_joint",
+                                        "L_ring_intermediate_joint",
+                                        "L_pinky_proximal_joint",
+                                        "L_pinky_intermediate_joint",
+                                        "L_thumb_proximal_yaw_joint",
+                                        "L_thumb_proximal_pitch_joint",
+                                        "L_thumb_intermediate_joint",
+                                        "L_thumb_distal_joint",
+                                        
+                                        "R_index_proximal_joint",
+                                        "R_index_intermediate_joint",
+                                        "R_middle_proximal_joint",
+                                        "R_middle_intermediate_joint",
+                                        "R_ring_proximal_joint",
+                                        "R_ring_intermediate_joint",
+                                        "R_pinky_proximal_joint",
+                                        "R_pinky_intermediate_joint",
+                                        "R_thumb_proximal_yaw_joint",
+                                        "R_thumb_proximal_pitch_joint",
+                                        "R_thumb_intermediate_joint",
+                                        "R_thumb_distal_joint",
+
+                                        "left_hand_joint",
+                                        "right_hand_joint"    
+                                      ]
+   
         # 构建简化机器人模型
         self.reduced_robot = self.robot.buildReducedRobot(
             list_of_joints_to_lock=self.mixed_jointsToLockIDs,
@@ -162,7 +179,7 @@ class H1_IK_Solver:
 
 # 创建IK求解器实例
 ik_solver = H1_IK_Solver()
-
+# ik_solver=Arm_IK()
 @app.route('/ik', methods=['POST'])
 def ik_service():
     """IK服务的HTTP端点"""
@@ -173,6 +190,9 @@ def ik_service():
         motorstate = np.array(data.get('motorstate', None))
         motorV = np.array(data.get('motorV', None))
 
+        print("left_pose: ",left_pose)
+        print("right_pose: ",right_pose)
+        print("motorstate: ",motorstate)
         success, q, tau = ik_solver.solve_ik(left_pose, right_pose, motorstate, motorV)
 
         response = {
