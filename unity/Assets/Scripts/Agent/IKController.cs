@@ -63,7 +63,20 @@ public class IKController : MonoBehaviour
         // 检测键盘输入
         if (Input.GetKeyDown(triggerKey))
         {
-            StartCoroutine(SendIKRequest());
+            Debug.Log("开始IK计算");
+            // 转换目标位置到基座坐标系
+            float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
+            float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
+
+            // 构建请求数据
+            var request = new IKRequest
+            {
+                left_pose = left_target_matrix,
+                right_pose = right_target_matrix,
+                motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
+                motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
+            };
+            StartCoroutine(SendIKRequest(request));
         }
 
         // 执行插值
@@ -105,21 +118,8 @@ public class IKController : MonoBehaviour
         }
     }
 
-    IEnumerator SendIKRequest()
+    IEnumerator SendIKRequest(IKRequest request)
     {
-        // 转换目标位置到基座坐标系
-        float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
-        float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
-
-        // 构建请求数据
-        var request = new IKRequest
-        {
-            left_pose = left_target_matrix,
-            right_pose = right_target_matrix,
-            motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
-            motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
-        };
-
         string jsonData = JsonConvert.SerializeObject(request);
 
         using (UnityWebRequest www = new UnityWebRequest(serverUrl, "POST"))
@@ -209,5 +209,30 @@ public class IKController : MonoBehaviour
         while (angle > 180f) angle -= 360f;
         while (angle < -180f) angle += 360f;
         return angle;
+    }
+
+    public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
+    {
+        // 选择目标位姿和基座变换
+        Transform targetPose = isLeftArm ? leftTargetPose : rightTargetPose;
+        Transform baseTransform = this.baseTransform;
+
+        // 转换目标位置到基座坐标系
+        Vector3 targetPositionRelative = ConvertToBaseCoordinates(newTargetPosition, baseTransform);
+
+        // 构建目标位姿矩阵
+        float[][] targetMatrix = TransformToMatrix(targetPositionRelative, targetPose.rotation);
+
+        // 构建请求数据
+        var request = new IKRequest
+        {
+            left_pose = isLeftArm ? targetMatrix : null,
+            right_pose = isLeftArm ? null : targetMatrix,
+            motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
+            motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
+        };
+
+        // 发送反向运动学请求
+        StartCoroutine(SendIKRequest(request));
     }
 } 
