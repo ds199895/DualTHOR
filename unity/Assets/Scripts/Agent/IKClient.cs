@@ -8,7 +8,7 @@ using System;
 
 public class IKClient : MonoBehaviour
 {
-    private string url = "http://192.168.31.212:5000/ik";
+    private string url = "http://localhost:5000/ik";
     public AgentMovement agentMovement;
     private List<float> initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
     public Transform ur5BaseLeft; // 左臂的基座

@@ -23,10 +23,10 @@ public class AgentMovement : MonoBehaviour
     private Vector3 lastTargetPosition;
     private float positionChangeThreshold = 0.0001f; // 位置变化阈值
     public IKClient ikClient;  
-    public Transform pickPositionL;  // 夹取位置
-    public Transform placePositionL; // 放置位置
-    public Transform pickPositionR;  // 夹取位置
-    public Transform placePositionR; // 放置位置
+    // public Transform pickPositionL;  // 夹取位置
+    // public Transform placePositionL; // 放置位置
+    // public Transform pickPositionR;  // 夹取位置
+    // public Transform placePositionR; // 放置位置
     public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // 初始值
     public List<ArticulationBody> leftArmJoints;  // 左臂关节
     public List<ArticulationBody> rightArmJoints; // 右臂关节
@@ -35,6 +35,7 @@ public class AgentMovement : MonoBehaviour
     private bool isTargetAnglesUpdated = false;
 
 
+    
 
     private bool isManualControlEnabled = false;
     private float manualMoveSpeed = 5.0f;
@@ -236,9 +237,11 @@ public class AgentMovement : MonoBehaviour
 
     public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action callback)
     {
+        Debug.Log("ExecuteActionWithCallback");
         // 获取方法
         MethodInfo method = typeof(AgentMovement).GetMethod(actionData.action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
-
+        
+        Debug.Log(method);
         // 如果方法不存在，执行回调并返回
         if (method == null)
         {
@@ -263,19 +266,34 @@ public class AgentMovement : MonoBehaviour
 
         try
         {
+            
+            Debug.Log("ConstructArguments");
+
+            Debug.Log(actionData);
+            
+            Debug.Log("test log1");
+            Debug.Log(method.GetParameters());
+            
+            Debug.Log("test log2");
             // 构造参数并执行方法
             object[] args = ConstructArguments(method.GetParameters(), actionData);
-
+            Debug.Log("test log3");
+            Debug.Log(method.ReturnType);
+            Debug.Log("test log4");
             if (method.ReturnType == typeof(IEnumerator))
             {
+                Debug.Log("test log5");
                 // 如果是协程方法，启动协程并在结束时调用回调
                 StartCoroutine(ExecuteCoroutineAction(method, args, callback));
+                Debug.Log("ExecuteCoroutineAction");
             }
             else
             {
+                Debug.Log("非协程");
                 // 非协程方法，立即调用并触发回调
                 method.Invoke(this, args);
                 callback?.Invoke();
+                Debug.Log("立即调用并返回");
             }
         }
         catch (Exception ex)
@@ -313,26 +331,59 @@ public class AgentMovement : MonoBehaviour
     }
     private object[] ConstructArguments(ParameterInfo[] parameters, UnityClient.ActionData actionData)
     {
+        Debug.Log("parameters length : "+parameters.Length);
         if (parameters.Length == 0) return null;
 
         List<object> args = new List<object>();
 
         foreach (var param in parameters)
         {
+            Debug.Log(param.Name.ToLower());
             // 根据参数名称显式映射
             switch (param.Name.ToLower())
             {
                 case "stateid":
-                    args.Add(actionData.stateID); // 映射到 stateID
+                    if (actionData.stateID != null)
+                    {
+                        args.Add(actionData.stateID);
+                    }
+                    else
+                    {
+                        Debug.LogError("State ID is not Valid");
+                    }
+                   
                     break;
                 case "objectid":
-                    args.Add(actionData.objectID); // 映射到 objectID
+                    if (actionData.objectID != null)
+                    {
+                        args.Add(actionData.objectID);
+                    }
+                    else
+                    {
+                        Debug.LogError("Object ID is Not Valid");
+                    }
                     break;
                 case "isleftarm":
-                    args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // 映射到 arm
+                    Debug.Log("test log before arm");
+                    Debug.Log(actionData.arm);
+                    Debug.Log("test log after arm");
+                    if (actionData.arm != null){
+                        args.Add(actionData.arm.Equals("left", StringComparison.OrdinalIgnoreCase)); // 映射到 arm
+                    }
+                    else
+                    {
+                        args.Add(true); // 映射到 arm
+                    }
                     break;
                 case "magnitude":
-                    args.Add(actionData.Magnitude); // 映射到 Magnitude
+                    if (actionData.Magnitude != null)
+                    {
+                        args.Add(actionData.Magnitude);
+                    }
+                    else
+                    {
+                        Debug.LogError("Magnitude is not Set");
+                    }
                     break;
                 default:
                     Debug.LogWarning($"Unsupported parameter: {param.Name} of type {param.ParameterType.Name}");
@@ -340,17 +391,20 @@ public class AgentMovement : MonoBehaviour
                     break;
             }
         }
-
+        Debug.Log("args length : " + args.Count);
         return args.ToArray();
     }
 
 
     public IEnumerator Toggle(string objectID, bool isLeftArm)
     {
+        
         // 获取目标交互点和 Toggle 脚本
         Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
         CanToggleOnOff toggleScript = interactPoint?.GetComponentInParent<CanToggleOnOff>();
-
+        
+        Debug.Log(interactPoint);
+        Debug.Log(toggleScript);
         // 如果尚未到达目标位置，执行移动
         if (!hasMovedToPosition && interactPoint != null)
         {
@@ -440,10 +494,13 @@ public class AgentMovement : MonoBehaviour
         Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
         gripperController.SetGripper(isLeftArm, false);
         yield return new WaitForSeconds(1f);
+        
 
         Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
         yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
         yield return new WaitForSeconds(1f);
+        
+        sceneManager.SetParent(gripperController.transform, objectID);
     }
 
     public IEnumerator Place(string objectID, bool isLeftArm)
@@ -468,6 +525,7 @@ public class AgentMovement : MonoBehaviour
         // 打开夹爪放置物体
         Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
         gripperController.SetGripper(isLeftArm, true);
+        sceneManager.Release(objectID);
         yield return new WaitForSeconds(1f);
     }
     public IEnumerator ResetJoint(bool isLeftArm)

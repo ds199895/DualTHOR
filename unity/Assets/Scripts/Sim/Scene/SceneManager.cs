@@ -52,6 +52,12 @@ public class SceneManager : MonoBehaviour
 
     [SerializeField]
     private GetObjectsInView getObjectsInView;
+    
+    
+    public List<SimObjPhysics> ObjectsInOperation=new  List<SimObjPhysics>();
+
+
+    public Transform ObjectsParent = null;
     void Start()
     {
         // 查找并填充可交互物体列表
@@ -446,6 +452,48 @@ public class SceneManager : MonoBehaviour
 
         Debug.LogWarning($"未找到ID为 {objectID} 的物品");
         return null;
+    }
+
+    public void SetParent(Transform parent, string objectID)
+    {
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                ObjectsInOperation.Add(obj);
+                obj.transform.SetParent(parent);
+                Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
+                if (rigidbody != null)
+                {
+                    rigidbody.isKinematic = true; // 设置为运动学模式
+                    rigidbody.useGravity = false; // 禁用重力
+                    rigidbody.detectCollisions = false; // 禁用碰撞检测
+                }
+            }
+        }
+    }
+
+    public void Release(string objectID)
+    {
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                obj.transform.SetParent(ObjectsParent);
+                ObjectsInOperation.Remove(obj);
+                Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
+                if (rigidbody != null)
+                {
+                    rigidbody.isKinematic = false; // 恢复物理运动
+                    rigidbody.useGravity = true; // 启用重力
+                    rigidbody.detectCollisions = true; // 启用碰撞检测
+                }
+            }
+        }
     }
     
     public void UpdateLastActionSuccess(bool isSuccessful, string actionType = null)
