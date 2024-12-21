@@ -210,6 +210,23 @@ public class IK_H1 : IKBase
         return angle;
     }
 
+    public void IniitTarget()
+    {
+        // 转换目标位置到基座坐标系
+        float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
+        float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
+
+        // 构建请求数据
+        var request = new IKRequest
+        {
+            left_pose = left_target_matrix,
+            right_pose = right_target_matrix,
+            motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
+            motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
+        };
+        StartCoroutine(SendIKRequest(request));
+    }
+
     public override void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
         // // 选择目标位姿和基座变换

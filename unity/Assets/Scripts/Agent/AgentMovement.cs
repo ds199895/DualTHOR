@@ -903,6 +903,8 @@ public class AgentMovement : MonoBehaviour
                 initGame();
                 cameraTransform = Camera.main.transform;
                 CurrentRobotType = RobotType.H1;
+                
+                ikH1.IniitTarget();
                 // InitializeAdjustments(true);
                 // InitializeAdjustments(false);
                 // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
