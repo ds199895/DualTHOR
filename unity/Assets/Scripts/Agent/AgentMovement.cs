@@ -7,6 +7,13 @@ using System.Linq;
 
 public class AgentMovement : MonoBehaviour
 {
+    
+    public enum RobotType
+    {
+        X1=0,
+        H1=1,
+        G1=2
+    }
     public SceneManager sceneManager;
     public float moveSpeed = 1.0f;
     public float rotationSpeed = 90.0f;  // 每秒旋转的角度
@@ -22,21 +29,49 @@ public class AgentMovement : MonoBehaviour
     public Transform target;
     private Vector3 lastTargetPosition;
     private float positionChangeThreshold = 0.0001f; // 位置变化阈值
-    public IKClient ikClient;  
+    public IK_X1 ikX1; 
+    public IK_H1 ikH1;
     // public Transform pickPositionL;  // 夹取位置
     // public Transform placePositionL; // 放置位置
     // public Transform pickPositionR;  // 夹取位置
     // public Transform placePositionR; // 放置位置
     public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // 初始值
+    
+    private string[] h1_left_arm_joints = new string[]
+    {
+        "left_shoulder_pitch_link",
+        "left_shoulder_roll_link",
+        "left_shoulder_yaw_link",
+        "left_elbow_link",
+    };
+    private string[] h1_right_arm_joints = new string[]
+    {
+        "right_shoulder_pitch_link",
+        "right_shoulder_roll_link",
+        "right_shoulder_yaw_link",
+        "right_elbow_link",
+    };
+    
+    private string[] x1_left_arm_joints = new string[]
+    {
+        "left_shoulder_pitch_link",
+        "left_shoulder_roll_link",
+        "left_shoulder_yaw_link",
+        "left_elbow_link",
+    };
+    private string[] x2_right_arm_joints = new string[]
+    {
+        "right_shoulder_pitch_link",
+        "right_shoulder_roll_link",
+        "right_shoulder_yaw_link",
+        "right_elbow_link",
+    };
+    
     public List<ArticulationBody> leftArmJoints;  // 左臂关节
     public List<ArticulationBody> rightArmJoints; // 右臂关节
 
     private bool hasMovedToPosition = false; // toggle函数中标记是否已经到达目标位置
     private bool isTargetAnglesUpdated = false;
-
-
-    
-
     private bool isManualControlEnabled = false;
     private float manualMoveSpeed = 5.0f;
     private float manualRotateSpeed = 60.0f;
@@ -90,14 +125,12 @@ public class AgentMovement : MonoBehaviour
         new Vector3(0, 0, 0)
     };
 
-
+    public RobotType CurrentRobotType = RobotType.X1;
+    public List<GameObject> robots = new List<GameObject>();
     void Start()
     {
-        initGame();
-        cameraTransform = Camera.main.transform;
-        InitializeAdjustments(true);
-        InitializeAdjustments(false);
-        ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+
+
 
     }
 
@@ -594,20 +627,30 @@ public class AgentMovement : MonoBehaviour
     private IEnumerator MoveToPosition(Vector3 position, bool isLeftArm)
     {
         // 请求计算目标角度
-        ikClient.ProcessTargetPosition(position, isLeftArm);
+        // ikClient.ProcessTargetPosition(position, isLeftArm);
+        if (CurrentRobotType == RobotType.X1)
+        {
+            ikX1.ProcessTargetPosition(position, isLeftArm);
+            // 等待目标角度更新
+            yield return new WaitUntil(() => isTargetAnglesUpdated);
 
-        // 等待目标角度更新
-        yield return new WaitUntil(() => isTargetAnglesUpdated);
+            //Debug.Log("MoveToPosition 中的目标角度: " + string.Join(", ", targetJointAngles));
 
-        //Debug.Log("MoveToPosition 中的目标角度: " + string.Join(", ", targetJointAngles));
+            // 重置标记
+            isTargetAnglesUpdated = false;
 
-        // 重置标记
-        isTargetAnglesUpdated = false;
+            yield return StartCoroutine(SmoothUpdateJointAngles(targetJointAngles, 2f, isLeftArm));
 
-        yield return StartCoroutine(SmoothUpdateJointAngles(targetJointAngles, 2f, isLeftArm));
+            // 清理状态，防止后续动作受影响
+            targetJointAngles.Clear();
+        }else if (CurrentRobotType == RobotType.H1)
+        {
+            ikH1.ProcessTargetPosition(position, isLeftArm);
+            
+        }
 
-        // 清理状态，防止后续动作受影响
-        targetJointAngles.Clear();
+
+
     }
 
     public IEnumerator SmoothUpdateJointAngles(List<float> targetJointAngles, float duration, bool isLeftArm)
@@ -834,5 +877,43 @@ public class AgentMovement : MonoBehaviour
         // 应用旋转
         transform.Rotate(Vector3.up * mouseX, Space.World); // 整个物体的水平旋转
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0); // 只旋转相机的上下视角
+    }
+
+    public void LoadRobot(string robotType)
+    {
+        Debug.Log($"Loading robot of type: {robotType}");
+        foreach (var robot in robots)
+        {
+            robot.SetActive(false);
+        }
+
+        switch (robotType.ToLower())
+        {
+            case "x1":
+                robots[0].SetActive(true);
+                initGame();
+                cameraTransform = Camera.main.transform;
+                CurrentRobotType = RobotType.X1;
+                InitializeAdjustments(true);
+                InitializeAdjustments(false);
+                ikX1.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+                break;
+            case "h1":
+                robots[1].SetActive(true);
+                initGame();
+                cameraTransform = Camera.main.transform;
+                CurrentRobotType = RobotType.H1;
+                // InitializeAdjustments(true);
+                // InitializeAdjustments(false);
+                // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+                break;
+            case "g1":
+                robots[2].SetActive(true);
+                CurrentRobotType = RobotType.G1;
+                break;
+            default:
+                Debug.LogError($"Unknown robot type: {robotType}");
+                break;
+        }
     }
 }

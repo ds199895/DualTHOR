@@ -1,6 +1,6 @@
 import socket
 import logging
-
+import json
 # 设置日志记录
 logging.basicConfig(level=logging.INFO)
 
@@ -11,6 +11,7 @@ class TCPServer:
         self.server_socket = None
         self.conn = None
         self.addr = None
+        self.on_connect = None  # 添加连接事件回调
 
     def start(self):
         """
@@ -23,7 +24,12 @@ class TCPServer:
         logging.info(f"Server listening on {self.host}:{self.port}")
 
         self.conn, self.addr = self.server_socket.accept()
+        
         logging.info(f"Connected by {self.addr}")
+        
+        # 触发连接事件回调
+        if self.on_connect:
+            self.on_connect()
 
     def send(self, data):
         """
@@ -33,6 +39,18 @@ class TCPServer:
             raise Exception("No active connection to send data.")
         self.conn.sendall(data.encode())
         logging.info(f"Sent data: {data}")
+
+    def send_robot_type(self, robot_type):
+        """
+        发送 robot_type 参数给客户端，格式为 JSON。
+        """
+        if not self.conn:
+            raise Exception("No active connection to send data.")
+        
+        # 将 robot_type 转换为 JSON 格式
+        data = json.dumps({"robot_type": robot_type})
+        self.conn.sendall(data.encode() + b'\n')
+        logging.info(f"Sent robot type as JSON: {data}")
 
     def receive(self):
         """

@@ -19,13 +19,15 @@ public class UnityClient : MonoBehaviour
         public string arm;  
         public string objectID;
         public float successRate;
-        public string stateID;  
+        public string stateID;
+        public string robotType;
     }
     string PreprocessJson(string json)
     {
         return json.Replace("\"stateid\"", "\"stateID\"")
                    .Replace("\"objectid\"", "\"objectID\"")
-                   .Replace("\"successrate\"", "\"successRate\"");
+                   .Replace("\"successrate\"", "\"successRate\"")
+                   .Replace("\"robottype\"", "\"robotType\"");
     }
 
     void Start()
@@ -139,6 +141,12 @@ public class UnityClient : MonoBehaviour
                             Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
                             SendFeedbackToPython("Error: Missing state ID for LoadSceneState.");
                         }
+                    }else if(actionData.action=="loadrobot"){
+                        // 调用 AgentMovement 加载机器人
+                        agentMovement.LoadRobot(actionData.robotType);
+                        Debug.Log($"Loaded robot of type: {actionData.robotType}");
+                        // sceneManager.SaveCurrentState();
+                        // SendFeedbackToPython(actionData.robotType);
                     }
                     else
                     {
@@ -178,12 +186,16 @@ public class UnityClient : MonoBehaviour
             try
             {
                 Vector3 currentPosition = transform.position;
+                // Debug.Log($"Get current states");
                 SceneStateA2T currentSceneState = sceneManager.GetCurrentSceneStateA2T();
 
+                // Debug.Log($"Get states json");
                 // 确保 objectsStates 被正确序列化
                 string sceneStateJson = JsonUtility.ToJson(currentSceneState);
+                // Debug.Log($"Get feed back");
                 string feedback = $"Executed {action}, x1position: {currentPosition}, sceneState: {sceneStateJson}";
 
+                // Debug.Log($"Sending feedback to Python: {feedback}");
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
 

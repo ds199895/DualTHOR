@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Controller:
-    def __init__(self, host='localhost', port=5678, config_path="config.json"):
+    def __init__(self, host='localhost', port=5678, config_path="config.json", robot_type='X1'):
         """
         初始化控制器，包括动作执行器、TCP 服务器和配置加载。
         """
@@ -18,6 +18,8 @@ class Controller:
         self.config = self.load_config(config_path)
         self.thread_pool = ThreadPoolExecutor(max_workers=10)  # 最大并发线程数
         self.stop_event = threading.Event()
+        self.robot_type = robot_type  # 保存 robot_type
+        self.tcp_server.on_connect = self.on_client_connect  # 设置连接事件回调
 
     def load_config(self, config_path):
         """
@@ -130,6 +132,20 @@ class Controller:
         """
         logging.info("Redoing last action...")
         self.step("redo")
+
+    def load_robot(self, robottype):
+        """
+        加载指定类型的机器人。
+        """
+        logging.info(f"Loading robot of type: {robottype}")
+        self.step("loadrobot", robottype=robottype)
+
+    def on_client_connect(self):
+        """
+        客户端连接时触发的事件。
+        """
+        logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
+        self.load_robot(self.robot_type)
 
 
 # 启动控制器

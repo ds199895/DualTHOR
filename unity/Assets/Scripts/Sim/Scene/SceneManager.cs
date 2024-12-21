@@ -5,8 +5,11 @@ using System.Collections;
 using System.Linq;
 using System;
 
+
 public class SceneManager : MonoBehaviour
 {
+    
+
     private readonly List<SceneState> stateHistory = new();
     private readonly List<SceneStateA2T> stateHistoryA2T = new();
 
@@ -58,6 +61,8 @@ public class SceneManager : MonoBehaviour
 
 
     public Transform ObjectsParent = null;
+    
+
     void Start()
     {
         // 查找并填充可交互物体列表
@@ -80,7 +85,9 @@ public class SceneManager : MonoBehaviour
         {
             obj.SetActive(false);
         }
+        
 
+        
         StartCoroutine(DelayedSave());
     }
 
