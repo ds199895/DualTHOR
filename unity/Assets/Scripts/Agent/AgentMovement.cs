@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Agent;
 
 public class AgentMovement : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class AgentMovement : MonoBehaviour
     public float moveSpeed = 1.0f;
     public float rotationSpeed = 90.0f;  // 每秒旋转的角度
     public GripperController gripperController; 
+    public HandController handController;
+
     public ArticulationBody[] articulationChain;
     public float stiffness = 10000f;    // 刚度
     public float damping = 100f;       // 阻尼
@@ -81,6 +84,7 @@ public class AgentMovement : MonoBehaviour
     private Transform cameraTransform; // 相机Transform
     private float maxVerticalAngle = 80f; // 最大俯仰角度
     private bool isMouseUnlocked = false; // 标记是否按下了ESC以解锁鼠标
+
 
     [System.Serializable]
     public class JointAdjustment
@@ -497,43 +501,120 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Pick(string objectID, bool isLeftArm)
     {
-        Vector3 offset = new Vector3(0, 0.1f, 0);
-        Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
-
-        if (pickPosition == null)
+        if (CurrentRobotType == RobotType.X1)
         {
-            Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Pick动作");
-            yield break;
+            Vector3 offset = new Vector3(0, 0.1f, 0);
+            Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
+
+            if (pickPosition == null)
+            {
+                Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Pick动作");
+                yield break;
+            }
+
+            Vector3 abovePickPosition = pickPosition.position + offset;
+
+            // 移动到夹取位置上方
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return new WaitForSeconds(1f);
+
+            // 打开夹爪准备夹取
+            Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
+            gripperController.SetGripper(isLeftArm, true);
+            yield return new WaitForSeconds(1f);
+
+            // 下降到夹取位置
+            Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
+            yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
+            yield return new WaitForSeconds(1f);
+
+            // 夹紧物体
+            Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
+            gripperController.SetGripper(isLeftArm, false);
+            yield return new WaitForSeconds(1f);
+        
+
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return new WaitForSeconds(1f);
+        
+            sceneManager.SetParent(gripperController.transform, objectID);
+        }else if (CurrentRobotType == RobotType.H1)
+        {
+            var offset = new Vector3(0, 0.1f, 0);
+            if (isLeftArm)
+            {
+                offset = new Vector3(0, 0.02f, -0.1f);
+            }
+            else
+            {
+                offset = new Vector3(0f, 0.05f, 0.05f);
+            }
+            
+            Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
+            
+            
+            if (interactablePoint == null)
+            {
+                Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Pick动作");
+                yield break;
+            }
+
+            Vector3 pickPosition = interactablePoint.position + offset;
+            Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.09f, 0f);
+
+            // 移动到夹取位置上方
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition}");
+            yield return StartCoroutine(MoveToPosition(pickPosition, isLeftArm));
+            yield return new WaitForSeconds(1f);
+            
+            
+            Debug.Log($"旋转{(isLeftArm ? "左臂" : "右臂")}手腕准备夹取");
+            handController.RotateHandBase(isLeftArm);
+            yield return new WaitForSeconds(1f);
+            
+            Debug.Log($"启动{(isLeftArm ? "左臂" : "右臂")}手指虚握");
+            handController.StartSmoothTransition(isLeftArm);
+            yield return new WaitForSeconds(1f);
+            if (isLeftArm)
+            {
+                sceneManager.SetParent(handController.hands[0].transform, objectID);
+            }
+            else
+            {
+                sceneManager.SetParent(handController.hands[1].transform, objectID);
+            }
+            
+            
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return new WaitForSeconds(1f);
+            
+            
+            
+            // // 打开夹爪准备夹取
+            // Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
+            // gripperController.SetGripper(isLeftArm, true);
+            // yield return new WaitForSeconds(1f);
+            //
+            // // 下降到夹取位置
+            // Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
+            // yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
+            // yield return new WaitForSeconds(1f);
+            //
+            // // 夹紧物体
+            // Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
+            // gripperController.SetGripper(isLeftArm, false);
+            // yield return new WaitForSeconds(1f);
+            //
+            //
+            // Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            // yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            // yield return new WaitForSeconds(1f);
+    
         }
-
-        Vector3 abovePickPosition = pickPosition.position + offset;
-
-        // 移动到夹取位置上方
-        Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-        yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
-        yield return new WaitForSeconds(1f);
-
-        // 打开夹爪准备夹取
-        Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-        gripperController.SetGripper(isLeftArm, true);
-        yield return new WaitForSeconds(1f);
-
-        // 下降到夹取位置
-        Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
-        yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
-        yield return new WaitForSeconds(1f);
-
-        // 夹紧物体
-        Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-        gripperController.SetGripper(isLeftArm, false);
-        yield return new WaitForSeconds(1f);
-        
-
-        Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-        yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
-        yield return new WaitForSeconds(1f);
-        
-        sceneManager.SetParent(gripperController.transform, objectID);
+       
     }
 
     public IEnumerator Place(string objectID, bool isLeftArm)

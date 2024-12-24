@@ -28212,6 +28212,7 @@ MonoBehaviour:
   moveSpeed: 1
   rotationSpeed: 90
   gripperController: {fileID: 0}
+  handController: {fileID: 0}
   articulationChain: []
   stiffness: 10000
   damping: 100
@@ -50483,6 +50484,7 @@ GameObject:
   - component: {fileID: 936950133}
   - component: {fileID: 936950135}
   - component: {fileID: 936950134}
+  - component: {fileID: 936950136}
   m_Layer: 0
   m_Name: 'Robot '
   m_TagString: Untagged
@@ -50556,6 +50558,7 @@ MonoBehaviour:
   moveSpeed: 1
   rotationSpeed: 90
   gripperController: {fileID: 936950128}
+  handController: {fileID: 936950136}
   articulationChain: []
   stiffness: 10000
   damping: 800
@@ -50755,6 +50758,9 @@ MonoBehaviour:
   - {fileID: 1505867033}
   - {fileID: 791197327}
   - {fileID: 648916258}
+  hands:
+  - {fileID: 1625871458}
+  - {fileID: 1543638960}
   leftTargetPose: {fileID: 1029155481}
   rightTargetPose: {fileID: 1449910185}
   baseTransform: {fileID: 2040061976}
@@ -50774,6 +50780,48 @@ MonoBehaviour:
   agentMovement: {fileID: 936950130}
   ur5BaseLeft: {fileID: 1535352092}
   ur5BaseRight: {fileID: 1202892614}
+--- !u!114 &936950136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936950126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6212de385acb488dbe577e233bbfa6e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHandJoints:
+  - {fileID: 1912427288}
+  - {fileID: 453186832}
+  - {fileID: 1574149781}
+  - {fileID: 435006087}
+  - {fileID: 267940127}
+  - {fileID: 1004166013}
+  - {fileID: 1535801375}
+  - {fileID: 968308818}
+  - {fileID: 836197434}
+  - {fileID: 1454020860}
+  - {fileID: 1231363345}
+  - {fileID: 431840103}
+  rightHandJoints:
+  - {fileID: 75838256}
+  - {fileID: 1386127958}
+  - {fileID: 1096664446}
+  - {fileID: 840429114}
+  - {fileID: 1830238352}
+  - {fileID: 31597112}
+  - {fileID: 1991052521}
+  - {fileID: 672991407}
+  - {fileID: 1601338888}
+  - {fileID: 1402682647}
+  - {fileID: 229875604}
+  - {fileID: 1072409525}
+  hands:
+  - {fileID: 1625871458}
+  - {fileID: 1543638960}
+  interpolationSpeed: 2
 --- !u!1 &938203911
 GameObject:
   m_ObjectHideFlags: 8
@@ -85678,6 +85726,7 @@ MonoBehaviour:
   moveSpeed: 1
   rotationSpeed: 90
   gripperController: {fileID: 0}
+  handController: {fileID: 0}
   articulationChain: []
   stiffness: 10000
   damping: 800
@@ -117974,6 +118023,7 @@ MonoBehaviour:
   moveSpeed: 1
   rotationSpeed: 90
   gripperController: {fileID: 2020528285}
+  handController: {fileID: 0}
   articulationChain: []
   stiffness: 10000
   damping: 800

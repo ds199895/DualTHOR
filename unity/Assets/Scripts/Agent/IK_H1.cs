@@ -24,6 +24,8 @@ public class IK_H1 : IKBase
         public float[] tau;    // 计算得到的关节力矩
     }
     public ArticulationBody[] joints; // 机器人的关节
+
+   
     private string serverUrl = "http://localhost:5000/ik";
 
     // 左右手目标位姿
@@ -51,7 +53,6 @@ public class IK_H1 : IKBase
             enabled = false;
             return;
         }
-
         // 初始化当前关节角度
         currentJointAngles = joints.Select(j => j.jointPosition[0] * Mathf.Rad2Deg).ToArray();
         targetJointAngles = currentJointAngles.ToArray();
