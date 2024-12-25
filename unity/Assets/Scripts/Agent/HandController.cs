@@ -107,7 +107,7 @@ namespace Agent
                 StartCoroutine(ResetRightHandCoroutine());
             }
         }
-        
+
         private IEnumerator SmoothTransitionLeftHandCoroutine()
         {
             bool allJointsReachedTarget = false;
