@@ -41,33 +41,70 @@ namespace Agent
                 WriteCurrentAnglesToFile(Path.Combine(Application.dataPath, "Resources", "currentAngles.txt"));
             }
         }
-        public void ResetHands()
+        public void ResetAllHands()
         {
-            ResetLeftHand();
-            ResetRightHand();
+
+            StartCoroutine(ResetLeftHandCoroutine());
+
+            StartCoroutine(ResetRightHandCoroutine());
         }
 
-        private void ResetLeftHand()
+
+        private IEnumerator ResetLeftHandCoroutine()
         {
-            for (int i = 0; i < leftHandJoints.Length; i++)
+            bool allJointsReset = false;
+            while (!allJointsReset)
             {
-                float currentAngle = leftHandJoints[i].xDrive.target;
-                float newAngle = Mathf.Lerp(currentAngle, 0, Time.deltaTime * interpolationSpeed);
-                leftHandJoints[i].xDrive = CreateDrive(newAngle);
+                allJointsReset = true;
+                for (int i = 0; i < leftHandJoints.Length; i++)
+                {
+                    float currentAngle = leftHandJoints[i].xDrive.target;
+                    float newAngle = Mathf.Lerp(currentAngle, 0, Time.deltaTime * interpolationSpeed);
+                    var left_drive = leftHandJoints[i].xDrive;
+                    left_drive.target = newAngle;
+                    leftHandJoints[i].xDrive = left_drive;
+
+                    if (Mathf.Abs(newAngle) > 0.01f)
+                    {
+                        allJointsReset = false;
+                    }
+                }
+                yield return null; // Wait for the next frame
             }
         }
 
-        private void ResetRightHand()
+        private IEnumerator ResetRightHandCoroutine()
         {
-            for (int i = 0; i < rightHandJoints.Length; i++)
+            bool allJointsReset = false;
+            while (!allJointsReset)
             {
-                float currentAngle = rightHandJoints[i].xDrive.target;
-                float newAngle = Mathf.Lerp(currentAngle, 0, Time.deltaTime * interpolationSpeed);
-                rightHandJoints[i].xDrive = CreateDrive(newAngle);
-                var right_drive = rightHandJoints[i].xDrive;
-                right_drive.target = newAngle;
-                rightHandJoints[i].xDrive = right_drive;
-                
+                allJointsReset = true;
+                for (int i = 0; i < rightHandJoints.Length; i++)
+                {
+                    float currentAngle = rightHandJoints[i].xDrive.target;
+                    float newAngle = Mathf.Lerp(currentAngle, 0, Time.deltaTime * interpolationSpeed);
+                    var right_drive = rightHandJoints[i].xDrive;
+                    right_drive.target = newAngle;
+                    rightHandJoints[i].xDrive = right_drive;
+
+                    if (Mathf.Abs(newAngle) > 0.01f)
+                    {
+                        allJointsReset = false;
+                    }
+                }
+                yield return null; // Wait for the next frame
+            }
+        }
+
+        public void StartResetHand(bool isLeftHand)
+        {
+            if (isLeftHand)
+            {
+                StartCoroutine(ResetLeftHandCoroutine());
+            }
+            else
+            {
+                StartCoroutine(ResetRightHandCoroutine());
             }
         }
         
