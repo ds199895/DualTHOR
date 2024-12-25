@@ -545,11 +545,11 @@ public class AgentMovement : MonoBehaviour
             var offset = new Vector3(0, 0.1f, 0);
             if (isLeftArm)
             {
-                offset = new Vector3(0, 0.02f, -0.1f);
+                offset = new Vector3(-0.05f, 0.04f, -0.05f);
             }
             else
             {
-                offset = new Vector3(0f, 0.05f, 0.05f);
+                offset = new Vector3(-0.05f, 0.04f, 0.05f);
             }
             
             Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
@@ -562,7 +562,7 @@ public class AgentMovement : MonoBehaviour
             }
 
             Vector3 pickPosition = interactablePoint.position + offset;
-            Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.09f, 0f);
+            Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.46f, 0f);
 
             // 移动到夹取位置上方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition}");
@@ -619,28 +619,58 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Place(string objectID, bool isLeftArm)
     {
-        // 根据是否是左臂设置偏移量
-        Vector3 offset = isLeftArm ? new Vector3(0, 0.1f, -0.13f) : new Vector3(0, 0.1f, 0.13f);
-        Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
-
-        if (pickPosition == null)
+        if (CurrentRobotType == RobotType.X1)
         {
-            Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Place动作");
-            yield break;
+            // 根据是否是左臂设置偏移量
+            Vector3 offset = isLeftArm ? new Vector3(0, 0.1f, -0.13f) : new Vector3(0, 0.1f, 0.13f);
+            Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
+
+            if (pickPosition == null)
+            {
+                Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Place动作");
+                yield break;
+            }
+
+            Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
+
+            // 移动到放置位置
+            Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
+            yield return MoveToPosition(placePosition, isLeftArm);
+            yield return new WaitForSeconds(1f);
+
+            // 打开夹爪放置物体
+            Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
+            gripperController.SetGripper(isLeftArm, true);
+            sceneManager.Release(objectID);
+            yield return new WaitForSeconds(1f);
+        }
+        else
+        {
+            // 根据是否是左臂设置偏移量
+            Vector3 offset = isLeftArm ? new Vector3(0, 0.1f, -0.13f) : new Vector3(0, 0.1f, 0.13f);
+            Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
+
+            if (pickPosition == null)
+            {
+                Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Place动作");
+                yield break;
+            }
+
+            Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
+
+            // 移动到放置位置
+            Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
+            yield return MoveToPosition(placePosition, isLeftArm);
+            yield return new WaitForSeconds(1f);
+
+            // 打开夹爪放置物体
+            Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
+            handController.StartResetHand(isLeftArm);
+            handController.ResetHandBase(isLeftArm);
+            sceneManager.Release(objectID);
+            yield return new WaitForSeconds(1f);
         }
 
-        Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
-
-        // 移动到放置位置
-        Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
-        yield return MoveToPosition(placePosition, isLeftArm);
-        yield return new WaitForSeconds(1f);
-
-        // 打开夹爪放置物体
-        Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
-        gripperController.SetGripper(isLeftArm, true);
-        sceneManager.Release(objectID);
-        yield return new WaitForSeconds(1f);
     }
     public IEnumerator ResetJoint(bool isLeftArm)
     {
