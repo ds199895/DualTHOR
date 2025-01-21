@@ -7,10 +7,41 @@ public class GripperController : MonoBehaviour
     public ArticulationBody rightArmLeftGripper;
     public ArticulationBody rightArmRightGripper;
 
+    public ArticulationBody h1_leftArmLeftGripper;
+    public ArticulationBody h1_leftArmRightGripper;
+    public ArticulationBody h1_rightArmLeftGripper;
+    public ArticulationBody h1_rightArmRightGripper;
+
+    private ArticulationBody currentLeftLeftGripper;
+    private ArticulationBody currentLeftRightGripper;
+    private ArticulationBody currentRightLeftGripper;
+    private ArticulationBody currentRightRightGripper;
+
+
+
+    public void Start()
+    {
+        AgentMovement movement = this.GetComponent<AgentMovement>();
+        if (movement.CurrentRobotType == RobotType.H1)
+        {
+            currentLeftLeftGripper = h1_leftArmLeftGripper;
+            currentLeftRightGripper = h1_leftArmRightGripper;
+            currentRightLeftGripper = h1_rightArmLeftGripper;
+            currentRightRightGripper = h1_rightArmRightGripper;
+        }
+        else
+        {
+            currentLeftLeftGripper = leftArmLeftGripper;
+            currentLeftRightGripper = leftArmRightGripper;
+            currentRightLeftGripper = rightArmLeftGripper;
+            currentRightRightGripper = rightArmRightGripper;
+        }
+    }
+
     public void SetGripper(bool isLeftArm, bool open)
     {
-        var leftGripper = isLeftArm ? leftArmLeftGripper : rightArmLeftGripper;
-        var rightGripper = isLeftArm ? leftArmRightGripper : rightArmRightGripper;
+        var leftGripper = isLeftArm ? currentLeftLeftGripper : currentRightLeftGripper;
+        var rightGripper = isLeftArm ? currentLeftRightGripper : currentRightRightGripper;
 
         var leftDrive = leftGripper.xDrive;
         var rightDrive = rightGripper.xDrive;
@@ -32,8 +63,8 @@ public class GripperController : MonoBehaviour
 
     public void ResetGripper(bool isLeftArm)
     {
-        var leftGripper = isLeftArm ? leftArmLeftGripper : rightArmLeftGripper;
-        var rightGripper = isLeftArm ? leftArmRightGripper : rightArmRightGripper;
+        var leftGripper = isLeftArm ? currentLeftLeftGripper : currentRightLeftGripper;
+        var rightGripper = isLeftArm ? currentLeftRightGripper : currentRightRightGripper;
 
         var leftDrive = leftGripper.xDrive;
         var rightDrive = rightGripper.xDrive;
