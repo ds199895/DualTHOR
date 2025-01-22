@@ -538,11 +538,37 @@ public class AgentMovement : MonoBehaviour
             yield return new WaitForSeconds(1f);
         
             sceneManager.SetParent(gripperController.transform, objectID);
-        }else if (CurrentRobotType == RobotType.H1)
+
+            // 调整物体的旋转以保持与世界坐标正交
+            AdjustRotationToWorldAxes(objectID);
+
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return new WaitForSeconds(1f);
+        }
+        else if (CurrentRobotType == RobotType.H1)
         {
             Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
-            
+            Vector3 ref_vec=interactablePoint.position-transform.position;
+
+            float arm_dis=0.43f;
+
+            if(isLeftArm)
+            {
+                arm_dis=0.43f;
+            }else{
+                arm_dis=-0.43f;
+            }
+
+            Vector3 move_vec=new Vector3(ref_vec.x+arm_dis,0,0);
+
+
+            StartCoroutine(MoveRight(move_vec.magnitude));
+            yield return new WaitForSeconds(1f);
+
             var offset =CalculateOffset(interactablePoint);
+            Debug.Log(offset);
+            // Vector3 offset = new Vector3(0.2f, 0f,0f);
 
             if (interactablePoint == null)
             {
@@ -550,19 +576,20 @@ public class AgentMovement : MonoBehaviour
                 yield break;
             }
 
-            Vector3 pickPosition = interactablePoint.position;
-            Vector3 frontPickPosition = pickPosition +offset;
+            Vector3 pickPosition = interactablePoint.position+new Vector3(0.08f,0.0f,0.0f);
+            // Vector3 frontPickPosition = pickPosition +offset;
+            Vector3 abovePickPosition=pickPosition+new Vector3(0f,0.1f,0.0f);
 
-            Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.46f, 0f);
+            // Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.1f, 0f);
 
             // 移动到夹取位置前方
-            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
-            yield return StartCoroutine(MoveToPosition(frontPickPosition, isLeftArm));
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {abovePickPosition}");
+            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // 打开夹爪准备夹取
             Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-            gripperController.SetGripper(isLeftArm, true);
+            gripperController.SetRobotGripper(RobotType.H1,isLeftArm, true);
             yield return new WaitForSeconds(1f);
 
             // 下降到夹取位置
@@ -570,38 +597,25 @@ public class AgentMovement : MonoBehaviour
             yield return StartCoroutine(MoveToPosition(pickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
-            // 夹紧物体
+            // // 夹紧物体
             Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-            gripperController.SetGripper(isLeftArm, false);
+            gripperController.SetRobotGripper(RobotType.H1,isLeftArm, false);
             yield return new WaitForSeconds(1f);
-        
+            if(isLeftArm)
+            {
+                sceneManager.SetParent(gripperController.h1_leftArmLeftGripper.transform, objectID);
+            }else{
+                sceneManager.SetParent(gripperController.h1_rightArmLeftGripper.transform, objectID);
+            }
 
-            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+
+
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {abovePickPosition}");
             yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
-        
-            sceneManager.SetParent(gripperController.transform, objectID);
-            
-            // // 打开夹爪准备夹取
-            // Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-            // gripperController.SetGripper(isLeftArm, true);
-            // yield return new WaitForSeconds(1f);
-            //
-            // // 下降到夹取位置
-            // Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
-            // yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
-            // yield return new WaitForSeconds(1f);
-            //
-            // // 夹紧物体
-            // Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-            // gripperController.SetGripper(isLeftArm, false);
-            // yield return new WaitForSeconds(1f);
-            //
-            //
-            // Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            // yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
-            // yield return new WaitForSeconds(1f);
-    
+
+            // 调整物体的旋转以保持与世界坐标正交
+            AdjustRotationToWorldAxes(objectID);
         }
        
     }
@@ -629,7 +643,8 @@ public class AgentMovement : MonoBehaviour
         }
 
         // 使用CalculateOffset方法计算offset
-        Vector3 offset = CalculateOffset(pickPosition);
+        // Vector3 offset = CalculateOffset(pickPosition);
+        Vector3 offset = new Vector3(0.08f,0.1f,0.1f);
 
         Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
 
@@ -640,11 +655,25 @@ public class AgentMovement : MonoBehaviour
 
         // 打开夹爪放置物体
         Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
-        handController.StartResetHand(isLeftArm);
-        handController.ResetHandBase(isLeftArm);
-        sceneManager.Release(objectID);
+        // handController.StartResetHand(isLeftArm);
+        // handController.ResetHandBase(isLeftArm);
+        gripperController.SetRobotGripper(RobotType.H1,isLeftArm, true);
+        AdjustRotationToWorldAxes(objectID);
         yield return new WaitForSeconds(1f);
+        
+       
+        sceneManager.Release(objectID);
+        AdjustRotationToWorldAxes(objectID);
+        yield return new WaitForSeconds(1f);
+        
+        AdjustRotationToWorldAxes(objectID);
+        
+        sceneManager.RemoveOperation(objectID);
+        
     }
+
+
+    
 
     public IEnumerator ResetJoint(bool isLeftArm)
     {
@@ -1001,6 +1030,26 @@ public class AgentMovement : MonoBehaviour
             default:
                 Debug.LogError($"Unknown robot type: {robotType}");
                 break;
+        }
+    }
+
+    private void AdjustRotationToWorldAxes(string objectID)
+    {
+        
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+        Transform objectTransform = null;
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                objectTransform = obj.transform;
+            }
+        }
+
+        if (objectTransform != null)
+        {
+            // 将物体的旋转调整为与世界坐标轴对齐
+            objectTransform.rotation = Quaternion.identity;
         }
     }
 }

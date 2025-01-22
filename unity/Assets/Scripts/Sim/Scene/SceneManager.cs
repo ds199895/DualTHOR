@@ -138,6 +138,12 @@ public class SceneManager : MonoBehaviour
 
     void Update()
     {
+        foreach (SimObjPhysics obj in ObjectsInOperation)
+        {
+            AdjustRotationToWorldAxes(obj.transform);
+        }
+        
+        
         //if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Alpha1))
         //{
         //    SaveCurrentState(); 
@@ -162,6 +168,16 @@ public class SceneManager : MonoBehaviour
         //{
         //    Redo();
         //}
+    }
+    
+    public void AdjustRotationToWorldAxes(Transform objectTransform)
+    {
+
+        if (objectTransform != null)
+        {
+            // 将物体的旋转调整为与世界坐标轴对齐
+            objectTransform.rotation = Quaternion.identity;
+        }
     }
 
     public void SaveCurrentState()
@@ -491,14 +507,30 @@ public class SceneManager : MonoBehaviour
             if (obj.ObjectID == objectID)
             {
                 obj.transform.SetParent(ObjectsParent);
-                ObjectsInOperation.Remove(obj);
+               
                 Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
                 if (rigidbody != null)
                 {
+                    AdjustRotationToWorldAxes(obj.transform);
+                    
                     rigidbody.isKinematic = false; // 恢复物理运动
                     rigidbody.useGravity = true; // 启用重力
                     rigidbody.detectCollisions = true; // 启用碰撞检测
                 }
+                // ObjectsInOperation.Remove(obj);
+            }
+        }
+    }
+
+    public void RemoveOperation(string objectID)
+    {
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+        Transform objectTransform = null;
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                ObjectsInOperation.Remove(obj);
             }
         }
     }
