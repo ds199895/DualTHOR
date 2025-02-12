@@ -129,126 +129,47 @@ public class AgentMovement : MonoBehaviour
 
     public RobotType CurrentRobotType = RobotType.X1;
     public List<GameObject> robots = new List<GameObject>();
+
+    private List<ArticulationDrive> defaultDrives = new List<ArticulationDrive>();
+    private List<ArticulationDrive> tempDrives = new List<ArticulationDrive>();
+
     void Start()
-    {
+ {
+        articulationChain = GetComponentsInChildren<ArticulationBody>();
 
+        if (articulationChain == null || articulationChain.Length == 0)
+        {
+            Debug.LogError("未找到任何关节，请确保该对象具有 ArticulationBody 组件！");
+            return;
+        }
 
+        foreach (ArticulationBody joint in articulationChain)
+        {
+            ArticulationDrive drive = joint.xDrive;
+            drive.stiffness = stiffness;
+            drive.damping = damping;
+            drive.forceLimit = forceLimit;
+            joint.xDrive = drive;
+        }
+
+        // 记录默认的 xDrive 值
+        defaultDrives.Clear();
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                defaultDrives.Add(body.xDrive);
+            }
+        }
+    }
+    public void Update(){
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            DisableArticulationBodies();
+        }
 
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            StartCoroutine(ResetJoint(true)); // 同样，true表示使用左臂，false表示使用右臂
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            string targetObjectID = "Kitchen_Cup_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            StartCoroutine(Pick("Kitchen_Cup_01", true)); // true表示使用左臂，false表示使用右臂
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            StartCoroutine(Place("Kitchen_Cup_01", true)); // 同样，true表示使用左臂，false表示使用右臂
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            StartCoroutine(Pick("Kitchen_Cup_01", false)); // true表示使用左臂，false表示使用右臂
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            StartCoroutine(Place("Kitchen_Cup_01", false)); // 同样，true表示使用左臂，false表示使用右臂
-        }
-
-
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            string targetObjectID = "Kitchen_Faucet_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            StartCoroutine(Toggle("Kitchen_Faucet_01", true)); //
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            StartCoroutine(Toggle("Kitchen_Faucet_01", false)); //
-        }
-
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            string targetObjectID = "Kitchen_Fridge_01"; // 替换为目标物品的 ID
-            TP(targetObjectID);
-        }
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            StartCoroutine(Open("Kitchen_Fridge_01", true)); // 
-        }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            StartCoroutine(Open("Kitchen_Fridge_01", false)); // 
-        }
-        //if (Input.GetKeyDown(KeyCode.Alpha5))
-        //{
-        //    string targetObjectID = "Kitchen_StoveKnob_01"; // 替换为目标物品的 ID
-        //    TP(targetObjectID);
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha6))
-        //{
-        //    StartCoroutine(Toggle("Kitchen_StoveKnob_01")); // 
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha7))
-        //{
-        //    string targetObjectID = "Kitchen_Cabinet_02"; // 替换为目标物品的 ID
-        //    TP(targetObjectID);
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha8))
-        //{
-        //    StartCoroutine(Open("Kitchen_Cabinet_02")); // 同样，
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha0))
-        //{
-        //    StartCoroutine(ResetJoint(false)); // 同样，true表示使用左臂，false表示使用右臂
-        //}
-
-
-        if (Input.GetKeyDown(KeyCode.Z))        // Z键切换手动控制
-        {
-            isManualControlEnabled = !isManualControlEnabled;
-            Cursor.visible = !isManualControlEnabled;
-            Cursor.lockState = isManualControlEnabled ? CursorLockMode.Locked : CursorLockMode.None;
-
-            if (isManualControlEnabled)
-            {
-                DisableArticulationBodies();
-                isMouseUnlocked = false; // 确保进入控制模式时鼠标锁定
-            }
-            else
-            {
-                EnableArticulationBodies();
-            }
-        }
-        // ESC键退出手动控制但不恢复ArticulationBodies
-        if (isManualControlEnabled && Input.GetKeyDown(KeyCode.Escape))
-        {
-            isMouseUnlocked = true;
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-        }
-        // 点击屏幕重新进入手动控制
-        if (isMouseUnlocked && Input.GetMouseButtonDown(0))
-        {
-            isMouseUnlocked = false;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }
-        // 手动控制
-        if (isManualControlEnabled && !isMouseUnlocked) ManualControl();
-    }
     public void initGame()
     {
         articulationChain = GetComponentsInChildren<ArticulationBody>();
@@ -931,28 +852,63 @@ public class AgentMovement : MonoBehaviour
     }
     public void DisableArticulationBodies()
     {
+        // 保存当前的 xDrive 值
+        tempDrives.Clear();
         foreach (ArticulationBody body in articulationChain)
         {
-            // if(body.name=="pelvis"){
-                body.enabled = false;
-            // }
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                tempDrives.Add(body.xDrive);
+            }
+        }
+
+        // 设置为默认的 xDrive 值
+        int i = 0;
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                if (i < defaultDrives.Count)
+                {
+                    body.xDrive = defaultDrives[i];
+                    i++;
+                }
+            }
+        }
+
+        // 禁用 ArticulationBody
+        foreach (ArticulationBody body in articulationChain)
+        {
+            body.enabled = false;
         }
     }
+
     public void EnableArticulationBodies()
     {
+        // 启用 ArticulationBody
         foreach (ArticulationBody body in articulationChain)
         {
-            // if(body.name=="pelvis"){
-                body.enabled = true;
-            // }
-            
+            body.enabled = true;
         }
-        
+
+        // 恢复之前保存的 xDrive 值
+        int i = 0;
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                if (i < tempDrives.Count)
+                {
+                    body.xDrive = tempDrives[i];
+                    i++;
+                }
+            }
+        }
     }
     public float NormalizeAngle(float angle)
     {
-        while (angle > 180) angle -= 360;
-        while (angle < -180) angle += 360;
+        while (angle > 180f) angle -= 360f;
+        while (angle < -180f) angle += 360f;
         return angle;
     }
     private bool Probability(float successRate)
@@ -1057,6 +1013,70 @@ public class AgentMovement : MonoBehaviour
         {
             // 将物体的旋转调整为与世界坐标轴对齐
             objectTransform.rotation = Quaternion.identity;
+        }
+    }
+
+    private List<float> savedTargets = new List<float>();
+
+    public void SaveArticulationBodyTargets()
+    {
+        savedTargets.Clear();
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                savedTargets.Add(body.xDrive.target);
+            }
+        }
+    }
+
+    public void RestoreArticulationBodyTargets()
+    {
+        int i = 0;
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                if (i < savedTargets.Count)
+                {
+                    var drive = body.xDrive;
+                    drive.target = savedTargets[i];
+                    body.xDrive = drive;
+                    i++;
+                }
+            }
+        }
+    }
+
+    private List<float> savedAngles = new List<float>();
+
+    public void SaveArticulationBodyAngles()
+    {
+        savedAngles.Clear();
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                savedAngles.Add(body.jointPosition[0]);
+            }
+        }
+    }
+
+    public void RestoreArticulationBodyAngles()
+    {
+        int i = 0;
+        foreach (ArticulationBody body in articulationChain)
+        {
+            if (body.jointType != ArticulationJointType.FixedJoint)
+            {
+                if (i < savedAngles.Count)
+                {
+                    var drive = body.xDrive;
+                    drive.target = savedAngles[i];
+                    body.xDrive = drive;
+                    i++;
+                }
+            }
         }
     }
 }
