@@ -859,6 +859,7 @@ public class AgentMovement : MonoBehaviour
             yield return null;
         }
 
+        yield return new WaitForSeconds(1f);
         EnableArticulationBodies();
     }
 
@@ -932,15 +933,21 @@ public class AgentMovement : MonoBehaviour
     {
         foreach (ArticulationBody body in articulationChain)
         {
-            body.enabled = false;
+            // if(body.name=="pelvis"){
+                body.enabled = false;
+            // }
         }
     }
     public void EnableArticulationBodies()
     {
         foreach (ArticulationBody body in articulationChain)
         {
-            body.enabled = true;
+            // if(body.name=="pelvis"){
+                body.enabled = true;
+            // }
+            
         }
+        
     }
     public float NormalizeAngle(float angle)
     {
