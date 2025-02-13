@@ -64,7 +64,7 @@ public class AgentMovement : MonoBehaviour
         "right_shoulder_yaw_link",
         "right_elbow_link",
     };
-    
+    public ArticulationBody rootArt;
     public List<ArticulationBody> leftArmJoints;  // 左臂关节
     public List<ArticulationBody> rightArmJoints; // 右臂关节
 
@@ -744,44 +744,50 @@ public class AgentMovement : MonoBehaviour
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
-        DisableArticulationBodies();
+        // DisableArticulationBodies();
 
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = startPosition + transform.TransformDirection(localDirection) * moveSpeed * magnitude;
-
+         
+        Quaternion originRot= transform.rotation;
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
         {
-            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
+            Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
+
+            rootArt.TeleportRoot(pos_temp, originRot);
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = targetPosition; // 确保到达目标位置
-        EnableArticulationBodies();
+        rootArt.TeleportRoot(targetPosition, originRot);
+        // transform.position = targetPosition; // 确保到达目标位置
+        // EnableArticulationBodies();
     }
 
     // 平滑旋转的协程，使用局部坐标系的方向
     private IEnumerator SmoothRotate(Vector3 rotationAxis, float magnitude, float duration)
     {
-        DisableArticulationBodies();
-
-        // 使用旋转角度逐步累加方式
         float targetAngle = rotationSpeed * magnitude;
+        Vector3 currentPosition = transform.position;
+        Quaternion startRotation = transform.rotation;
+        Quaternion targetRotation = startRotation * Quaternion.AngleAxis(targetAngle, rotationAxis);
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
         {
-            float stepAngle = (targetAngle / duration) * Time.deltaTime; // 按每帧增量调整旋转角度
-            transform.Rotate(rotationAxis, stepAngle, Space.Self);
+            float t = elapsedTime / duration;
+            Quaternion currentRotation = Quaternion.Lerp(startRotation, targetRotation, t);
+            rootArt.TeleportRoot(currentPosition, currentRotation);
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
+        rootArt.TeleportRoot(currentPosition, targetRotation);
         yield return new WaitForSeconds(1f);
-        EnableArticulationBodies();
     }
 
     public IEnumerator MoveAhead(float Magnitude, Action callback = null)
