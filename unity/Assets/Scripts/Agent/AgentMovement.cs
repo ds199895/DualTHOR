@@ -364,7 +364,7 @@ public class AgentMovement : MonoBehaviour
         // 如果尚未到达目标位置，执行移动
         if (!hasMovedToPosition && interactPoint != null)
         {
-            yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
@@ -383,7 +383,7 @@ public class AgentMovement : MonoBehaviour
         // 如果尚未到达目标位置，执行移动
         if (!hasMovedToPosition && interactPoint != null)
         {
-            yield return StartCoroutine(MoveToPosition(interactPoint.position, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(interactPoint.position, isLeftArm));
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
@@ -405,15 +405,17 @@ public class AgentMovement : MonoBehaviour
         }
 
         // 禁用机器人所有关节的 ArticulationBody
-        DisableArticulationBodies();
+        // DisableArticulationBodies();
 
         // 直接修改机器人的位置和旋转
-        Debug.Log($"Robot directly transported to {objectID}'s TransferPoint: {transferPoint.position}");
-        transform.position = transferPoint.position;
-        transform.rotation = transferPoint.rotation;
+        // Debug.Log($"Robot directly transported to {objectID}'s TransferPoint: {transferPoint.position}");
+        // transform.position = transferPoint.position;
+        // transform.rotation = transferPoint.rotation;
 
         // 启用机器人所有关节的 ArticulationBody
-        EnableArticulationBodies();
+        // EnableArticulationBodies();
+
+        StartCoroutine(ArmMovetoPosition(transferPoint.position, true));
 
         Debug.Log($"Robot successfully transported to {objectID}'s TransferPoint");
     }
@@ -435,7 +437,7 @@ public class AgentMovement : MonoBehaviour
 
             // 移动到夹取位置上方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // 打开夹爪准备夹取
@@ -445,7 +447,7 @@ public class AgentMovement : MonoBehaviour
 
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
-            yield return StartCoroutine(MoveToPosition(pickPosition.position, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(pickPosition.position, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // 夹紧物体
@@ -455,7 +457,7 @@ public class AgentMovement : MonoBehaviour
         
 
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
         
             sceneManager.SetParent(gripperController.transform, objectID);
@@ -464,11 +466,12 @@ public class AgentMovement : MonoBehaviour
             AdjustRotationToWorldAxes(objectID);
 
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            yield return StartCoroutine(MoveToPosition(abovePickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
         }
         else if (CurrentRobotType == RobotType.H1)
         {
+            
             Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
             Vector3 ref_vec=interactablePoint.position-transform.position;
 
@@ -481,14 +484,16 @@ public class AgentMovement : MonoBehaviour
                 arm_dis=-0.43f;
             }
 
-            Vector3 move_vec=new Vector3(ref_vec.x+arm_dis,0,0);
+            Vector3 arm_vec=interactablePoint.right*arm_dis;
+
+            Vector3 move_vec=arm_vec+ref_vec+transform.position;
 
 
-            StartCoroutine(MoveRight(move_vec.magnitude));
+            StartCoroutine(MoveToPosition(move_vec));
             yield return new WaitForSeconds(1f);
 
-            var offset =CalculateOffset(interactablePoint);
-            Debug.Log(offset);
+            // var offset =CalculateOffset(interactablePoint);
+            // Debug.Log(offset);
             // Vector3 offset = new Vector3(0.2f, 0f,0f);
 
             if (interactablePoint == null)
@@ -497,15 +502,15 @@ public class AgentMovement : MonoBehaviour
                 yield break;
             }
 
-            Vector3 pickPosition = interactablePoint.position+new Vector3(0.10f,0.05f,0.0f);
+            Vector3 pickPosition = interactablePoint.position+interactablePoint.right*0.1f+interactablePoint.up*0.05f;
             // Vector3 frontPickPosition = pickPosition +offset;
-            Vector3 frontPickPosition=pickPosition+new Vector3(0.0f,0.1f,0.0f);
+            Vector3 frontPickPosition=pickPosition+interactablePoint.up*0.1f;
 
             // Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.1f, 0f);
 
             // 移动到夹取位置前方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
-            yield return StartCoroutine(MoveToPosition(frontPickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // // 打开夹爪准备夹取
@@ -515,7 +520,7 @@ public class AgentMovement : MonoBehaviour
 
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition}");
-            yield return StartCoroutine(MoveToPosition(pickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(pickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // // 夹紧物体
@@ -532,7 +537,7 @@ public class AgentMovement : MonoBehaviour
 
 
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
-            yield return StartCoroutine(MoveToPosition(frontPickPosition, isLeftArm));
+            yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
             // 调整物体的旋转以保持与世界坐标正交
@@ -565,13 +570,14 @@ public class AgentMovement : MonoBehaviour
 
         // 使用CalculateOffset方法计算offset
         // Vector3 offset = CalculateOffset(pickPosition);
-        Vector3 offset = new Vector3(0.1f,0.1f,0.1f);
+        // Vector3 offset = new Vector3(0.1f,0.1f,0.1f);
+        Vector3 offset=pickPosition.right*0.1f+pickPosition.up*0.1f+pickPosition.forward*0.1f;
 
         Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
 
         // 移动到放置位置
         Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
-        yield return MoveToPosition(placePosition, isLeftArm);
+        yield return ArmMovetoPosition(placePosition, isLeftArm);
         yield return new WaitForSeconds(1f);
 
         // 打开夹爪放置物体
@@ -659,7 +665,7 @@ public class AgentMovement : MonoBehaviour
         isTargetAnglesUpdated = true; // 标记角度已更新
     }
 
-    private IEnumerator MoveToPosition(Vector3 position, bool isLeftArm)
+    private IEnumerator ArmMovetoPosition(Vector3 position, bool isLeftArm)
     {
         // 请求计算目标角度
         // ikClient.ProcessTargetPosition(position, isLeftArm);
@@ -669,7 +675,7 @@ public class AgentMovement : MonoBehaviour
             // 等待目标角度更新
             yield return new WaitUntil(() => isTargetAnglesUpdated);
 
-            //Debug.Log("MoveToPosition 中的目标角度: " + string.Join(", ", targetJointAngles));
+            //Debug.Log("ArmMovetoPosition 中的目标角度: " + string.Join(", ", targetJointAngles));
 
             // 重置标记
             isTargetAnglesUpdated = false;
@@ -683,8 +689,58 @@ public class AgentMovement : MonoBehaviour
             ikH1.ProcessTargetPosition(position, isLeftArm);
             
         }
+    }
 
+    private IEnumerator TransferToPose(Transform transfer)
+    {
+        // 请求计算目标角度
+        // rootArt.TeleportRoot(transfer.position, transfer.rotation);
+        // transform.position = transfer.position; // 确保到达目标位置
 
+        Vector3 startPosition = transform.position;
+        Vector3 targetPosition = transfer.position;
+         
+        Quaternion originRot= transform.rotation;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < 0.5f)
+        {
+            Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / 0.5f);
+
+            rootArt.TeleportRoot(pos_temp, transfer.rotation);
+            transform.position = pos_temp;
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        rootArt.TeleportRoot(targetPosition, transfer.rotation);
+        transform.position = targetPosition; // 确保到达目标位置
+
+    }
+    private IEnumerator MoveToPosition(Vector3 targetPosition)
+    {
+        // 请求计算目标角度
+        // rootArt.TeleportRoot(targetPosition, transform.rotation);
+        // transform.position = position; // 确保到达目标位置
+
+        Vector3 startPosition = transform.position;
+
+         
+        Quaternion originRot= transform.rotation;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < 0.5f)
+        {
+            Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / 0.5f);
+
+            rootArt.TeleportRoot(pos_temp, originRot);
+            transform.position = pos_temp;
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        rootArt.TeleportRoot(targetPosition, originRot);
+        transform.position = targetPosition; // 确保到达目标位置
 
     }
 
