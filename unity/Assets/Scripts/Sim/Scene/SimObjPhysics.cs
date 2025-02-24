@@ -65,8 +65,9 @@ public class SimObjPhysics : MonoBehaviour
     void Start()
     {
         objectID = gameObject.name;
-        InitializeTransferPoint();
         InitializeInteractablePoints();
+        InitializeTransferPoint();
+
         InitializeVisiblePoints();
         InitializeProperties();
     }
@@ -74,32 +75,51 @@ public class SimObjPhysics : MonoBehaviour
     //初始化传送点
     private void InitializeTransferPoint()
     {
-        Transform foundTransferPoint = transform.Find("TransferPoint");
-        if (foundTransferPoint != null)
-        {
-            transferPoint = foundTransferPoint;
-        }
-        else
-        {
-            Debug.LogWarning($"{gameObject.name} 没有找到名为 'TransferPoint' 的子物体。");
-        }
+        // 创建一个新的 GameObject 作为 transferPoint
+        GameObject newTransferPoint = new GameObject("TransferPoint");
+        
+        newTransferPoint.transform.SetParent(transform);
+
+
+        // 设置位置和旋转
+        newTransferPoint.transform.position = interactablePoints[0].position + interactablePoints[0].forward * -0.5f;
+        // newTransferPoint.transform.position = transform.position + transform.up * 0.5f;
+        // newTransferPoint.transform.position = transform.position+transform.right*0.5f;
+        newTransferPoint.transform.rotation = transform.rotation;
+
+        // 将新的 Transform 赋值给 transferPoint
+        transferPoint = newTransferPoint.transform;
     }
 
     //初始化可交互点
     private void InitializeInteractablePoints()
     {
-        Transform foundInteractablePoint = transform.Find("InteractablePoints");
-        if (foundInteractablePoint != null)
+        // 获取物体的所有 Renderer 组件
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0)
         {
-            interactablePoints = new Transform[foundInteractablePoint.childCount];
-            for (int i = 0; i < foundInteractablePoint.childCount; i++)
+            // 初始化一个空的 Bounds
+            Bounds bounds = renderers[0].bounds;
+            
+            // 合并所有 Renderer 的 Bounds
+            foreach (Renderer renderer in renderers)
             {
-                interactablePoints[i] = foundInteractablePoint.GetChild(i);
+                bounds.Encapsulate(renderer.bounds);
             }
+
+            // 创建一个新的 GameObject 作为 interactablePoint
+            GameObject newInteractablePoint = new GameObject("InteractablePoint");
+            newInteractablePoint.transform.SetParent(transform);
+
+            // 设置位置为几何中心
+            newInteractablePoint.transform.position = bounds.center;
+            newInteractablePoint.transform.rotation=transform.rotation;
+            // 将新的 Transform 赋值给 interactablePoints
+            interactablePoints = new Transform[] { newInteractablePoint.transform };
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} 没有找到名为 'InteractablePoints' 的子物体。");
+            Debug.LogWarning($"{gameObject.name} 没有找到任何 Renderer 组件。");
         }
     }
     
