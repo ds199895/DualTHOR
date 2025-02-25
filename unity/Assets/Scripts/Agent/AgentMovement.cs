@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Agent;
 
+
 public class AgentMovement : MonoBehaviour
 {
     
@@ -415,7 +416,8 @@ public class AgentMovement : MonoBehaviour
         // 启用机器人所有关节的 ArticulationBody
         // EnableArticulationBodies();
 
-        StartCoroutine(ArmMovetoPosition(transferPoint.position, true));
+        // StartCoroutine(ArmMovetoPosition(transferPoint.position, true));
+        StartCoroutine(TransferToPose(transferPoint));
 
         Debug.Log($"Robot successfully transported to {objectID}'s TransferPoint");
     }
@@ -473,18 +475,21 @@ public class AgentMovement : MonoBehaviour
         {
             
             Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
-            Vector3 ref_vec=interactablePoint.position-transform.position;
+            Transform transferPoint=SceneManager.GetTransferPointByObjectID(objectID);
+
+
+            Vector3 ref_vec=transferPoint.position-transform.position;
 
             float arm_dis=0.43f;
 
             if(isLeftArm)
             {
-                arm_dis=0.43f;
+                arm_dis=0.33f;
             }else{
-                arm_dis=-0.43f;
+                arm_dis=-0.33f;
             }
 
-            Vector3 arm_vec=interactablePoint.right*arm_dis;
+            Vector3 arm_vec=transferPoint.right*arm_dis;
 
             Vector3 move_vec=arm_vec+ref_vec+transform.position;
 
@@ -502,7 +507,7 @@ public class AgentMovement : MonoBehaviour
                 yield break;
             }
 
-            Vector3 pickPosition = interactablePoint.position+interactablePoint.right*0.1f+interactablePoint.up*0.05f;
+            Vector3 pickPosition = interactablePoint.position+interactablePoint.forward*-0.1f+interactablePoint.up*0.05f;
             // Vector3 frontPickPosition = pickPosition +offset;
             Vector3 frontPickPosition=pickPosition+interactablePoint.up*0.1f;
 
