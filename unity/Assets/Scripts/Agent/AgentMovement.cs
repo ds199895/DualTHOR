@@ -18,6 +18,7 @@ public class AgentMovement : MonoBehaviour
     public HandController handController;
 
     public ArticulationBody[] articulationChain;
+    public List<GameObject> collidedObjects = new List<GameObject>();
     public float stiffness = 10000f;    // 刚度
     public float damping = 100f;       // 阻尼
     public float forceLimit = 1000f;  // 力限制
@@ -1062,6 +1063,39 @@ public class AgentMovement : MonoBehaviour
                 Debug.LogError($"Unknown robot type: {robotType}");
                 break;
         }
+    }
+
+        // 碰撞检测方法
+    private void OnCollisionEnter(Collision collision)
+    {
+        // 遍历所有的 ArticulationBody
+        foreach (ArticulationBody articulationBody in articulationChain)
+        {
+            // 获取当前 ArticulationBody 的所有碰撞体
+            Collider[] colliders = articulationBody.GetComponents<Collider>();
+
+            // 检查碰撞体是否与其他物体发生碰撞
+            foreach (Collider collider in colliders)
+            {
+                if (collider.bounds.Intersects(collision.collider.bounds))
+                {
+                    // 如果碰撞的物体不是 ArticulationBody，则记录
+                    if (collision.gameObject.GetComponent<ArticulationBody>() == null)
+                    {
+                        if (!collidedObjects.Contains(collision.gameObject))
+                        {
+                            collidedObjects.Add(collision.gameObject);
+                            Debug.Log($"与物体 {collision.gameObject.name} 发生碰撞");
+                        }
+                    }
+                }
+            }
+        }
+    }
+        // 可选：清空碰撞记录
+    public void ClearCollidedObjects()
+    {
+        collidedObjects.Clear();
     }
 
     private void AdjustRotationToWorldAxes(string objectID)
