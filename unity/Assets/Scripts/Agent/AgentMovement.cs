@@ -152,6 +152,10 @@ public class AgentMovement : MonoBehaviour
             drive.damping = damping;
             drive.forceLimit = forceLimit;
             joint.xDrive = drive;
+
+            
+            joint.gameObject.AddComponent<CollisionHandler>().OnCollisionEnterEvent += (collision) => HandleCollision(joint, collision);
+  
         }
 
         // 记录默认的 xDrive 值
@@ -189,6 +193,9 @@ public class AgentMovement : MonoBehaviour
             drive.damping = damping;
             drive.forceLimit = forceLimit;
             joint.xDrive = drive;
+
+            // joint.gameObject.AddComponent<CollisionHandler>().OnCollisionEnterEvent += (collision) => HandleCollision(joint, collision);
+  
         }
 
     }
@@ -1065,7 +1072,13 @@ public class AgentMovement : MonoBehaviour
         }
     }
 
-        // 碰撞检测方法
+
+    // 在 AgentMovement 类中添加一个方法来处理碰撞
+    private void HandleCollision(ArticulationBody articulationBody, Collision collision)
+    {
+        Debug.Log($"ArticulationBody {articulationBody.name} 碰撞到 {collision.gameObject.name}");
+    }
+    // 碰撞检测方法
     private void OnCollisionEnter(Collision collision)
     {
         // 遍历所有的 ArticulationBody
