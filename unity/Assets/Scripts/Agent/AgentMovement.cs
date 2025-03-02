@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Agent;
+using Unity.Collections;
 
 
 public class AgentMovement : MonoBehaviour
@@ -35,6 +36,8 @@ public class AgentMovement : MonoBehaviour
     // public Transform placePositionL; // 放置位置
     // public Transform pickPositionR;  // 夹取位置
     // public Transform placePositionR; // 放置位置
+
+    // private PhysicsScene physicsScene;
     public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // 初始值
     
     private string[] h1_left_arm_joints = new string[]
@@ -136,7 +139,7 @@ public class AgentMovement : MonoBehaviour
     private List<ArticulationDrive> tempDrives = new List<ArticulationDrive>();
 
     void Start()
- {
+    {
         articulationChain = GetComponentsInChildren<ArticulationBody>();
 
         if (articulationChain == null || articulationChain.Length == 0)
@@ -152,10 +155,6 @@ public class AgentMovement : MonoBehaviour
             drive.damping = damping;
             drive.forceLimit = forceLimit;
             joint.xDrive = drive;
-
-            
-            joint.gameObject.AddComponent<CollisionHandler>().OnCollisionEnterEvent += (collision) => HandleCollision(joint, collision);
-  
         }
 
         // 记录默认的 xDrive 值
@@ -166,6 +165,45 @@ public class AgentMovement : MonoBehaviour
             {
                 defaultDrives.Add(body.xDrive);
             }
+            
+            if (body.jointType == ArticulationJointType.RevoluteJoint) // 仅在 RevoluteJoint 类型时执行
+            {
+                Transform collisionsTransform = body.transform.Find("Collisions");
+                if (collisionsTransform != null)
+                {
+                    foreach (Collider collider in collisionsTransform.GetComponentsInChildren<Collider>())
+                    {
+                        GameObject colliderObj = collider.gameObject;
+
+                    // // // 添加刚体组件
+                    Rigidbody rb = colliderObj.GetComponent<Rigidbody>();
+                    if (rb == null)
+                    {
+                        rb = colliderObj.AddComponent<Rigidbody>();
+                        // rb.isKinematic = true; // 设置为运动学刚体以避免物理引擎影响
+                        rb.constraints = RigidbodyConstraints.FreezeAll; // 冻结所有位置和旋转
+                    }
+
+                        // 添加碰撞处理器
+                        //colliderObj.AddComponent<CollisionReporter>();
+                        // 添加碰撞处理器
+                        CollisionHandler handler = colliderObj.AddComponent<CollisionHandler>();
+                        Debug.Log("add collision Handler");
+                        handler.OnCollisionEnterEvent += (collision) => HandleCollision(body, collision, colliderObj);
+                    }
+                }
+            }
+        }
+    }
+    // 修改HandleCollision方法，添加colliderObj参数
+    private void HandleCollision(ArticulationBody articulationBody, Collision collision, GameObject colliderObj)
+    {
+        Debug.Log($"碰撞检测: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
+        
+        // 添加到碰撞列表
+        if (!collidedObjects.Contains(collision.gameObject))
+        {
+            collidedObjects.Add(collision.gameObject);
         }
     }
     public void Update(){

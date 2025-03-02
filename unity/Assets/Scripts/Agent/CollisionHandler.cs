@@ -8,6 +8,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        Debug.Log("Trigger Collider");
         OnCollisionEnterEvent?.Invoke(collision);
     }
 }
