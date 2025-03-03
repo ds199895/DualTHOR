@@ -23,6 +23,7 @@ class Actions:
             "redo": self.dynamic_action,
             "loadstate": self.dynamic_action,
             "loadrobot": self.dynamic_action,
+            "loadscene":self.dynamic_action
         }
 
     def execute_action(self, action_name, **kwargs):

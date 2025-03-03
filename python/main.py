@@ -4,7 +4,7 @@ import server_ik_h1
 import unity_launcher  
 from controller import Controller  
 
-def main(start_unity_exe=True,robot_type='X1'):
+def main(start_unity_exe=True,robot_type='X1', scene="livingroom2"):
     """
     启动程序入口。
     :param start_unity_exe: 是否启动 Unity 可执行文件
@@ -31,7 +31,7 @@ def main(start_unity_exe=True,robot_type='X1'):
 
     try:
         # 启动 Controller（代替 TCP 服务器），并传递 robot_type
-        controller = Controller(robot_type=robot_type)
+        controller = Controller(robot_type=robot_type,scene=scene)
         controller.start()
         
     except KeyboardInterrupt:
@@ -45,4 +45,4 @@ def main(start_unity_exe=True,robot_type='X1'):
 
 if __name__ == '__main__':
     # 这里可以根据需求设置是否启动 Unity 可执行文件,仅调试时设置为 False！！！
-    main(start_unity_exe=True, robot_type='h1')
+    main(start_unity_exe=False, robot_type='h1',scene="livingroom2")

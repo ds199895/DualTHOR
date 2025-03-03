@@ -10,12 +10,12 @@ public class GetObjectsInView : MonoBehaviour
     private float viewDistance = 30f; // 视野距离
     [SerializeField]
     private List<GameObject> canInteractableObjects; // 记录GameObject的数组
-    private SceneManager sceneManager;
+    private SceneStateManager sceneManager;
 
     
     private void Start()
     {
-        sceneManager =GameObject.Find("SceneManager").GetComponent<SceneManager>();
+        sceneManager =GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
     }
 #if UNITY_EDITOR
     private void Update()

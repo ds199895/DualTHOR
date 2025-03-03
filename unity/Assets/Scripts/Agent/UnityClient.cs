@@ -9,7 +9,7 @@ public class UnityClient : MonoBehaviour
     TcpClient client;
     NetworkStream stream;
     AgentMovement agentMovement;
-    SceneManager sceneManager;
+    SceneStateManager sceneStateManager;
 
     [Serializable]
     public class ActionData
@@ -21,6 +21,8 @@ public class UnityClient : MonoBehaviour
         public float successRate;
         public string stateID;
         public string robotType;
+
+        public string scene;
     }
     string PreprocessJson(string json)
     {
@@ -33,7 +35,7 @@ public class UnityClient : MonoBehaviour
     void Start()
     {
         agentMovement = GetComponent<AgentMovement>();
-        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
+        sceneStateManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
         ConnectToServerAsync();
     }
 
@@ -115,55 +117,60 @@ public class UnityClient : MonoBehaviour
                     string actionJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Debug.Log($"Received action from Python: {actionJson}");
 
-                    // 解析 JSON 数据
                     actionJson = PreprocessJson(actionJson);
                     ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
 
-                    // 确保 action 有效
                     if (string.IsNullOrEmpty(actionData.action))
                     {
                         Debug.LogError("ActionData does not contain a valid action.");
-                        SendFeedbackToPython("Error: Missing action in ActionData.");
+                        SendFeedbackToPython( false,"Error: Missing action in ActionData.");
                         return;
                     }
 
-                    // 特殊处理 LoadSceneState 动作
                     if (actionData.action == "loadstate")
                     {
                         if (!string.IsNullOrEmpty(actionData.stateID))
                         {
                             agentMovement.LoadState(actionData.stateID);
                             Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
-                            SendFeedbackToPython($"Loaded state ID: {actionData.stateID}");
+                            SendFeedbackToPython( true,$"Loaded state ID: {actionData.stateID}");
                         }
                         else
                         {
                             Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
-                            SendFeedbackToPython("Error: Missing state ID for LoadSceneState.");
+                            SendFeedbackToPython( false,"Error: Missing state ID for LoadSceneState.");
                         }
-                    }else if(actionData.action=="loadrobot"){
-                        // 调用 AgentMovement 加载机器人
-                        agentMovement.LoadRobot(actionData.robotType);
+                    }
+                    else if (actionData.action == "loadrobot")
+                    {
+                        var result = agentMovement.LoadRobot(actionData.robotType);
                         Debug.Log($"Loaded robot of type: {actionData.robotType}");
-                        // sceneManager.SaveCurrentState();
-                        // SendFeedbackToPython(actionData.robotType);
+                        SendFeedbackToPython( result, $"Loaded robot of type: {actionData.robotType}");
+                    }
+                    else if (actionData.action == "loadscene")
+                    {
+                        var result = agentMovement.LoadScene(actionData.scene);
+                        Debug.Log($"Loaded scene: {actionData.scene}");
+                        SendFeedbackToPython(result, $"Loaded scene: {actionData.scene}");
                     }
                     else
                     {
-                        // 处理其他常规动作
                         agentMovement.ExecuteActionWithCallback(actionData, () =>
                         {
+                            bool success = true; // Assume success unless otherwise determined
+                            string msg = "";
+
                             if (actionData.action == "undo" || actionData.action == "redo")
                             {
                                 Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
                             }
                             else
                             {
-                                sceneManager.SaveCurrentState();
+                                sceneStateManager.SaveCurrentState();
                                 Debug.Log($"Saved current state after action: {actionData.action}");
                             }
 
-                            SendFeedbackToPython(actionData.action);
+                            SendFeedbackToPython( success, msg);
                         });
                     }
                 }
@@ -179,27 +186,27 @@ public class UnityClient : MonoBehaviour
         }
     }
 
-    public void SendFeedbackToPython(string action)
+    public void SendFeedbackToPython( bool success, string msg = "")
     {
         if (client != null && stream != null)
         {
             try
             {
                 Vector3 currentPosition = transform.position;
-                // Debug.Log($"Get current states");
-                SceneStateA2T currentSceneState = sceneManager.GetCurrentSceneStateA2T();
+                string feedback ="";
+                if(sceneStateManager) {
+                    Debug.Log(sceneStateManager);
+                    SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
+                    Debug.Log(currentSceneState);
+                    string sceneStateJson = JsonUtility.ToJson(currentSceneState);
+                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
+                }
+              
+                feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
 
-                // Debug.Log($"Get states json");
-                // 确保 objectsStates 被正确序列化
-                string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                // Debug.Log($"Get feed back");
-                string feedback = $"Executed {action}, x1position: {currentPosition}, sceneState: {sceneStateJson}";
-
-                // Debug.Log($"Sending feedback to Python: {feedback}");
+                Debug.Log(feedback);
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
-
-                //Debug.Log($"Sent feedback to Python: {feedback} (Size: {feedbackData.Length} bytes)");
             }
             catch (Exception ex)
             {

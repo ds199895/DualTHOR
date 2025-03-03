@@ -20,7 +20,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
     [SerializeField]
     private float currentSqueezeForce; // 当前捏的力度
 
-    private SceneManager sceneManager;
+    private SceneStateManager sceneManager;
 
     [SerializeField]
     private bool broken; // 是否已经破碎
@@ -95,7 +95,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
         // 计算冲击力
         fallImpactForce = CalculateFallImpactForce(rb);
         mass= rb.mass;
-        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
+        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
     }
 
     //private void Update()

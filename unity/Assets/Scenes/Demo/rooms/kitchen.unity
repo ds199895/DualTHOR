@@ -7844,12 +7844,6 @@ Transform:
   - {fileID: 263788295}
   m_Father: {fileID: 1630265014}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &213908138 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1229225718034001699, guid: 3cb3ee3f96e302a45b4ab970499cca01,
-    type: 3}
-  m_PrefabInstance: {fileID: 1207852284}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &217405216
 GameObject:
   m_ObjectHideFlags: 0
@@ -19934,6 +19928,7 @@ MonoBehaviour:
   gripperController: {fileID: 0}
   handController: {fileID: 0}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 100
   forceLimit: 1000
@@ -37052,6 +37047,7 @@ MonoBehaviour:
   gripperController: {fileID: 936950128}
   handController: {fileID: 936950136}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 800
   forceLimit: 1000
@@ -56746,18 +56742,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07e388268219b634b9d88720ca69f73d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 936950126}
-  stateIndexText: {fileID: 2047051957}
-  maxStateIndexText: {fileID: 1794123775}
-  simObjects: []
-  interactableObjects: []
-  canInteractableObjects: []
-  transferPoints: []
-  canTransferPoints: []
-  interactablePoints: []
-  getObjectsInView: {fileID: 1401664179}
-  ObjectsInOperation: []
-  ObjectsParent: {fileID: 213908138}
 --- !u!4 &1401664177
 Transform:
   m_ObjectHideFlags: 0
@@ -71877,18 +71861,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   geometryType: 3
---- !u!114 &1794123775 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5718803946386198830, guid: bfee0b7b6a337694bbd5c95808f068db,
-    type: 3}
-  m_PrefabInstance: {fileID: 817581877}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1797032113
 GameObject:
   m_ObjectHideFlags: 0
@@ -80907,6 +80879,7 @@ MonoBehaviour:
   gripperController: {fileID: 2020528285}
   handController: {fileID: 0}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 800
   forceLimit: 1000
@@ -81947,18 +81920,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsBaseLink: 0
---- !u!114 &2047051957 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2999437973142164816, guid: bfee0b7b6a337694bbd5c95808f068db,
-    type: 3}
-  m_PrefabInstance: {fileID: 817581877}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2047480968
 GameObject:
   m_ObjectHideFlags: 0
@@ -85753,6 +85714,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: h1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8385427154599163284, guid: d4f4a199425759691aed595032b47a93,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

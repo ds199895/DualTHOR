@@ -10,7 +10,7 @@ public class SliceObject : MonoBehaviour, IUniqueStateManager
     [SerializeField]
     private bool isSliced = false;
 
-    private SceneManager sceneManager;
+    private SceneStateManager sceneManager;
 
     public bool IsSliced => isSliced;
 
@@ -27,7 +27,7 @@ public class SliceObject : MonoBehaviour, IUniqueStateManager
 
     void Start()
     {
-        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneManager>();
+        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
 
 #if UNITY_EDITOR
         PropertyValidator.ValidateProperty(gameObject, SimObjSecondaryProperty.CanBeSliced);

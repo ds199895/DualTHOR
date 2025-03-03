@@ -7,13 +7,14 @@ using System.Linq;
 using Agent;
 using Unity.Collections;
 using Unity.Robotics.UrdfImporter;
+using UnityEngine.SceneManagement;
 
 
 public class AgentMovement : MonoBehaviour
 {
     
 
-    public SceneManager sceneManager;
+    public SceneStateManager sceneManager;
     public float moveSpeed = 1.0f;
     public float rotationSpeed = 90.0f;  // 每秒旋转的角度
     public GripperController gripperController; 
@@ -405,7 +406,7 @@ public class AgentMovement : MonoBehaviour
     {
         
         // 获取目标交互点和 Toggle 脚本
-        Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
+        Transform interactPoint = SceneStateManager.GetInteractablePoint(objectID);
         CanToggleOnOff toggleScript = interactPoint?.GetComponentInParent<CanToggleOnOff>();
         
         Debug.Log(interactPoint);
@@ -426,7 +427,7 @@ public class AgentMovement : MonoBehaviour
     public IEnumerator Open(string objectID, bool isLeftArm)
     {
         // 获取目标交互点和 Open 脚本
-        Transform interactPoint = SceneManager.GetInteractablePoint(objectID);
+        Transform interactPoint = SceneStateManager.GetInteractablePoint(objectID);
         CanOpen_Object openScript = interactPoint?.GetComponentInParent<CanOpen_Object>();
 
         // 如果尚未到达目标位置，执行移动
@@ -445,7 +446,7 @@ public class AgentMovement : MonoBehaviour
     public void TP(string objectID)
     {
         // 查找物品的 TransferPoint
-        Transform transferPoint = SceneManager.GetTransferPointByObjectID(objectID);
+        Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
 
         if (transferPoint == null)
         {
@@ -475,7 +476,7 @@ public class AgentMovement : MonoBehaviour
         if (CurrentRobotType == RobotType.X1)
         {
             Vector3 offset = new Vector3(0, 0.1f, 0);
-            Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
+            Transform pickPosition = SceneStateManager.GetInteractablePoint(objectID);
 
             if (pickPosition == null)
             {
@@ -522,8 +523,8 @@ public class AgentMovement : MonoBehaviour
         else if (CurrentRobotType == RobotType.H1)
         {
             
-            Transform interactablePoint = SceneManager.GetInteractablePoint(objectID);
-            Transform transferPoint=SceneManager.GetTransferPointByObjectID(objectID);
+            Transform interactablePoint = SceneStateManager.GetInteractablePoint(objectID);
+            Transform transferPoint=SceneStateManager.GetTransferPointByObjectID(objectID);
 
 
             Vector3 ref_vec=transferPoint.position-transform.position;
@@ -613,7 +614,7 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Place(string objectID, bool isLeftArm)
     {
-        Transform pickPosition = SceneManager.GetInteractablePoint(objectID);
+        Transform pickPosition = SceneStateManager.GetInteractablePoint(objectID);
 
         if (pickPosition == null)
         {
@@ -958,7 +959,7 @@ public class AgentMovement : MonoBehaviour
         // EnableArticulationBodies();
     }
 
-    // 调用 SceneManager 的 LoadStateByIndex 方法
+    // 调用 SceneStateManager 的 LoadStateByIndex 方法
     public void LoadState(string stateID)
     {
         Debug.Log($"Attempting to load scene state with ID: {stateID}");
@@ -1071,8 +1072,19 @@ public class AgentMovement : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX, Space.World); // 整个物体的水平旋转
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0); // 只旋转相机的上下视角
     }
+    public bool LoadScene(string scene)
+    {
+        Debug.Log($"Loading scene: {scene}");
+        try{
+            SceneManager.LoadScene(scene);
+        }catch(Exception e){
+            Debug.Log(e);
+            return false;
+        }
+        return true;
+    }
 
-    public void LoadRobot(string robotType)
+    public bool LoadRobot(string robotType)
     {
         Debug.Log($"Loading robot of type: {robotType}");
         foreach (var robot in robots)
@@ -1110,6 +1122,7 @@ public class AgentMovement : MonoBehaviour
                 Debug.LogError($"Unknown robot type: {robotType}");
                 break;
         }
+        return true;
     }
 
 

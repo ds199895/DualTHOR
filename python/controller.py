@@ -4,12 +4,13 @@ from tcp_server import TCPServer
 from actions import Actions
 from concurrent.futures import ThreadPoolExecutor
 import threading
-
+import time
+import queue
 logging.basicConfig(level=logging.INFO)
 
 
 class Controller:
-    def __init__(self, host='localhost', port=5678, config_path="config.json", robot_type='X1'):
+    def __init__(self, host='localhost', port=5678, config_path="config.json", robot_type='X1',scene="livingroom2"):
         """
         初始化控制器，包括动作执行器、TCP 服务器和配置加载。
         """
@@ -20,6 +21,8 @@ class Controller:
         self.stop_event = threading.Event()
         self.robot_type = robot_type  # 保存 robot_type
         self.tcp_server.on_connect = self.on_client_connect  # 设置连接事件回调
+        self.scene=scene
+        self.feedback_queue = queue.Queue()  # 用于存储反馈的队列
 
     def load_config(self, config_path):
         """
@@ -60,11 +63,10 @@ class Controller:
 
     def step(self, action_name, **kwargs):
         """
-        执行动作，并通过 TCP 服务器发送命令。
+        执行动作，并通过 TCP 服务器发送命令，等待并返回反馈。
         """
         def execute_action():
             try:
-                # 如果未指定 success_rate，从配置中加载默认值
                 if "successRate" not in kwargs:
                     kwargs["successRate"] = self.get_default_success_rate(action_name)
 
@@ -77,6 +79,14 @@ class Controller:
         # 将动作提交到线程池，独立执行
         self.thread_pool.submit(execute_action)
 
+        # 等待反馈
+        try:
+            feedback = self.feedback_queue.get(timeout=60)  # 等待最多10秒
+            return feedback
+        except queue.Empty:
+            logging.error("No feedback received within the timeout period.")
+            return None
+
     def handle_feedback(self):
         """
         后台线程：统一处理来自 Unity 的反馈。
@@ -85,6 +95,7 @@ class Controller:
             try:
                 feedback = self.tcp_server.receive()
                 logging.info(f"Feedback from Unity: {feedback}")
+                self.feedback_queue.put(feedback)  # 将反馈放入队列
             except Exception as e:
                 logging.error(f"Error receiving feedback: {e}")
 
@@ -139,13 +150,19 @@ class Controller:
         """
         logging.info(f"Loading robot of type: {robottype}")
         self.step("loadrobot", robottype=robottype)
+    
+    def reset(self,scene):
+        logging.info(f"Loading scene: {scene}")
+        self.step("loadscene",scene=scene)
 
     def on_client_connect(self):
         """
         客户端连接时触发的事件。
         """
         logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
-        self.load_robot(self.robot_type)
+        res=self.reset(scene=self.scene)
+        if res:
+            self.load_robot(self.robot_type)
 
 
 # 启动控制器
