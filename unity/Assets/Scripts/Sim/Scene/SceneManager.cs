@@ -18,6 +18,9 @@ public class SceneManager : MonoBehaviour
     private GameObject agent;
 
     [SerializeField]
+    public ArticulationBody root;
+
+    [SerializeField]
     TextMeshProUGUI stateIndexText;
     [SerializeField]
     TextMeshProUGUI maxStateIndexText;
@@ -65,6 +68,8 @@ public class SceneManager : MonoBehaviour
 
     void Start()
     {
+
+
         // 查找并填充可交互物体列表
         FillList(simObjects, new[] { "Interactable", "DynamicAdd" });
         // 查找并填充可交互物体字典
@@ -189,6 +194,7 @@ public class SceneManager : MonoBehaviour
             id = currentStateIndex + 1,
             agentPosition = agent.transform.position,
             agentRotation = agent.transform.rotation,
+            
             objects = new ObjectState[simObjects.Count]
         };
         stateIndexText.text = "CurrentIndex: " + state.id;
@@ -359,7 +365,8 @@ public class SceneManager : MonoBehaviour
         //string sceneStateJson = JsonUtility.ToJson(state);
         //print(sceneStateJson);
         // 更新场景状态和相关信息
-        agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
+        // agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
+        root.TeleportRoot(state.agentPosition,state.agentRotation);
         stateIndexText.text = "CurrentIndex: " + state.id;
 
         // 还原其他物体的状态
@@ -371,13 +378,18 @@ public class SceneManager : MonoBehaviour
 
     private void LoadState(SceneState state, SceneStateA2T stateA2T)
     {
-        //string sceneStateJson = JsonUtility.ToJson(state);
-        //print(sceneStateJson);
+        string sceneStateJson = JsonUtility.ToJson(state);
+        print(sceneStateJson);
         string sceneStateJsonA2T = JsonUtility.ToJson(stateA2T);
         print(sceneStateJsonA2T);
         // 更新场景状态和相关信息
+
+        print("Load state");
+
+        root.TeleportRoot(state.agentPosition,state.agentRotation);
         agent.transform.position = state.agentPosition;
         agent.transform.rotation = state.agentRotation;
+
         stateIndexText.text = "CurrentIndex: " + state.id;
 
         // 还原其他物体的状态

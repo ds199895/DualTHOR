@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Agent;
 using Unity.Collections;
+using Unity.Robotics.UrdfImporter;
 
 
 public class AgentMovement : MonoBehaviour
@@ -130,8 +131,6 @@ public class AgentMovement : MonoBehaviour
     };
 
 
-    
-
     public RobotType CurrentRobotType = RobotType.X1;
     public List<GameObject> robots = new List<GameObject>();
 
@@ -165,7 +164,10 @@ public class AgentMovement : MonoBehaviour
             {
                 defaultDrives.Add(body.xDrive);
             }
-            
+            if(body.name=="root"){
+                Debug.Log("get root link");
+                sceneManager.root=body;
+            }
             if (body.jointType == ArticulationJointType.RevoluteJoint) // 仅在 RevoluteJoint 类型时执行
             {
                 Transform collisionsTransform = body.transform.Find("Collisions");
@@ -945,15 +947,15 @@ public class AgentMovement : MonoBehaviour
     }
     public void Undo()
     {
-        DisableArticulationBodies();
+        // DisableArticulationBodies();
         sceneManager.Undo();
-        EnableArticulationBodies();
+        // EnableArticulationBodies();
     }
     public void Redo()
     {
-        DisableArticulationBodies();
+        // DisableArticulationBodies();
         sceneManager.Redo();
-        EnableArticulationBodies();
+        // EnableArticulationBodies();
     }
 
     // 调用 SceneManager 的 LoadStateByIndex 方法

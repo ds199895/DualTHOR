@@ -8534,7 +8534,7 @@ GameObject:
   - component: {fileID: 217405219}
   - component: {fileID: 217405218}
   m_Layer: 0
-  m_Name: hip_base
+  m_Name: root
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56232,6 +56232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 936950126}
+  root: {fileID: 0}
   stateIndexText: {fileID: 2047051957}
   maxStateIndexText: {fileID: 1794123775}
   simObjects: []
@@ -85784,6 +85785,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 936950127}
     m_Modifications:
+    - target: {fileID: 155161730961267517, guid: d4f4a199425759691aed595032b47a93,
+        type: 3}
+      propertyPath: m_Name
+      value: root
+      objectReference: {fileID: 0}
     - target: {fileID: 372847230289781792, guid: d4f4a199425759691aed595032b47a93,
         type: 3}
       propertyPath: m_ParentAnchorPosition.x
