@@ -8,6 +8,7 @@ using Agent;
 using Unity.Collections;
 using Unity.Robotics.UrdfImporter;
 using UnityEngine.SceneManagement;
+using NUnit.Framework.Constraints;
 
 
 public class AgentMovement : MonoBehaviour
@@ -87,6 +88,7 @@ public class AgentMovement : MonoBehaviour
     private float maxVerticalAngle = 80f; // 最大俯仰角度
     private bool isMouseUnlocked = false; // 标记是否按下了ESC以解锁鼠标
 
+    private string robottype="";
 
     [System.Serializable]
     public class JointAdjustment
@@ -197,6 +199,8 @@ public class AgentMovement : MonoBehaviour
                 }
             }
         }
+
+        SceneManager.sceneLoaded+=OnSceneLoaded;
     }
     // 修改HandleCollision方法，添加colliderObj参数
     private void HandleCollision(ArticulationBody articulationBody, Collision collision, GameObject colliderObj)
@@ -1072,9 +1076,11 @@ public class AgentMovement : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX, Space.World); // 整个物体的水平旋转
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0); // 只旋转相机的上下视角
     }
-    public bool LoadScene(string scene)
+    public bool LoadScene(string scene,string robottype)
     {
-        Debug.Log($"Loading scene: {scene}");
+        Debug.Log($"Loading scene: {scene}, robot Type:{robottype}");
+        
+        this.robottype=robottype;
         try{
             SceneManager.LoadScene(scene);
         }catch(Exception e){
@@ -1083,7 +1089,23 @@ public class AgentMovement : MonoBehaviour
         }
         return true;
     }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 在场景加载完成后查找 AgentMovement 并调用 LoadRobot 方法
+        Debug.Log("scene loaded");
+        AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
+        if (agentMovement != null)
+        {
+            agentMovement.LoadRobot(this.robottype);
+        }
+        else
+        {
+            Debug.LogWarning("AgentMovement not found in the loaded scene.");
+        }
 
+        // 取消注册事件以避免重复调用
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
     public bool LoadRobot(string robotType)
     {
         Debug.Log($"Loading robot of type: {robotType}");

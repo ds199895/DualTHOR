@@ -31063,6 +31063,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bfee0b7b6a337694bbd5c95808f068db, type: 3}
+--- !u!114 &817581878 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8423796548962093025, guid: bfee0b7b6a337694bbd5c95808f068db,
+    type: 3}
+  m_PrefabInstance: {fileID: 817581877}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &818887583
 GameObject:
   m_ObjectHideFlags: 0
@@ -56228,12 +56240,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1401664175}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07e388268219b634b9d88720ca69f73d, type: 3}
+  m_Script: {fileID: 11500000, guid: eb044fe403ef51b4b80e61a7ac2ec1a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 936950126}
   root: {fileID: 0}
-  stateIndexText: {fileID: 2047051957}
+  stateIndexText: {fileID: 817581878}
   maxStateIndexText: {fileID: 1794123775}
   simObjects: []
   interactableObjects: []
@@ -81238,18 +81250,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsBaseLink: 0
---- !u!114 &2047051957 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2999437973142164816, guid: bfee0b7b6a337694bbd5c95808f068db,
-    type: 3}
-  m_PrefabInstance: {fileID: 817581877}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2047480968
 GameObject:
   m_ObjectHideFlags: 0

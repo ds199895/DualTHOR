@@ -147,10 +147,10 @@ public class UnityClient : MonoBehaviour
                         Debug.Log($"Loaded robot of type: {actionData.robotType}");
                         SendFeedbackToPython( result, $"Loaded robot of type: {actionData.robotType}");
                     }
-                    else if (actionData.action == "loadscene")
+                    else if (actionData.action == "resetscene")
                     {
-                        var result = agentMovement.LoadScene(actionData.scene);
-                        Debug.Log($"Loaded scene: {actionData.scene}");
+                        var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
+                        Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
                         SendFeedbackToPython(result, $"Loaded scene: {actionData.scene}");
                     }
                     else
