@@ -2,7 +2,7 @@ import logging
 import json
 from tcp_server import TCPServer
 from actions import Actions
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import time
 import queue
@@ -72,20 +72,24 @@ class Controller:
 
                 action_json = self.executor.execute_action(action_name, **kwargs)
                 self.tcp_server.send(action_json)
+
                 logging.info(f"Action '{action_name}' sent with parameters: {kwargs}")
+
+                feed_back = None
+                while feed_back is None:
+                    print("feedback: ", feed_back)
+                    feed_back = self.feedback_queue.get()
+                print("result feed back: ", feed_back)
+                feedback_json=json.loads(feed_back)
+                print("feed back json: ", feedback_json)
+                return feedback_json
             except Exception as e:
                 logging.error(f"Error executing action {action_name}: {e}")
-
-        # 将动作提交到线程池，独立执行
+                return None
         self.thread_pool.submit(execute_action)
-
-        # # 等待反馈
-        # try:
-        #     feedback = self.feedback_queue.get(timeout=60)  # 等待最多10秒
-        #     return feedback
-        # except queue.Empty:
-        #     logging.error("No feedback received within the timeout period.")
-        #     return None
+        # # 将动作提交到线程池，独立执行，并等待结果
+        # future = self.thread_pool.submit(execute_action)
+        # return future.result()  # 等待 execute_action 完成并返回结果
 
     def handle_feedback(self):
         """
@@ -161,6 +165,9 @@ class Controller:
         """
         logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
         res=self.reset_scene(scene=self.scene,robottype=self.robot_type)
+
+
+        print("reset scene feed back: ",res)
         # if res:
         #     self.load_robot(self.robot_type)
 

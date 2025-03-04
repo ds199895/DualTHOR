@@ -142,7 +142,11 @@ public class AgentMovement : MonoBehaviour
 
     void Start()
     {
-        articulationChain = GetComponentsInChildren<ArticulationBody>();
+       
+    }
+
+    public void SetRobot(){
+         articulationChain = GetComponentsInChildren<ArticulationBody>();
 
         if (articulationChain == null || articulationChain.Length == 0)
         {
@@ -199,9 +203,10 @@ public class AgentMovement : MonoBehaviour
                 }
             }
         }
-
-        SceneManager.sceneLoaded+=OnSceneLoaded;
     }
+
+
+
     // 修改HandleCollision方法，添加colliderObj参数
     private void HandleCollision(ArticulationBody articulationBody, Collision collision, GameObject colliderObj)
     {

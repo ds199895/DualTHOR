@@ -2,10 +2,14 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class UnityClient : MonoBehaviour
 {
+    private static UnityClient instance;
+    public static UnityClient Instance => instance;
+
     TcpClient client;
     NetworkStream stream;
     AgentMovement agentMovement;
@@ -32,11 +36,29 @@ public class UnityClient : MonoBehaviour
                    .Replace("\"robottype\"", "\"robotType\"");
     }
 
+    void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(this.gameObject);
+    }
+
     void Start()
     {
-        agentMovement = GetComponent<AgentMovement>();
-        sceneStateManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
+        Init();
         ConnectToServerAsync();
+    }
+
+    void Init(){
+        
+        sceneStateManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
+        // Debug.Log(sceneStateManager);
+        agentMovement=FindAnyObjectByType<AgentMovement>();
+        
     }
 
     async void ConnectToServerAsync()
@@ -53,51 +75,9 @@ public class UnityClient : MonoBehaviour
 
                 Debug.Log("Connected to server successfully.");
             }
-            catch (SocketException se)
-            {
-                switch (se.SocketErrorCode)
-                {
-                    case SocketError.ConnectionRefused:
-                        Debug.LogError("Connection refused by server. Is the server running?");
-                        break;
-                    case SocketError.HostNotFound:
-                        Debug.LogError("Host not found. Please check the IP address.");
-                        break;
-                    case SocketError.TimedOut:
-                        Debug.LogError("Connection timed out. Server might be unreachable.");
-                        break;
-                    case SocketError.NetworkUnreachable:
-                        Debug.LogError("Network unreachable. Please check your network connection.");
-                        break;
-                    case SocketError.AddressFamilyNotSupported:
-                        Debug.LogError("Address family not supported. Verify IPv4/IPv6 compatibility.");
-                        break;
-                    case SocketError.AccessDenied:
-                        Debug.LogError("Access denied. Check if port 5678 is blocked by a firewall.");
-                        break;
-                    default:
-                        Debug.LogError($"SocketException occurred: {se.SocketErrorCode} - {se.Message}");
-                        break;
-                }
-
-                Debug.LogError($"Detailed exception: {se.GetType().Name} - {se.Message}");
-                await Task.Delay(5000); // 5 秒后重试
-            }
-            catch (ArgumentException ae)
-            {
-                Debug.LogError($"Invalid IP address or port number: {ae.Message}. Please check your settings.");
-            }
-            catch (ObjectDisposedException ode)
-            {
-                Debug.LogError($"Attempted to use a disposed TcpClient: {ode.Message}");
-            }
             catch (Exception e)
             {
-                Debug.LogError($"Unexpected exception occurred: {e.GetType().Name} - {e.Message}");
-                if (e.InnerException != null)
-                {
-                    Debug.LogError($"Inner Exception: {e.InnerException.GetType().Name} - {e.InnerException.Message}");
-                }
+                Debug.LogError($"Connection error: {e.Message}");
                 await Task.Delay(5000); // 5 秒后重试
             }
         }
@@ -145,13 +125,14 @@ public class UnityClient : MonoBehaviour
                     {
                         var result = agentMovement.LoadRobot(actionData.robotType);
                         Debug.Log($"Loaded robot of type: {actionData.robotType}");
-                        SendFeedbackToPython( result, $"Loaded robot of type: {actionData.robotType}");
+                        SendFeedbackToPython( result);
                     }
                     else if (actionData.action == "resetscene")
                     {
                         var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
                         Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
-                        SendFeedbackToPython(result, $"Loaded scene: {actionData.scene}");
+                        Init();
+                        SendFeedbackToPython(result);
                     }
                     else
                     {
@@ -203,6 +184,32 @@ public class UnityClient : MonoBehaviour
                 }
               
                 feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
+
+                Debug.Log(feedback);
+                byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
+                stream.Write(feedbackData, 0, feedbackData.Length);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception occurred while sending feedback: {ex.GetType().Name} - {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Cannot send feedback: client or stream is null.");
+        }
+    }
+
+    public void SendFeedbackToPython( bool success)
+    {
+        if (client != null && stream != null)
+        {
+            try
+            {
+                Vector3 currentPosition = transform.position;
+                string feedback ="";
+              
+                feedback = $"{{\"success\": {(success ? 1 : 0)}}}";
 
                 Debug.Log(feedback);
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");

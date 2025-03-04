@@ -53,10 +53,13 @@ public class IK_H1 : IKBase
             enabled = false;
             return;
         }
+        
         // 初始化当前关节角度
         currentJointAngles = joints.Select(j => j.jointPosition[0] * Mathf.Rad2Deg).ToArray();
         targetJointAngles = currentJointAngles.ToArray();
     }
+
+
 
     void Update()
     {
