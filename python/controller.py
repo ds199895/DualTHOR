@@ -79,13 +79,13 @@ class Controller:
         # 将动作提交到线程池，独立执行
         self.thread_pool.submit(execute_action)
 
-        # 等待反馈
-        try:
-            feedback = self.feedback_queue.get(timeout=60)  # 等待最多10秒
-            return feedback
-        except queue.Empty:
-            logging.error("No feedback received within the timeout period.")
-            return None
+        # # 等待反馈
+        # try:
+        #     feedback = self.feedback_queue.get(timeout=60)  # 等待最多10秒
+        #     return feedback
+        # except queue.Empty:
+        #     logging.error("No feedback received within the timeout period.")
+        #     return None
 
     def handle_feedback(self):
         """
@@ -151,18 +151,18 @@ class Controller:
         logging.info(f"Loading robot of type: {robottype}")
         self.step("loadrobot", robottype=robottype)
     
-    def reset(self,scene):
+    def reset_scene(self,scene,robottype):
         logging.info(f"Loading scene: {scene}")
-        self.step("loadscene",scene=scene)
+        self.step("resetscene",scene=scene,robottype=robottype)
 
     def on_client_connect(self):
         """
         客户端连接时触发的事件。
         """
         logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
-        res=self.reset(scene=self.scene)
-        if res:
-            self.load_robot(self.robot_type)
+        res=self.reset_scene(scene=self.scene,robottype=self.robot_type)
+        # if res:
+        #     self.load_robot(self.robot_type)
 
 
 # 启动控制器
