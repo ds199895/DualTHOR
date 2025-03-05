@@ -38541,7 +38541,6 @@ GameObject:
   - component: {fileID: 4444130025350905273}
   - component: {fileID: 4958404587363579691}
   - component: {fileID: 5352603860288206303}
-  - component: {fileID: 4142253125495395630}
   - component: {fileID: 7638495552591036846}
   - component: {fileID: 6258177384504701500}
   - component: {fileID: 7579761148172197475}
@@ -38553,7 +38552,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4444130025350905273
 Transform:
   m_ObjectHideFlags: 0
@@ -38614,18 +38613,6 @@ MonoBehaviour:
   torque: 100
   acceleration: 5
   highLightColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &4142253125495395630
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8385427154599163284}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7638495552591036846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38724,6 +38711,7 @@ MonoBehaviour:
   gripperController: {fileID: 0}
   handController: {fileID: 0}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 800
   forceLimit: 1000
@@ -38740,6 +38728,7 @@ MonoBehaviour:
   - 0
   - 0
   - 0
+  rootArt: {fileID: 0}
   leftArmJoints:
   - {fileID: 0}
   - {fileID: 0}

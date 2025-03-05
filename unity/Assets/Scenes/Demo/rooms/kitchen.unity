@@ -19988,6 +19988,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!114 &526372065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47435,6 +47437,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!4 &1177530907
 Transform:
   m_ObjectHideFlags: 0
@@ -81099,6 +81103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!114 &2020528283
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85782,11 +85788,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: h1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8385427154599163284, guid: d4f4a199425759691aed595032b47a93,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

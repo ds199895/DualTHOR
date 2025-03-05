@@ -12,8 +12,8 @@ public class UnityClient : MonoBehaviour
 
     TcpClient client;
     NetworkStream stream;
-    AgentMovement agentMovement;
-    SceneStateManager sceneStateManager;
+    public AgentMovement agentMovement;
+    public SceneStateManager sceneStateManager;
 
     [Serializable]
     public class ActionData
@@ -56,9 +56,10 @@ public class UnityClient : MonoBehaviour
     void Init(){
         
         sceneStateManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
+        Debug.Log("Set scenestate manager ",sceneStateManager);
         // Debug.Log(sceneStateManager);
         agentMovement=FindAnyObjectByType<AgentMovement>();
-        
+        Debug.Log("Set scenestate manager ",agentMovement);
     }
 
     async void ConnectToServerAsync()
@@ -83,7 +84,7 @@ public class UnityClient : MonoBehaviour
         }
     }
 
-    void Update()
+    async void Update()
     {
         if (client != null && stream != null && stream.DataAvailable)
         {
@@ -123,6 +124,11 @@ public class UnityClient : MonoBehaviour
                     }
                     else if (actionData.action == "loadrobot")
                     {
+                        if (agentMovement == null) {
+                            Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
+                            await Task.Delay(2000);
+                            Init();
+                        }
                         var result = agentMovement.LoadRobot(actionData.robotType);
                         Debug.Log($"Loaded robot of type: {actionData.robotType}");
                         SendFeedbackToPython( result);
@@ -151,7 +157,7 @@ public class UnityClient : MonoBehaviour
                                 Debug.Log($"Saved current state after action: {actionData.action}");
                             }
 
-                            SendFeedbackToPython( success, msg);
+                            SendFeedbackToPython(success, msg);
                         });
                     }
                 }
@@ -183,7 +189,7 @@ public class UnityClient : MonoBehaviour
                     feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
               
-                feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
+                // feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
 
                 Debug.Log(feedback);
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");

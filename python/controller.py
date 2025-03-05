@@ -51,7 +51,7 @@ class Controller:
         try:
             self.tcp_server.start()
             # 启动反馈接收线程
-            threading.Thread(target=self.handle_feedback, daemon=True).start()
+            # threading.Thread(target=self.handle_feedback, daemon=True).start()
             # 启动用户输入处理
             self.handle_user_input()
         except Exception as e:
@@ -86,10 +86,29 @@ class Controller:
             except Exception as e:
                 logging.error(f"Error executing action {action_name}: {e}")
                 return None
-        self.thread_pool.submit(execute_action)
+        # self.thread_pool.submit(execute_action)
         # # 将动作提交到线程池，独立执行，并等待结果
         # future = self.thread_pool.submit(execute_action)
         # return future.result()  # 等待 execute_action 完成并返回结果
+        # execute_action()
+      
+        if "successRate" not in kwargs:
+            kwargs["successRate"] = self.get_default_success_rate(action_name)
+
+        action_json = self.executor.execute_action(action_name, **kwargs)
+        self.tcp_server.send(action_json)
+
+        logging.info(f"Action '{action_name}' sent with parameters: {kwargs}")
+        try:
+            feed_back=self.tcp_server.receive()
+            print("feedback string: ",feed_back)
+            feedback_json=json.loads(feed_back)
+            print("feed back json: ", feedback_json)
+            return feedback_json
+        except Exception as e:
+            logging.error(f"Error executing action {action_name}: {e}")
+            return None
+
 
     def handle_feedback(self):
         """
@@ -157,7 +176,8 @@ class Controller:
     
     def reset_scene(self,scene,robottype):
         logging.info(f"Loading scene: {scene}")
-        self.step("resetscene",scene=scene,robottype=robottype)
+        return self.step("resetscene",scene=scene,robottype=robottype)
+
 
     def on_client_connect(self):
         """
@@ -168,8 +188,8 @@ class Controller:
 
 
         print("reset scene feed back: ",res)
-        # if res:
-        #     self.load_robot(self.robot_type)
+        if res['success']:
+            self.load_robot(self.robot_type)
 
 
 # 启动控制器
