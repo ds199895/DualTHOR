@@ -19839,6 +19839,7 @@ MonoBehaviour:
   gripperController: {fileID: 0}
   handController: {fileID: 0}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 100
   forceLimit: 1000
@@ -19858,6 +19859,9 @@ MonoBehaviour:
   rootArt: {fileID: 0}
   leftArmJoints: []
   rightArmJoints: []
+  collisionDetected: 0
+  collisionA: 
+  collisionB: 
   adjustments:
   - angle: 0
     axis: {x: 0, y: 1, z: 0}
@@ -19898,6 +19902,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!114 &526372065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24460,6 +24466,33 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 659975823}
   m_Mesh: {fileID: 4300000, guid: f2c577feb1faf514b96d15d763ffa2ba, type: 2}
+--- !u!1 &660302496 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9050916668294217085, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+    type: 3}
+  m_PrefabInstance: {fileID: 1412505280}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &660302497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 660302496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectID: 
+  type: 0
+  primaryProperty: 3
+  secondaryProperties: 
+  transferPoint: {fileID: 0}
+  interactablePoints: []
+  visiblePoints: []
+  receptacleTriggerBoxes: []
+  parentReceptacleObjects: []
 --- !u!1 &661434739
 GameObject:
   m_ObjectHideFlags: 0
@@ -36803,6 +36836,7 @@ MonoBehaviour:
   gripperController: {fileID: 936950128}
   handController: {fileID: 936950136}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 800
   forceLimit: 1000
@@ -36834,6 +36868,9 @@ MonoBehaviour:
   - {fileID: 2014128283}
   - {fileID: 636936081}
   - {fileID: 50893609}
+  collisionDetected: 0
+  collisionA: 
+  collisionB: 
   adjustments:
   - angle: 0
     axis: {x: 0, y: 1, z: 0}
@@ -36956,6 +36993,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!114 &936950133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55330,6 +55369,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: bedroom_applyState
       objectReference: {fileID: 0}
+    - target: {fileID: 6893314354098680034, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      propertyPath: m_TagString
+      value: Interactable
+      objectReference: {fileID: 0}
+    - target: {fileID: 7342204472289636183, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      propertyPath: m_TagString
+      value: Interactable
+      objectReference: {fileID: 0}
     - target: {fileID: 7595148688397620330, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -55395,6 +55444,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9050916668294217085, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      propertyPath: m_TagString
+      value: Interactable
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -55402,7 +55456,19 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5067887551038050030}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6893314354098680034, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1412505283}
+    - targetCorrespondingSourceObject: {fileID: 9050916668294217085, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 660302497}
+    - targetCorrespondingSourceObject: {fileID: 7342204472289636183, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1412505285}
   m_SourcePrefab: {fileID: 100100000, guid: 97a69bff261bceb4da7d3a7fbc47ce43, type: 3}
 --- !u!4 &1412505281 stripped
 Transform:
@@ -55410,6 +55476,60 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1412505280}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1412505282 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6893314354098680034, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+    type: 3}
+  m_PrefabInstance: {fileID: 1412505280}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1412505283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412505282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectID: 
+  type: 0
+  primaryProperty: 3
+  secondaryProperties: 
+  transferPoint: {fileID: 0}
+  interactablePoints: []
+  visiblePoints: []
+  receptacleTriggerBoxes: []
+  parentReceptacleObjects: []
+--- !u!1 &1412505284 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7342204472289636183, guid: 97a69bff261bceb4da7d3a7fbc47ce43,
+    type: 3}
+  m_PrefabInstance: {fileID: 1412505280}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1412505285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412505284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectID: 
+  type: 0
+  primaryProperty: 2
+  secondaryProperties: 
+  transferPoint: {fileID: 0}
+  interactablePoints: []
+  visiblePoints: []
+  receptacleTriggerBoxes: []
+  parentReceptacleObjects: []
 --- !u!1 &1413394085
 GameObject:
   m_ObjectHideFlags: 0
@@ -78738,6 +78858,7 @@ MonoBehaviour:
   gripperController: {fileID: 2020528285}
   handController: {fileID: 0}
   articulationChain: []
+  collidedObjects: []
   stiffness: 10000
   damping: 800
   forceLimit: 1000
@@ -78769,6 +78890,9 @@ MonoBehaviour:
   - {fileID: 2014128283}
   - {fileID: 636936081}
   - {fileID: 50893609}
+  collisionDetected: 0
+  collisionA: 
+  collisionB: 
   adjustments:
   - angle: 0
     axis: {x: 0, y: 1, z: 0}
@@ -78889,6 +79013,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a698548d4a6d42b73daab5574b7e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentMovement: {fileID: 0}
+  sceneStateManager: {fileID: 0}
 --- !u!114 &2020528283
 MonoBehaviour:
   m_ObjectHideFlags: 0

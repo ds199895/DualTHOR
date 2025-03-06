@@ -46,6 +46,9 @@ public class IK_H1 : IKBase
 
     void Start()
     {
+
+    }
+    public void InitBodies(){
         // 确保所有关节都已赋值
         if (joints == null || joints.Length == 0)
         {

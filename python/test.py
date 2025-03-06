@@ -10,7 +10,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="livingroom2")
     
     # 启动控制器
     controller.start()
@@ -24,9 +24,17 @@ def test_controller():
     logging.info("Testing move...")
     controller.step("tp",objectID="LivingRoom_Bottle_01")
 
+    json_actions = '[{"action":"pick","arm":"left","objectID":"LivingRoom_Bottle_01"}, {"action":"pick","arm":"right","objectID":"LivingRoom_Bottle_02"}]'
+
+
+
+    controller.step_async(json_actions)
     # feedback=controller.step("pick",arm="left",objectID="LivingRoom_Bottle_01")
 
     # feedback=controller.step("moveright",magnitude=1)
+
+
+
 
     
 

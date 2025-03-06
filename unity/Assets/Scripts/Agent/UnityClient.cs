@@ -29,6 +29,11 @@ public class UnityClient : MonoBehaviour
         public string scene;
 
     }
+    [Serializable]
+    public class ActionDataArray
+    {
+        public ActionData[] actions;
+    }
     string PreprocessJson(string json)
     {
         return json.Replace("\"stateid\"", "\"stateID\"")
@@ -99,72 +104,20 @@ public class UnityClient : MonoBehaviour
                     string actionJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Debug.Log($"Received action from Python: {actionJson}");
 
+                    if(actionJson.TrimStart().StartsWith("[")){
+                        Debug.Log("Parse Array!");
+                        string wrappedJson = "{\"actions\":" + actionJson + "}";
+                        ActionDataArray actionDataArray = JsonUtility.FromJson<ActionDataArray>(wrappedJson);
+                        Debug.Log("action length: " + actionDataArray.actions.Length);
+
+                        foreach(var data in actionDataArray.actions){
+                            await ProcessActionData(data);
+                        }
+                    }
+
                     actionJson = PreprocessJson(actionJson);
                     ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
-
-                    Debug.Log("Parsed Action Data: "+actionData.ToString());
-                    if (string.IsNullOrEmpty(actionData.action))
-                    {
-                        Debug.LogError("ActionData does not contain a valid action.");
-                        SendFeedbackToPython( false,"Error: Missing action in ActionData.");
-                        return;
-                    }
-
-                    if (actionData.action == "loadstate")
-                    {
-                        if (!string.IsNullOrEmpty(actionData.stateID))
-                        {
-                            agentMovement.LoadState(actionData.stateID);
-                            Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
-                            SendFeedbackToPython( true,$"Loaded state ID: {actionData.stateID}");
-                        }
-                        else
-                        {
-                            Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
-                            SendFeedbackToPython( false,"Error: Missing state ID for LoadSceneState.");
-                        }
-                    }
-                    else if (actionData.action == "loadrobot")
-                    {
-                        if (agentMovement == null) {
-                            Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
-                            await Task.Delay(2000);
-                            Init();
-                        }
-                        var result = agentMovement.LoadRobot(actionData.robotType);
-                        Debug.Log($"Loaded robot of type: {actionData.robotType}");
-                        SendFeedbackToPython( result,"load robot feedback");
-                    }
-                    else if (actionData.action == "resetscene")
-                    {
-                        var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
-                        Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
-                        Init();
-                        SendFeedbackToPython(result);
-                    }else if (actionData.action=="getcurstate"){
-                        SendFeedbackToPython(true,"get current scene");
-                    }
-
-                    else
-                    {
-                        agentMovement.ExecuteActionWithCallback(actionData, () =>
-                        {
-                            bool success = true; // Assume success unless otherwise determined
-                            string msg = "";
-
-                            if (actionData.action == "undo" || actionData.action == "redo")
-                            {
-                                Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
-                            }
-                            else
-                            {
-                                sceneStateManager.SaveCurrentState();
-                                Debug.Log($"Saved current state after action: {actionData.action}");
-                            }
-
-                            SendFeedbackToPython(success, msg);
-                        });
-                    }
+                    await ProcessActionData(actionData);
                 }
                 else
                 {
@@ -175,6 +128,56 @@ public class UnityClient : MonoBehaviour
             {
                 Debug.LogError($"Exception occurred while reading stream: {ex.GetType().Name} - {ex.Message}");
             }
+        }
+    }
+
+    private async Task ProcessActionData(ActionData actionData) {
+        Debug.Log("Parsed Action Data: "+actionData.ToString());
+        if (string.IsNullOrEmpty(actionData.action)) {
+            Debug.LogError("ActionData does not contain a valid action.");
+            SendFeedbackToPython( false,"Error: Missing action in ActionData.");
+            return;
+        }
+
+        if (actionData.action == "loadstate") {
+            if (!string.IsNullOrEmpty(actionData.stateID)) {
+                agentMovement.LoadState(actionData.stateID);
+                Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
+                SendFeedbackToPython( true,$"Loaded state ID: {actionData.stateID}");
+            } else {
+                Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
+                SendFeedbackToPython( false,"Error: Missing state ID for LoadSceneState.");
+            }
+        } else if (actionData.action == "loadrobot") {
+            if (agentMovement == null) {
+                Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
+                await Task.Delay(2000);
+                Init();
+            }
+            var result = agentMovement.LoadRobot(actionData.robotType);
+            Debug.Log($"Loaded robot of type: {actionData.robotType}");
+            SendFeedbackToPython( result,"load robot feedback");
+        } else if (actionData.action == "resetscene") {
+            var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
+            Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
+            Init();
+            SendFeedbackToPython(result);
+        } else if (actionData.action=="getcurstate") {
+            SendFeedbackToPython(true,"get current scene");
+        } else {
+            agentMovement.ExecuteActionWithCallback(actionData, () => {
+                bool success = true; // Assume success unless otherwise determined
+                string msg = "";
+
+                if (actionData.action == "undo" || actionData.action == "redo") {
+                    Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
+                } else {
+                    sceneStateManager.SaveCurrentState();
+                    Debug.Log($"Saved current state after action: {actionData.action}");
+                }
+
+                SendFeedbackToPython(success, msg);
+            });
         }
     }
 
@@ -269,6 +272,4 @@ public class UnityClient : MonoBehaviour
             Debug.LogError($"Exception occurred while closing client/stream: {ex.GetType().Name} - {ex.Message}");
         }
     }
-
-
 }

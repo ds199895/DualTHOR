@@ -1012,9 +1012,9 @@ public class AgentMovement : MonoBehaviour
     public void LoadState(string stateID)
     {
         Debug.Log($"Attempting to load scene state with ID: {stateID}");
-        DisableArticulationBodies();
+        // DisableArticulationBodies();
         sceneManager.LoadStateByIndex(stateID);
-        EnableArticulationBodies();
+        // EnableArticulationBodies();
     }
     public void DisableArticulationBodies()
     {
@@ -1163,7 +1163,7 @@ public class AgentMovement : MonoBehaviour
         {
             case "x1":
                 robots[0].SetActive(true);
-                initGame();
+                SetRobot();
                 cameraTransform = Camera.main.transform;
                 CurrentRobotType = RobotType.X1;
                 InitializeAdjustments(true);
@@ -1172,11 +1172,13 @@ public class AgentMovement : MonoBehaviour
                 break;
             case "h1":
                 robots[1].SetActive(true);
-                initGame();
+                Debug.Log("Set robot!");
+                SetRobot();
                 cameraTransform = Camera.main.transform;
                 CurrentRobotType = RobotType.H1;
-                
+                ikH1.InitBodies();
                 ikH1.IniitTarget();
+                
                 // InitializeAdjustments(true);
                 // InitializeAdjustments(false);
                 // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
@@ -1189,8 +1191,6 @@ public class AgentMovement : MonoBehaviour
                 Debug.LogError($"Unknown robot type: {robotType}");
                 break;
         }
-        Debug.Log("Set robot!");
-        SetRobot();
         return true;
     }
 
