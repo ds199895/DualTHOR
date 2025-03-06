@@ -4,6 +4,12 @@ import time
 
 def test_controller():
     # 创建 Controller 实例
+    # scene name:
+    # kitchen
+    # bedroom
+    # bathroom
+    # livingroom
+    # livingroom2
     controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="livingroom2")
     
     # 启动控制器
