@@ -60,7 +60,7 @@ public class SceneStateManager : MonoBehaviour
     private GetObjectsInView getObjectsInView;
     
     
-    public List<SimObjPhysics> ObjectsInOperation=new  List<SimObjPhysics>();
+    public List<GameObject> ObjectsInOperation=new  List<GameObject>();
 
 
     public Transform ObjectsParent = null;
@@ -143,7 +143,7 @@ public class SceneStateManager : MonoBehaviour
 
     void Update()
     {
-        foreach (SimObjPhysics obj in ObjectsInOperation)
+        foreach (GameObject obj in ObjectsInOperation)
         {
             AdjustRotationToWorldAxes(obj.transform);
         }
@@ -497,7 +497,7 @@ public class SceneStateManager : MonoBehaviour
         {
             if (obj.ObjectID == objectID)
             {
-                ObjectsInOperation.Add(obj);
+                ObjectsInOperation.Add(obj.gameObject);
                 obj.transform.SetParent(parent);
                 Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
                 if (rigidbody != null)
@@ -542,11 +542,30 @@ public class SceneStateManager : MonoBehaviour
         {
             if (obj.ObjectID == objectID)
             {
-                ObjectsInOperation.Remove(obj);
+                ObjectsInOperation.Remove(obj.gameObject);
             }
         }
     }
-    
+
+    public void UpdateLastActionSuccessCollision(string collisionA,string collisionB)
+    {
+        if (stateHistoryA2T.Count > 0)
+        {
+            var currentAgent = stateHistoryA2T[currentStateIndex].agent;
+
+            currentAgent.lastActionSuccess = false;
+
+
+            // 尝试获取对应动作的错误信息
+
+            currentAgent.errorMessage =$"Collision Detected. Joint {collisionA} collision with object {collisionB}";
+        }
+        else
+        {
+            Debug.LogWarning("No state history to update lastActionSuccess or errorMessage.");
+        }
+    }
+
     public void UpdateLastActionSuccess(bool isSuccessful, string actionType = null)
     {
         if (stateHistoryA2T.Count > 0)

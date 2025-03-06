@@ -19,7 +19,7 @@ public class UnityClient : MonoBehaviour
     public class ActionData
     {
         public string action;
-        public float Magnitude;
+        public float magnitude;
         public string arm;  
         public string objectID;
         public float successRate;
@@ -27,6 +27,7 @@ public class UnityClient : MonoBehaviour
         public string robotType;
 
         public string scene;
+
     }
     string PreprocessJson(string json)
     {
@@ -101,6 +102,7 @@ public class UnityClient : MonoBehaviour
                     actionJson = PreprocessJson(actionJson);
                     ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
 
+                    Debug.Log("Parsed Action Data: "+actionData.ToString());
                     if (string.IsNullOrEmpty(actionData.action))
                     {
                         Debug.LogError("ActionData does not contain a valid action.");
@@ -131,7 +133,7 @@ public class UnityClient : MonoBehaviour
                         }
                         var result = agentMovement.LoadRobot(actionData.robotType);
                         Debug.Log($"Loaded robot of type: {actionData.robotType}");
-                        SendFeedbackToPython( result);
+                        SendFeedbackToPython( result,"load robot feedback");
                     }
                     else if (actionData.action == "resetscene")
                     {
@@ -139,7 +141,10 @@ public class UnityClient : MonoBehaviour
                         Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
                         Init();
                         SendFeedbackToPython(result);
+                    }else if (actionData.action=="getcurstate"){
+                        SendFeedbackToPython(true,"get current scene");
                     }
+
                     else
                     {
                         agentMovement.ExecuteActionWithCallback(actionData, () =>
@@ -181,6 +186,15 @@ public class UnityClient : MonoBehaviour
             {
                 Vector3 currentPosition = transform.position;
                 string feedback ="";
+
+                if(agentMovement.collisionDetected){
+                    success=false;
+                    msg+=" Collision Detected";
+
+                    sceneStateManager.UpdateLastActionSuccessCollision(agentMovement.collisionA,agentMovement.collisionB);
+                }
+
+
                 if(sceneStateManager) {
                     Debug.Log(sceneStateManager);
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();

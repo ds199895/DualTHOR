@@ -9,7 +9,7 @@ public class ErrorMessage : MonoBehaviour
     {
         errorMessage = new Dictionary<string, string[]>
         {
-            { "Break", new string[] {
+            { "Pick", new string[] {
                 "Unable to grasp", //无法抓住
                 "Successfully grasped but slipped afterwards", //成功抓住但后续滑落
                 "Object is too heavy", //物体太重

@@ -7,10 +7,11 @@ import threading
 import time
 import queue
 logging.basicConfig(level=logging.INFO)
-
-
+import server_ik_x1
+import server_ik_h1 
+import unity_launcher  
 class Controller:
-    def __init__(self, host='localhost', port=5678, config_path="config.json", robot_type='X1',scene="livingroom2"):
+    def __init__(self, host='localhost', port=5678, config_path="config.json", start_unity_exe=True, robot_type='X1',scene="livingroom2"):
         """
         初始化控制器，包括动作执行器、TCP 服务器和配置加载。
         """
@@ -23,6 +24,29 @@ class Controller:
         self.tcp_server.on_connect = self.on_client_connect  # 设置连接事件回调
         self.scene=scene
         self.feedback_queue = queue.Queue()  # 用于存储反馈的队列
+
+
+            # 如果需要启动 Unity 可执行文件
+        unity_process = None
+        if start_unity_exe:
+            unity_process = unity_launcher.start_unity()
+            if not unity_process:
+                print("Failed to start Unity. Exiting...")
+                return
+            print("Unity executable started.")
+        else:
+            print("Skipping Unity executable startup. Using Unity Editor for communication.")
+        
+
+        if robot_type=="x1":
+            server_ik=server_ik_x1
+        elif robot_type=="h1":
+            server_ik=server_ik_h1
+        print(server_ik)
+        # 启动 IK 服务
+        ik_thread = threading.Thread(target=server_ik.start_server_ik, daemon=True)
+        ik_thread.start()
+        print("IK server started.")
 
     def load_config(self, config_path):
         """
@@ -53,13 +77,13 @@ class Controller:
             # 启动反馈接收线程
             # threading.Thread(target=self.handle_feedback, daemon=True).start()
             # 启动用户输入处理
-            self.handle_user_input()
+            # self.handle_user_input()
         except Exception as e:
             logging.error(f"Error in Controller: {e}")
-        finally:
-            self.stop_event.set()
-            self.tcp_server.stop()
-            self.thread_pool.shutdown(wait=True)
+        # finally:
+        #     self.stop_event.set()
+        #     self.tcp_server.stop()
+        #     self.thread_pool.shutdown(wait=True)
 
     def step(self, action_name, **kwargs):
         """
@@ -79,9 +103,9 @@ class Controller:
                 while feed_back is None:
                     print("feedback: ", feed_back)
                     feed_back = self.feedback_queue.get()
-                print("result feed back: ", feed_back)
+                # print("result feed back: ", feed_back)
                 feedback_json=json.loads(feed_back)
-                print("feed back json: ", feedback_json)
+                # print("feed back json: ", feedback_json)
                 return feedback_json
             except Exception as e:
                 logging.error(f"Error executing action {action_name}: {e}")
@@ -101,9 +125,9 @@ class Controller:
         logging.info(f"Action '{action_name}' sent with parameters: {kwargs}")
         try:
             feed_back=self.tcp_server.receive()
-            print("feedback string: ",feed_back)
+            # print("feedback string: ",feed_back)
             feedback_json=json.loads(feed_back)
-            print("feed back json: ", feedback_json)
+            # print("feed back json: ", feedback_json)
             return feedback_json
         except Exception as e:
             logging.error(f"Error executing action {action_name}: {e}")
@@ -184,7 +208,8 @@ class Controller:
         客户端连接时触发的事件。
         """
         logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
-        res=self.reset_scene(scene=self.scene,robottype=self.robot_type)
+        # res=self.reset_scene(scene=self.scene,robottype=self.robot_type)
+        res=self.step("resetscene",scene=self.scene,robottype=self.robot_type)
 
 
         print("reset scene feed back: ",res)

@@ -88,6 +88,12 @@ public class AgentMovement : MonoBehaviour
     private float maxVerticalAngle = 80f; // 最大俯仰角度
     private bool isMouseUnlocked = false; // 标记是否按下了ESC以解锁鼠标
 
+
+    public bool collisionDetected=false;
+
+    public string collisionA;
+    public string collisionB;
+
     private string robottype="";
 
     [System.Serializable]
@@ -184,14 +190,14 @@ public class AgentMovement : MonoBehaviour
                     {
                         GameObject colliderObj = collider.gameObject;
 
-                    // // // 添加刚体组件
-                    Rigidbody rb = colliderObj.GetComponent<Rigidbody>();
-                    if (rb == null)
-                    {
-                        rb = colliderObj.AddComponent<Rigidbody>();
-                        // rb.isKinematic = true; // 设置为运动学刚体以避免物理引擎影响
-                        rb.constraints = RigidbodyConstraints.FreezeAll; // 冻结所有位置和旋转
-                    }
+                        // // // 添加刚体组件
+                        Rigidbody rb = colliderObj.GetComponent<Rigidbody>();
+                        if (rb == null)
+                        {
+                            rb = colliderObj.AddComponent<Rigidbody>();
+                            // rb.isKinematic = true; // 设置为运动学刚体以避免物理引擎影响
+                            rb.constraints = RigidbodyConstraints.FreezeAll; // 冻结所有位置和旋转
+                        }
 
                         // 添加碰撞处理器
                         //colliderObj.AddComponent<CollisionReporter>();
@@ -217,7 +223,33 @@ public class AgentMovement : MonoBehaviour
         {
             collidedObjects.Add(collision.gameObject);
         }
+
+        foreach(var obj in sceneManager.ObjectsInOperation){
+            if(collidedObjects.Contains(obj.gameObject)){
+
+            }else{
+                Debug.Log("Haven't interacted with object "+obj.gameObject.name);
+            }
+
+        }
+        if(!collisionDetected){
+            for(int i=0;i<collidedObjects.Count;i++){
+                if(!sceneManager.ObjectsInOperation.Contains(collidedObjects[i])){
+                    Debug.Log($"检测到异常碰撞: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
+                    collisionDetected=true;
+                    collisionA=articulationBody.name;
+                    collisionB=collision.gameObject.name;
+                }
+            }
+        }
+
     }
+
+    public void ClearCollisions(){
+        collidedObjects.Clear();
+        collisionDetected=false;
+    }
+
     public void Update(){
         if (Input.GetKeyDown(KeyCode.A))
         {
@@ -265,23 +297,9 @@ public class AgentMovement : MonoBehaviour
             return;
         }
 
-        // 更新 lastAction
-        sceneManager?.UpdateLastAction(actionData.action);
-
-        // 使用传入的 successRate 来执行概率判断
-        bool isSuccessful = Probability(actionData.successRate);
-        sceneManager?.UpdateLastActionSuccess(isSuccessful, actionData.action);
-
-        if (!isSuccessful)
-        {
-            Debug.LogWarning($"Action {actionData.action} failed due to random chance.");
-            callback?.Invoke();
-            return;
-        }
-
+    
         try
         {
-            
             Debug.Log("ConstructArguments");
 
             Debug.Log(actionData);
@@ -315,6 +333,27 @@ public class AgentMovement : MonoBehaviour
         {
             Debug.LogError($"Error executing action {actionData.action}: {ex.Message}");
             callback?.Invoke();
+        }
+
+        
+        // 更新 lastAction
+        sceneManager?.UpdateLastAction(actionData.action);
+
+        if(collisionDetected){
+
+            Debug.Log("Collision Detected, action failed!");
+            sceneManager?.UpdateLastActionSuccessCollision(collisionA,collisionB);
+        }else{
+            // 使用传入的 successRate 来执行概率判断
+            bool isSuccessful = Probability(actionData.successRate);
+            sceneManager?.UpdateLastActionSuccess(isSuccessful, actionData.action);
+
+            if (!isSuccessful)
+            {
+                Debug.LogWarning($"Action {actionData.action} failed due to random chance.");
+                callback?.Invoke();
+                return;
+            }
         }
     }
 
@@ -391,9 +430,10 @@ public class AgentMovement : MonoBehaviour
                     }
                     break;
                 case "magnitude":
-                    if (actionData.Magnitude != null)
+                    if (actionData.magnitude != null)
                     {
-                        args.Add(actionData.Magnitude);
+                        Debug.Log("magnitude: "+actionData.magnitude);
+                        args.Add(actionData.magnitude);
                     }
                     else
                     {
@@ -1149,6 +1189,8 @@ public class AgentMovement : MonoBehaviour
                 Debug.LogError($"Unknown robot type: {robotType}");
                 break;
         }
+        Debug.Log("Set robot!");
+        SetRobot();
         return true;
     }
 
