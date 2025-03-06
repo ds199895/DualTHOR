@@ -1,6 +1,7 @@
 import socket
 import logging
 import json
+import time
 # 设置日志记录
 logging.basicConfig(level=logging.INFO)
 
@@ -30,6 +31,8 @@ class TCPServer:
         # 触发连接事件回调
         if self.on_connect:
             self.on_connect()
+        # while True:
+        #     time.sleep(1)
 
     def send(self, data):
         """

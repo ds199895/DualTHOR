@@ -1,9 +1,10 @@
 import logging
 from controller import Controller
+import time
 
 def test_controller():
     # 创建 Controller 实例
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="livingroom2")
     
     # 启动控制器
     controller.start()
@@ -26,9 +27,9 @@ def test_controller():
     logging.info("Testing move...")
     controller.step("tp",objectID="LivingRoom_Bottle_01")
 
-    feedback=controller.step("pick",arm="left",objectID="LivingRoom_Bottle_01")
+    # feedback=controller.step("pick",arm="left",objectID="LivingRoom_Bottle_01")
 
-    feedback=controller.step("moveright",magnitude=1)
+    # feedback=controller.step("moveright",magnitude=1)
 
 
     
@@ -40,7 +41,7 @@ def test_controller():
     #     feedback=controller.step("undo")
     
 
-    print("feedback res",feedback);
+    # print("feedback res",feedback);
 
 
 
@@ -52,6 +53,13 @@ def test_controller():
     # logging.info("Testing redo_last_action...")
     # controller.redo_last_action()
 
+    # 等待特定信号
+
+    while True:
+        time.sleep(1)
+
+
+   
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

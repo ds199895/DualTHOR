@@ -48,6 +48,8 @@ class Controller:
         ik_thread.start()
         print("IK server started.")
 
+
+
     def load_config(self, config_path):
         """
         加载配置文件。
@@ -106,6 +108,7 @@ class Controller:
                 # print("result feed back: ", feed_back)
                 feedback_json=json.loads(feed_back)
                 # print("feed back json: ", feedback_json)
+                
                 return feedback_json
             except Exception as e:
                 logging.error(f"Error executing action {action_name}: {e}")
@@ -132,6 +135,25 @@ class Controller:
         except Exception as e:
             logging.error(f"Error executing action {action_name}: {e}")
             return None
+        
+    def step_async(self,actions_json):
+        # if "successRate" not in kwargs:
+        #     kwargs["successRate"] = self.get_default_success_rate(action_name)
+
+        # action_json = self.executor.execute_action(action_name, **kwargs)
+        self.tcp_server.send(actions_json)
+
+        # logging.info(f"Action '{action_name}' sent with parameters: {kwargs}")
+        try:
+            feed_back=self.tcp_server.receive()
+            # print("feedback string: ",feed_back)
+            feedback_json=json.loads(feed_back)
+            # print("feed back json: ", feedback_json)
+            return feedback_json
+        except Exception as e:
+            logging.error(f"Error executing action {actions_json}: {e}")
+            return None
+
 
 
     def handle_feedback(self):
@@ -216,6 +238,18 @@ class Controller:
         if res['success']:
             self.load_robot(self.robot_type)
 
+
+    def wait_for_signal(self, signal_name):
+        """
+        等待特定信号的到来。
+        """
+        logging.info(f"Waiting for signal: {signal_name}")
+        while True:
+            feedback = self.tcp_server.receive()
+            if signal_name in feedback:
+                logging.info(f"Received signal: {signal_name}")
+                break
+            time.sleep(1)  # 延迟以避免过多的CPU占用
 
 # 启动控制器
 if __name__ == '__main__':
