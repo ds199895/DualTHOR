@@ -23,20 +23,25 @@ def test_controller():
     # 测试move
     logging.info("Testing move...")
 
-    controller.step("rotateright",magnitude=1)
+    # controller.step("rotateright",magnitude=1)
 
-    controller.step("moveahead",magnitude=1.5)
+    # controller.step("moveahead",magnitude=1.5)
 
+    controller.step("tp",objectID="Kitchen_Faucet_01")
 
-    controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
+    controller.step("toggle",arm="left",objectID="Kitchen_Faucet_01")
     time.sleep(10)
-    controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
+    controller.step("toggle",objectID="Kitchen_Faucet_01")
+
+    # controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
+    # time.sleep(10)
+    # controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
     
-    controller.step("resetpose")
+    # controller.step("resetpose")
 
-    controller.step("pick", arm="left",objectID="Kitchen_Mug_02")
+    # controller.step("pick", arm="left",objectID="Kitchen_Mug_02")
 
-
+    # controller.step("moveleft", magnitude=0.2)
 
     # controller.step("tp",objectID="Kitchen_Mug_01")
 
