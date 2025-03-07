@@ -62,28 +62,36 @@ public class GetObjectsInView : MonoBehaviour
         int layerMask = LayerMask.GetMask("SimObjVisible");
 
         Collider[] collidersInLayer = Physics.OverlapSphere(targetCamera.transform.position, viewDistance, layerMask);
-        //print("GetObjectsInView colliders count: " + collidersInLayer.Length);
+        print("GetObjectsInView colliders count: " + collidersInLayer.Length);
        
         foreach (Collider collider in collidersInLayer)
         {
-            if(collider.GetComponentInParent<SimObjPhysics>().gameObject.CompareTag("Interactable"))
-            {
-                GameObject interactableParent = collider.GetComponentInParent<SimObjPhysics>().gameObject;
-                
-                if (interactableParent != null && GeometryUtility.TestPlanesAABB(planes, collider.bounds))
+            
+            // print("Get parent: " + collider.GetComponentInParent<SimObjPhysics>().gameObject);
+            if(collider.GetComponentInParent<SimObjPhysics>()){
+                if(collider.GetComponentInParent<SimObjPhysics>().gameObject.CompareTag("Interactable"))
                 {
-                    if (!canInteractableObjects.Contains(interactableParent))
+                
+                    GameObject interactableParent = collider.GetComponentInParent<SimObjPhysics>().gameObject;
+                
+                    if (interactableParent != null && GeometryUtility.TestPlanesAABB(planes, collider.bounds))
                     {
-                        if (IsVisible(interactableParent))
+                        // print("object name: "+interactableParent.name);
+                        if (!canInteractableObjects.Contains(interactableParent))
                         {
-                            canInteractableObjects.Add(interactableParent); // 添加到集合中
+                            if (IsVisible(interactableParent))
+                            {
+                                // print("is visible "+interactableParent.name);
+                                canInteractableObjects.Add(interactableParent); // 添加到集合中
+                            }
+                            //canInteractableObjects.Add(interactableParent); // 添加到集合中
+
                         }
-                        //canInteractableObjects.Add(interactableParent); // 添加到集合中
 
                     }
-
                 }
             }
+           
         }
         // 将集合转换为GameObject数组
         sceneManager.canInteractableObjects = canInteractableObjects;
@@ -134,17 +142,20 @@ public class GetObjectsInView : MonoBehaviour
         SimObjPhysics simObjPhysics = parent.GetComponent<SimObjPhysics>();
         if (simObjPhysics != null && simObjPhysics.VisiblePoints != null)
         {
+            // print("check visible ： "+parent.name);
             foreach (Transform visiblePoint in simObjPhysics.VisiblePoints)
             {
                 Vector3 direction = visiblePoint.position - targetCamera.transform.position;
+                // print("ray dir: "+direction);
                 Ray ray = new(targetCamera.transform.position, direction);
 
                 // 检测射线是否与物体相交
                 if (Physics.Raycast(ray, out RaycastHit hit, viewDistance))
                 {
+                    print("find hit: " + hit.transform.parent.name);
                     if (hit.transform.IsChildOf(parent.transform) || hit.transform == parent)
                     {
-                        //print("GetObjectsInView IsVisible: " + parent);
+                        // print("GetObjectsInView IsVisible: " + parent);
                         return true; // 找到与VisiblePoint相交的射线
                     }
                 }
