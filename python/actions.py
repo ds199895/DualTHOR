@@ -24,7 +24,8 @@ class Actions:
             "loadstate": self.dynamic_action,
             "loadrobot": self.dynamic_action,
             "resetscene":self.dynamic_action,
-            "getcurstate":self.dynamic_action
+            "getcurstate":self.dynamic_action,
+            "resetpose":self.dynamic_action
         }
 
     def execute_action(self, action_name, **kwargs):

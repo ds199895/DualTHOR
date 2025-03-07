@@ -10,7 +10,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     
     # 启动控制器
     controller.start()
@@ -22,14 +22,30 @@ def test_controller():
 
     # 测试move
     logging.info("Testing move...")
-    controller.step("tp",objectID="LivingRoom_Bottle_01")
 
-    json_actions = '[{"action":"pick","arm":"left","objectID":"LivingRoom_Bottle_01"}, {"action":"pick","arm":"right","objectID":"LivingRoom_Bottle_02"}]'
+    controller.step("rotateright",magnitude=1)
+
+    controller.step("moveahead",magnitude=1.5)
+
+
+    controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
+    time.sleep(10)
+    controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
+    
+    controller.step("resetpose")
+
+    controller.step("pick", arm="left",objectID="Kitchen_Mug_02")
 
 
 
-    controller.step_async(json_actions)
-    # feedback=controller.step("pick",arm="left",objectID="LivingRoom_Bottle_01")
+    # controller.step("tp",objectID="Kitchen_Mug_01")
+
+    # json_actions = '[{"action":"pick","arm":"left","objectID":"LivingRoom_Bottle_01"}, {"action":"pick","arm":"right","objectID":"LivingRoom_Bottle_02"}]'
+
+
+
+    # controller.step_async(json_actions)
+    # feedback=controller.step("pick",arm="left",objectID="Kitchen_Mug_01")
 
     # feedback=controller.step("moveright",magnitude=1)
 
