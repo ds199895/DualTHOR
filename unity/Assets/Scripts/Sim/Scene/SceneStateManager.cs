@@ -4,8 +4,9 @@ using TMPro;
 using System.Collections;
 using System.Linq;
 using System;
-
-
+using System.IO;
+using Newtonsoft.Json;
+using Unity.VisualScripting;
 public class SceneStateManager : MonoBehaviour
 {
     
@@ -64,11 +65,26 @@ public class SceneStateManager : MonoBehaviour
 
 
     public Transform ObjectsParent = null;
-    
+
+
+    public Dictionary<string, ActionConfig> actionConfigs;
+
+        // 定义ActionConfig类
+    public class ActionConfig
+    {
+        public float successRate;
+        public Dictionary<string, float> errorMessages;
+
+        public override string ToString()
+        {
+            string errorMessagesString = string.Join(", ", errorMessages.Select(kv => $"{kv.Key}: {kv.Value}"));
+            return $"Success Rate: {successRate}, Error Messages: [{errorMessagesString}]";
+        }
+    }
 
     void Start()
     {
-
+        LoadActionConfigs();
 
         // 查找并填充可交互物体列表
         FillList(simObjects, new[] { "Interactable", "DynamicAdd" });
@@ -95,8 +111,23 @@ public class SceneStateManager : MonoBehaviour
         
         StartCoroutine(DelayedSave());
     }
+    
+    private void LoadActionConfigs(){
+        string path = Path.Combine(Application.streamingAssetsPath, "ErrorConfig.json");
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            actionConfigs = JsonConvert.DeserializeObject<Dictionary<string, ActionConfig>>(json);
 
-
+            // foreach(var config in actionConfigs){
+            //     print(config.Value);
+            // }
+        }
+        else
+        {
+            Debug.LogError("ErrorConfig.json not found!");
+        }
+    }
     // 填充列表的方法
     private void FillList(List<GameObject> list, string[] tags)
     {
@@ -566,36 +597,49 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    public void UpdateLastActionSuccess(bool isSuccessful, string actionType = null)
+    public bool UpdateLastActionSuccess(string actionType = null)
     {
         if (stateHistoryA2T.Count > 0)
         {
             var currentAgent = stateHistoryA2T[currentStateIndex].agent;
 
-            currentAgent.lastActionSuccess = isSuccessful;
-
-            if (!isSuccessful && actionType != null)
+            if (actionConfigs.TryGetValue(actionType, out ActionConfig config))
             {
-                // 尝试获取对应动作的错误信息
-                ErrorMessage errorMessageComponent = FindObjectOfType<ErrorMessage>();
-                if (errorMessageComponent != null && errorMessageComponent.errorMessage.ContainsKey(actionType))
+                float randomValue = UnityEngine.Random.value;
+                if (randomValue < config.successRate)
                 {
-                    string[] possibleErrors = errorMessageComponent.GetErrorMessage(actionType);
-                    currentAgent.errorMessage = possibleErrors[UnityEngine.Random.Range(0, possibleErrors.Length)];
+                    currentAgent.lastActionSuccess = true;
+                    currentAgent.errorMessage = string.Empty;
+                    return true;
                 }
                 else
                 {
-                    currentAgent.errorMessage = "Error message not defined for this action."; // 动作无对应错误信息
+                    currentAgent.lastActionSuccess = false;
+                    float cumulativeProbability = config.successRate;
+                    foreach (var error in config.errorMessages)
+                    {
+                        cumulativeProbability += error.Value;
+                        if (randomValue < cumulativeProbability)
+                        {
+                            currentAgent.errorMessage = error.Key;
+                            break;
+                        }
+                    }
+                    return false;
                 }
             }
             else
             {
-                currentAgent.errorMessage = string.Empty; // 成功时无错误信息
+                Debug.LogWarning("No configuration found for action: " + actionType);
+                currentAgent.lastActionSuccess = true;
+                currentAgent.errorMessage =  "Error message not defined for this action, Default to Success.";
+                return true;
             }
         }
         else
         {
             Debug.LogWarning("No state history to update lastActionSuccess or errorMessage.");
+            return false;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Unity.VisualScripting;
 
 public class IK_H1 : IKBase
 {
@@ -32,6 +33,10 @@ public class IK_H1 : IKBase
     public Transform leftTargetPose;
     public Transform rightTargetPose;
 
+
+    private Transform defaultLeftTarget;
+    private Transform defaultRightTarget;
+
     public Transform baseTransform;
 
     // 插值相关参数
@@ -43,10 +48,28 @@ public class IK_H1 : IKBase
 
     // 键盘控制
     public KeyCode triggerKey = KeyCode.Space; // 触发IK的按键
+     
 
+    public float[] initialAngles;
+
+    public bool inited=false;
     void Start()
     {
-
+        if (defaultLeftTarget == null)
+        {
+            defaultLeftTarget = new GameObject("DefaultLeftTarget").transform;
+            defaultLeftTarget.SetParent(transform);
+            defaultLeftTarget.localPosition = leftTargetPose.localPosition;
+            defaultLeftTarget.localRotation = leftTargetPose.localRotation;
+        }
+        
+        if (defaultRightTarget == null)
+        {
+            defaultRightTarget = new GameObject("DefaultRightTarget").transform;
+            defaultRightTarget.SetParent(transform);
+            defaultRightTarget.localPosition = rightTargetPose.localPosition;
+            defaultRightTarget.localRotation = rightTargetPose.localRotation;
+        }
     }
     public void InitBodies(){
         // 确保所有关节都已赋值
@@ -148,6 +171,14 @@ public class IK_H1 : IKBase
                     
                     // 设置目标关节角度
                     targetJointAngles = response.q.Select(angle => angle * Mathf.Rad2Deg).ToArray();
+
+                    if(!inited){
+                        initialAngles=response.q.Select(angle => angle * Mathf.Rad2Deg).ToArray();
+                        inited=true;
+                        foreach(float f in initialAngles){
+                            Debug.Log("angle: "+f);
+                        }
+                    }
                     
                     // 重置插值参数
                     currentInterpolationTime = 0f;
@@ -219,6 +250,20 @@ public class IK_H1 : IKBase
 
     public void IniitTarget()
     {
+        // 确保 defaultLeftTarget 已经被初始化
+        if (defaultLeftTarget == null)
+        {
+            Debug.LogError("defaultLeftTarget 未初始化！");
+            return;
+        }
+
+        // 拷贝 leftTargetPose 的位置和旋转到 defaultLeftTarget
+        defaultLeftTarget.position = leftTargetPose.position;
+        defaultLeftTarget.rotation = leftTargetPose.rotation;
+        defaultRightTarget.position = rightTargetPose.position;
+        defaultRightTarget.rotation = rightTargetPose.rotation;
+
+
         // 转换目标位置到基座坐标系
         float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
         float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
@@ -233,6 +278,17 @@ public class IK_H1 : IKBase
         };
         StartCoroutine(SendIKRequest(request));
     }
+    public void ResetTarget()
+    {
+        
+        targetJointAngles=initialAngles;
+
+        // 重置插值参数
+        currentInterpolationTime = 0f;
+        isInterpolating = true;
+    }
+
+
 
     public override void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {

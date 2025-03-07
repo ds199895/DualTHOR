@@ -1,0 +1,50 @@
+{
+    "Pick": {
+        "successRate": 0.94,
+        "errorMessages": {
+            "Unable to grasp": 0.05,
+            "Successfully grasped but slipped afterwards": 0.01
+        }
+    },
+    "Open": {
+        "successRate": 0.8,
+        "errorMessages": {
+            "Object cannot be opened": 0.1,
+            "Successfully grasped but slipped afterwards": 0.1
+        }
+    },
+    "Toggle": {
+        "successRate": 0.85,
+        "errorMessages": {
+            "Action not permitted": 0.1,
+            "Operation failed due to mechanical issue": 0.05
+        }
+    },
+    "CookObject": {
+        "successRate": 0.9,
+        "errorMessages": {
+            "Cooker malfunction": 0.05,
+            "Cooking process interrupted": 0.05
+        }
+    },
+    "Fill": {
+        "successRate": 0.9,
+        "errorMessages": {
+            "Reached maximum capacity": 0.05,
+            "Filling process failed due to blockage": 0.05
+        }
+    },
+    "SliceObject": {
+        "successRate": 0.9,
+        "errorMessages": {
+            "Slicing failed due to resistance": 0.05,
+            "Invalid slicing position": 0.05
+        }
+    },
+    "UsedUp": {
+        "successRate": 0.95,
+        "errorMessages": {
+            "Object has been depleted": 0.05
+        }
+    }
+}

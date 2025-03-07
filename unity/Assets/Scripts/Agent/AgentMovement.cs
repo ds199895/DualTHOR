@@ -9,6 +9,8 @@ using Unity.Collections;
 using Unity.Robotics.UrdfImporter;
 using UnityEngine.SceneManagement;
 using NUnit.Framework.Constraints;
+using System.IO;
+using Newtonsoft.Json;
 
 
 public class AgentMovement : MonoBehaviour
@@ -35,14 +37,17 @@ public class AgentMovement : MonoBehaviour
     private float positionChangeThreshold = 0.0001f; // 位置变化阈值
     public IK_X1 ikX1; 
     public IK_H1 ikH1;
+
+
     // public Transform pickPositionL;  // 夹取位置
     // public Transform placePositionL; // 放置位置
     // public Transform pickPositionR;  // 夹取位置
     // public Transform placePositionR; // 放置位置
 
     // private PhysicsScene physicsScene;
+
     public List<float> targetJointAngles = new List<float> { 0, 0, 0, 0, 0, 0 }; // 初始值
-    
+    private List<float> initialJointAngles = new List<float>();
     private string[] h1_left_arm_joints = new string[]
     {
         "left_shoulder_pitch_link",
@@ -87,7 +92,6 @@ public class AgentMovement : MonoBehaviour
     private Transform cameraTransform; // 相机Transform
     private float maxVerticalAngle = 80f; // 最大俯仰角度
     private bool isMouseUnlocked = false; // 标记是否按下了ESC以解锁鼠标
-
 
     public bool collisionDetected=false;
 
@@ -146,13 +150,64 @@ public class AgentMovement : MonoBehaviour
     private List<ArticulationDrive> defaultDrives = new List<ArticulationDrive>();
     private List<ArticulationDrive> tempDrives = new List<ArticulationDrive>();
 
-    void Start()
-    {
-       
+
+    public class ActionMap{
+        public Dictionary<string,ActionState> actionmap;
     }
 
+    public class ActionState{
+        public Dictionary<string,float>actionstate;
+    }
+
+    public Dictionary<string,ActionMap> propertyMap;
+    void Start()
+    {
+       Loadpropertymap();
+    }
+
+
+    private void Loadpropertymap(){
+        string path = Path.Combine(Application.streamingAssetsPath, "ActionOutcomeConfig.json");
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            var actionOutcomeConfig = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, float>>>>(json);
+            propertyMap = actionOutcomeConfig.ToDictionary(
+                category => category.Key,
+                category => new ActionMap
+                {
+                    actionmap = category.Value.ToDictionary(
+                        action => action.Key,
+                        action => new ActionState
+                        {
+                            actionstate = new Dictionary<string, float>(action.Value)
+                        }
+                    )
+                }
+            );
+
+            // 打印调试信息
+            // Debug.Log("Loaded ActionOutcomeConfig:");
+            // foreach (var category in propertyMap)
+            // {
+            //     Debug.Log($"Category: {category.Key}");
+            //     foreach (var action in category.Value.actionmap)
+            //     {
+            //         Debug.Log($"  Action: {action.Key}");
+            //         foreach (var outcome in action.Value.actionstate)
+            //         {
+            //             Debug.Log($"    Outcome: {outcome.Key}, Probability: {outcome.Value}");
+            //         }
+            //     }
+            // }
+        }
+        else
+        {
+            Debug.LogError("ErrorConfig.json not found!");
+        }
+    }
     public void SetRobot(){
-         articulationChain = GetComponentsInChildren<ArticulationBody>();
+        articulationChain = GetComponentsInChildren<ArticulationBody>();
 
         if (articulationChain == null || articulationChain.Length == 0)
         {
@@ -339,23 +394,113 @@ public class AgentMovement : MonoBehaviour
         // 更新 lastAction
         sceneManager?.UpdateLastAction(actionData.action);
 
-        if(collisionDetected){
+        // var simobj=sceneManager.ObjectsInOperation[0].GetComponent<SimObjPhysics>();
 
-            Debug.Log("Collision Detected, action failed!");
-            sceneManager?.UpdateLastActionSuccessCollision(collisionA,collisionB);
-        }else{
-            // 使用传入的 successRate 来执行概率判断
-            bool isSuccessful = Probability(actionData.successRate);
-            sceneManager?.UpdateLastActionSuccess(isSuccessful, actionData.action);
+        // Debug.Log("sim object name: "+simobj.name);
 
-            if (!isSuccessful)
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+        GameObject simobj=null;
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == actionData.objectID)
             {
-                Debug.LogWarning($"Action {actionData.action} failed due to random chance.");
-                callback?.Invoke();
-                return;
+                simobj=obj.gameObject;
             }
         }
+
+        Debug.Log("sim obj name: "+simobj.name);
+
+        if(simobj.GetComponent<SimObjPhysics>().IsFillable){
+            Debug.Log("test get fill");
+            if(simobj.gameObject.GetComponent<Fill>().IsFilled){
+                Debug.Log("isfilled");
+                propertyMap.TryGetValue("Filled",out ActionMap filledmap);
+
+                Debug.Log(filledmap);
+                if(actionData.action=="pick"){
+                    Debug.Log("get pick state");
+                    filledmap.actionmap.TryGetValue("Pickup",out ActionState filled_pick_state);
+                    
+                    foreach (var outcome in filled_pick_state.actionstate)
+                    {
+                        Debug.Log($"    Outcome: {outcome.Key}, Probability: {outcome.Value}");
+                    }
+                }
+            }
+
+        }
+          
+
+
+        // if(collisionDetected){
+
+        //     Debug.Log("Collision Detected, action failed!");
+        //     sceneManager?.UpdateLastActionSuccessCollision(collisionA,collisionB);
+        // }else{
+            // 使用传入的 successRate 来执行概率判断
+            // bool isSuccessful = Probability(actionData.successRate);
+            bool isSuccessful= (bool)(sceneManager?.UpdateLastActionSuccess(actionData.action));
+            string msg="broken";
+            // var actionConfigs=sceneManager.actionConfigs;
+            // if (actionConfigs.TryGetValue(actionData.action, out SceneStateManager.ActionConfig config))
+            // {
+            //     float randomValue = UnityEngine.Random.value;
+            //     if (randomValue < config.successRate)
+            //     {
+            //         msg="success";
+            //     }
+            //     else
+            //     {
+            //         float cumulativeProbability = config.successRate;
+            //         foreach (var error in config.errorMessages)
+            //         {
+            //             cumulativeProbability += error.Value;
+            //             if (randomValue < cumulativeProbability)
+            //             {
+            //                 currentAgent.errorMessage = error.Key;
+            //                 break;
+            //             }
+            //         }
+            //         return false;
+            //     }
+            // }
+            // string msg=sceneManager?.UpdateLastActionSuccess(actionData.action);
+
+            // if(msg=="broken"){
+            //     SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+            //     GameObject breakobj=null;
+            //     foreach (SimObjPhysics obj in allObjects)
+            //     {
+            //         if (obj.ObjectID == actionData.objectID)
+            //         {
+            //             breakobj=obj.gameObject;
+            //         }
+            //     }
+
+            //     Debug.Log(breakobj);
+            //     if (breakobj!=null){
+                    
+            //         // Transform pickPosition = SceneStateManager.GetInteractablePoint(actionData.objectID);
+            //         Debug.Log("test break control");
+            //         Break break_script=breakobj.GetComponent<Break>();
+            //         break_script.BreakObject();
+            //     }
+            // }else if(msg=="spill"){
+
+            // }
+
+
+            // if (!isSuccessful)
+            // {
+            //     Debug.LogWarning($"Action {actionData.action} failed due to random chance.");
+            //     callback?.Invoke();
+            //     return;
+            // }
+        // }
     }
+
+
+
 
     private IEnumerator ExecuteCoroutineAction(MethodInfo method, object[] args, Action callback)
     {
@@ -1178,10 +1323,13 @@ public class AgentMovement : MonoBehaviour
                 CurrentRobotType = RobotType.H1;
                 ikH1.InitBodies();
                 ikH1.IniitTarget();
-                
+
                 // InitializeAdjustments(true);
                 // InitializeAdjustments(false);
                 // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+
+
+
                 break;
             case "g1":
                 robots[2].SetActive(true);
@@ -1192,6 +1340,16 @@ public class AgentMovement : MonoBehaviour
                 break;
         }
         return true;
+    }
+
+
+
+    public void ResetPose(){
+        // if(CurrentRobotType==RobotType.H1){
+        //     Debug.Log("reset h1 pose!");
+        //     ikH1.ResetTarget();
+        // }
+        ikH1.ResetTarget();
     }
 
 

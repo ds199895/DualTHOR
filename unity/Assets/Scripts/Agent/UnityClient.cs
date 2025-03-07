@@ -164,7 +164,15 @@ public class UnityClient : MonoBehaviour
             SendFeedbackToPython(result);
         } else if (actionData.action=="getcurstate") {
             SendFeedbackToPython(true,"get current scene");
-        } else {
+        } else if (actionData.action=="resetpose"){
+            Debug.Log("reset pose action!");
+            agentMovement.ResetPose();
+            SendFeedbackToPython(true,"reset pose");
+        } 
+        
+        
+        
+        else {
             agentMovement.ExecuteActionWithCallback(actionData, () => {
                 bool success = true; // Assume success unless otherwise determined
                 string msg = "";
