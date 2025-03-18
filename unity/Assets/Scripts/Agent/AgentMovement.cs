@@ -782,8 +782,6 @@ public class AgentMovement : MonoBehaviour
                 sceneManager.SetParent(gripperController.h1_rightArmLeftGripper.transform, objectID);
             }
 
-
-
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);

@@ -21,6 +21,13 @@ public class CameraController : MonoBehaviour
     private float rotationY = 0f;
     private float rotationX = 0f;
 
+    public bool record;
+    public string imgeDir;
+    
+    // 添加计时器变量
+    private float lastRecordTime = 0f;
+    private const float RECORD_INTERVAL = 0.2f; // 200毫秒间隔
+
     void Start()
     {
         // 确保所有相机启用
@@ -38,6 +45,32 @@ public class CameraController : MonoBehaviour
 
         // 按下 'P' 键时保存所有相机图像
         if (Input.GetKeyDown(KeyCode.P)) SaveAllCameraImages();
+        
+        // 添加自动记录功能
+        if (record)
+        {
+            // 检查是否到达记录间隔
+            if (Time.time - lastRecordTime >= RECORD_INTERVAL)
+            {
+                // 确保保存目录存在
+                if (!string.IsNullOrEmpty(imgeDir))
+                {
+                    if (!Directory.Exists(imgeDir))
+                    {
+                        Directory.CreateDirectory(imgeDir);
+                    }
+                    SaveAllCameraImages();
+                }
+                else
+                {
+                    Debug.LogWarning("记录目录路径为空！请设置 imgeDir");
+                    record = false;
+                }
+                
+                // 更新上次记录时间
+                lastRecordTime = Time.time;
+            }
+        }
     }
 
     private void EnableAllCameras()
@@ -110,7 +143,7 @@ public class CameraController : MonoBehaviour
         Cursor.visible = visible;
     }
 
-    // 保存所有相机图像到本地
+    // 修改保存所有相机图像到指定目录
     public void SaveAllCameraImages()
     {
         SaveCameraImage(egocentricCam.targetTexture, "EgocentricCam");
@@ -122,13 +155,22 @@ public class CameraController : MonoBehaviour
 
     private void SaveCameraImage(RenderTexture renderTexture, string cameraName)
     {
+        if (renderTexture == null)
+        {
+            Debug.LogWarning($"{cameraName} 没有目标渲染纹理！");
+            return;
+        }
+        
         // 生成UUID并构建文件名
         string uuid = Guid.NewGuid().ToString();
         string fileName = $"{cameraName}_{uuid}.png";
-        string filePath = Path.Combine(Application.dataPath, "SavedImages", fileName);
+        
+        // 使用自定义路径或默认路径
+        string dirPath = !string.IsNullOrEmpty(imgeDir) ? imgeDir : Path.Combine(Application.dataPath, "SavedImages");
+        string filePath = Path.Combine(dirPath, fileName);
 
         // 确保保存目录存在
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        Directory.CreateDirectory(dirPath);
 
         // 将RenderTexture内容保存到PNG文件
         Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
@@ -142,6 +184,6 @@ public class CameraController : MonoBehaviour
         File.WriteAllBytes(filePath, pngData);
 
         Destroy(texture);
-        Debug.Log($"Saved {cameraName} image to {filePath}");
+        Debug.Log($"已保存 {cameraName} 图像到 {filePath}");
     }
 }
