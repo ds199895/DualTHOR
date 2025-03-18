@@ -29,6 +29,8 @@ public class CameraController : MonoBehaviour
     private float lastRecordTime = 0f;
     private const float RECORD_INTERVAL = 0.2f; // 200毫秒间隔
 
+    private int imageCounter = 0; // 用于图像编号
+
     void Start()
     {
         // 确保所有相机启用
@@ -95,6 +97,10 @@ public class CameraController : MonoBehaviour
         isFreeMode = true;
         isCameraControlEnabled = true;
         SetCursorState(CursorLockMode.Locked, false);
+    }
+
+    public void ResetImageCount(){
+        imageCounter=0;
     }
 
     void FreeCamControl()
@@ -164,9 +170,8 @@ public class CameraController : MonoBehaviour
             return;
         }
         
-        // 生成UUID并构建文件名
-        string uuid = Guid.NewGuid().ToString();
-        string fileName = $"{cameraName}_{uuid}.png";
+        // 使用编号构建文件名
+        string fileName = $"{cameraName}_{imageCounter++}.png";
         
         // 使用自定义路径或默认路径
         string dirPath = !string.IsNullOrEmpty(imgeDir) ? imgeDir : Path.Combine(Application.dataPath, "SavedImages");

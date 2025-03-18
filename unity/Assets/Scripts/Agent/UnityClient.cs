@@ -136,7 +136,9 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Start recording .....");
 
         sceneStateManager.camera_ctrl.imgeDir=Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+
         sceneStateManager.camera_ctrl.record=true;
+
         Debug.Log("Parsed Action Data: "+actionData.ToString());
         if (string.IsNullOrEmpty(actionData.action)) {
             Debug.LogError("ActionData does not contain a valid action.");
@@ -191,7 +193,7 @@ public class UnityClient : MonoBehaviour
             });
         }
         // sceneStateManager.camera_ctrl.record=false;
-         Debug.Log("Finish recording .....");
+        //  Debug.Log("Finish recording .....");
     }
 
     public void SendFeedbackToPython( bool success, string msg = "")
@@ -216,7 +218,7 @@ public class UnityClient : MonoBehaviour
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
                     Debug.Log(currentSceneState);
                     string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\\\"); // 转义反斜杠
+                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
                     feedback = $"{{\"success\": {(success ? 1 : 0)},\"imgpath\":\"{imagePath}\" ,\"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
               
@@ -237,6 +239,7 @@ public class UnityClient : MonoBehaviour
         }
         Debug.Log("Stop recording");
         sceneStateManager.camera_ctrl.record=false;
+        sceneStateManager.camera_ctrl.ResetImageCount();
     }
 
     public void SendFeedbackToPython( bool success)
