@@ -66,10 +66,22 @@ public class SceneStateManager : MonoBehaviour
 
     public Transform ObjectsParent = null;
 
+    public CameraController camera_ctrl;
+
+    public string ImagePath{
+        get {
+            return camera_ctrl != null ? camera_ctrl.imgeDir : string.Empty;
+        }
+        set {
+            if (camera_ctrl != null) {
+                camera_ctrl.imgeDir = value;
+            }
+        }
+    }
 
     public Dictionary<string, ActionConfig> actionConfigs;
 
-        // 定义ActionConfig类
+    // 定义ActionConfig类
     public class ActionConfig
     {
         public float successRate;
@@ -81,6 +93,8 @@ public class SceneStateManager : MonoBehaviour
             return $"Success Rate: {successRate}, Error Messages: [{errorMessagesString}]";
         }
     }
+
+    
 
     void Start()
     {

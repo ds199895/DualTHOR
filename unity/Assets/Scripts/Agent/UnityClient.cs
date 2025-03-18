@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -132,6 +133,10 @@ public class UnityClient : MonoBehaviour
     }
 
     private async Task ProcessActionData(ActionData actionData) {
+        Debug.Log("Start recording .....");
+
+        sceneStateManager.camera_ctrl.imgeDir=Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.record=true;
         Debug.Log("Parsed Action Data: "+actionData.ToString());
         if (string.IsNullOrEmpty(actionData.action)) {
             Debug.LogError("ActionData does not contain a valid action.");
@@ -169,9 +174,6 @@ public class UnityClient : MonoBehaviour
             agentMovement.ResetPose();
             SendFeedbackToPython(true,"reset pose");
         } 
-        
-        
-        
         else {
             agentMovement.ExecuteActionWithCallback(actionData, () => {
                 bool success = true; // Assume success unless otherwise determined
@@ -185,8 +187,11 @@ public class UnityClient : MonoBehaviour
                 }
 
                 SendFeedbackToPython(success, msg);
+
             });
         }
+        // sceneStateManager.camera_ctrl.record=false;
+         Debug.Log("Finish recording .....");
     }
 
     public void SendFeedbackToPython( bool success, string msg = "")
@@ -211,7 +216,8 @@ public class UnityClient : MonoBehaviour
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
                     Debug.Log(currentSceneState);
                     string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
+                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\\\"); // 转义反斜杠
+                    feedback = $"{{\"success\": {(success ? 1 : 0)},\"imgpath\":\"{imagePath}\" ,\"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
               
                 // feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
@@ -229,6 +235,8 @@ public class UnityClient : MonoBehaviour
         {
             Debug.LogWarning("Cannot send feedback: client or stream is null.");
         }
+        Debug.Log("Stop recording");
+        sceneStateManager.camera_ctrl.record=false;
     }
 
     public void SendFeedbackToPython( bool success)

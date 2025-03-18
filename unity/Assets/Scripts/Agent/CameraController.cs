@@ -23,6 +23,7 @@ public class CameraController : MonoBehaviour
 
     public bool record;
     public string imgeDir;
+    private string baseDir=Path.Combine(Application.dataPath, "SavedImages");
     
     // 添加计时器变量
     private float lastRecordTime = 0f;
@@ -49,6 +50,8 @@ public class CameraController : MonoBehaviour
         // 添加自动记录功能
         if (record)
         {
+            Debug.Log("Image path: "+baseDir);
+            // imgeDir=baseDir+"/test";
             // 检查是否到达记录间隔
             if (Time.time - lastRecordTime >= RECORD_INTERVAL)
             {
