@@ -38,8 +38,9 @@ def test_controller():
     # controller.step("toggle",objectID="Kitchen_CoffeeMachine_01")
     
     # controller.step("resetpose")
-    controller.step("tp",objectID="Kitchen_Mug_02")
-    feed_back=controller.step("pick", arm="left",objectID="Kitchen_Mug_02")
+    controller.step("tp",objectID="Kitchen_Mug_01")
+    # feed_back=controller.step("toggle", arm="left",objectID="Kitchen_CoffeeMachine_01")
+    feed_back = controller.step("pick",objectID="Kitchen_Mug_01")
 
     # controller.step("moveleft", magnitude=0.2)
 
