@@ -7,7 +7,7 @@ public class GetObjectsInView : MonoBehaviour
     [SerializeField]
     private Camera targetCamera; // 相机
     [SerializeField]
-    private float viewDistance = 30f; // 视野距离
+    public float viewDistance = 30f; // 视野距离
     [SerializeField]
     private List<GameObject> canInteractableObjects; // 记录GameObject的数组
     private SceneStateManager sceneManager;

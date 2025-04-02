@@ -5,13 +5,12 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
+    - target: {fileID: 8396441049647835788, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
-      propertyPath: m_RootOrder
-      value: 0
+      propertyPath: m_Name
+      value: QuadDecalSpawnPlane
       objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
@@ -30,11 +29,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -46,6 +40,16 @@ PrefabInstance:
     - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
       propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835780, guid: 89a0464aabe374f16bde3f8e779b3830,
@@ -73,26 +77,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: a98ce57d4c59b417eb37214101182da7, type: 2}
-    - target: {fileID: 8396441049647835788, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
-      propertyPath: m_Name
-      value: QuadDecalSpawnPlane
-      objectReference: {fileID: 0}
-    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
-      propertyPath: transparent
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
-      propertyPath: decalScale.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
-      propertyPath: decalScale.y
-      value: 0.5
-      objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
       propertyPath: decals.Array.size
@@ -100,15 +84,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
-      propertyPath: stencilWriteValue
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
-        type: 3}
       propertyPath: decals.Array.data[0]
       value: 
       objectReference: {fileID: 5847586044502736223, guid: 19ee84792cfbf4f31a46e06ae2b30a2e,
         type: 3}
+    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: transparent
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: transparentDecalSpawnOffset.z
+      value: -0.03
+      objectReference: {fileID: 0}
     - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
       propertyPath: decals.Array.data[1]
@@ -129,11 +118,18 @@ PrefabInstance:
         type: 3}
     - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
         type: 3}
-      propertyPath: transparentDecalSpawnOffset.z
-      value: -0.03
+      propertyPath: stencilWriteValue
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: decalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396441049647835789, guid: 89a0464aabe374f16bde3f8e779b3830,
+        type: 3}
+      propertyPath: decalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 89a0464aabe374f16bde3f8e779b3830, type: 3}

@@ -5,16 +5,11 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1619650004, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
       propertyPath: m_Name
       value: Bedsheet_Made_20
-      objectReference: {fileID: 0}
-    - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
-      propertyPath: m_RootOrder
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
       propertyPath: m_LocalPosition.x
@@ -29,10 +24,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
@@ -43,6 +34,14 @@ PrefabInstance:
     - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1619949620, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -61,7 +60,4 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 5509ac41d2275c64596ec042696dca4d, type: 2}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c0c642203f8e2954fbe2cd435b0a1837, type: 3}

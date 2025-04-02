@@ -58,7 +58,7 @@ public class SceneStateManager : MonoBehaviour
     //public Dictionary<string , GameObject> CanInteractableObjectsDict => canInteractableObjectsDict;
 
     [SerializeField]
-    private GetObjectsInView getObjectsInView;
+    public GetObjectsInView getObjectsInView;
     
     
     public List<GameObject> ObjectsInOperation=new  List<GameObject>();

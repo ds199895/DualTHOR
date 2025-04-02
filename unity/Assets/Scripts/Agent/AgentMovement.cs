@@ -1312,6 +1312,7 @@ public class AgentMovement : MonoBehaviour
                 InitializeAdjustments(true);
                 InitializeAdjustments(false);
                 ikX1.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+                sceneManager.getObjectsInView.viewDistance=1.5f;
                 break;
             case "h1":
                 robots[1].SetActive(true);
@@ -1321,13 +1322,11 @@ public class AgentMovement : MonoBehaviour
                 CurrentRobotType = RobotType.H1;
                 ikH1.InitBodies();
                 ikH1.IniitTarget();
+                sceneManager.getObjectsInView.viewDistance=2.0f;
 
                 // InitializeAdjustments(true);
                 // InitializeAdjustments(false);
                 // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
-
-
-
                 break;
             case "g1":
                 robots[2].SetActive(true);
