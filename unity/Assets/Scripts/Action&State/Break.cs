@@ -1,0 +1,542 @@
+﻿// using System.Collections;
+// using System.Collections.Generic;
+// using UnityEngine;
+// using UnityStandardAssets.Characters.FirstPerson;
+
+// public class Break : MonoBehaviour {
+//     [SerializeField]
+//     private GameObject PrefabToSwapTo = null;
+
+//     [SerializeField]
+//     private GameObject DirtyPrefabToSwapTo = null;
+
+//     [SerializeField]
+//     protected float ImpulseThreshold = 3.6f; // set this to lower if this object should be easier to break. Higher if the object requires more force to break
+
+//     [SerializeField]
+//     protected float HighFrictionImpulseOffset = 2.0f; // if the object is colliding with a "soft" high friction zone, offset the ImpulseThreshold to be harder to break
+
+//     protected float CurrentImpulseThreshold; // modify this with ImpulseThreshold and HighFrictionImpulseOffset based on trigger callback functions
+
+//     [SerializeField]
+//     protected bool readytobreak = true;
+
+//     [SerializeField]
+//     protected bool broken;
+
+//     // if set to true, all breakable objects cannot be broken automatically. Instaed, only the Break() action targeting specific objects will allow them to be broken.
+//     public bool Unbreakable = false;
+
+//     // what does this object need to do when it is in the broken state?
+//     // Some need a decal to show a cracked screen on the surface, others need a prefab swap to shattered pieces
+//     protected enum BreakType {
+//         PrefabSwap,
+//         MaterialSwap,
+//         Decal
+//     };
+
+//     [SerializeField]
+//     protected BreakType breakType; // please select how this object should be broken here
+
+//     [SerializeField]
+//     protected SwapObjList[] MaterialSwapObjects; // swap screen/surface with cracked version
+
+//     // if these soft objects hit this breakable object, ignore the breakobject check because it's soft so yeah why would it break this object?
+//     private List<SimObjType> TooSmalOrSoftToBreakOtherObjects = new List<SimObjType>()
+//     {
+//         SimObjType.TeddyBear,
+//         SimObjType.Pillow,
+//         SimObjType.Cloth,
+//         SimObjType.Bread,
+//         SimObjType.BreadSliced,
+//         SimObjType.Egg,
+//         SimObjType.EggShell,
+//         SimObjType.Omelette,
+//         SimObjType.EggCracked,
+//         SimObjType.LettuceSliced,
+//         SimObjType.TissueBox,
+//         SimObjType.Newspaper,
+//         SimObjType.TissueBoxEmpty,
+//         SimObjType.TissueBoxEmpty,
+//         SimObjType.CreditCard,
+//         SimObjType.ToiletPaper,
+//         SimObjType.ToiletPaperRoll,
+//         SimObjType.SoapBar,
+//         SimObjType.Pen,
+//         SimObjType.Pencil,
+//         SimObjType.Towel,
+//         SimObjType.Watch,
+//         SimObjType.DishSponge,
+//         SimObjType.Tissue,
+//         SimObjType.CD,
+//         SimObjType.HandTowel
+//     };
+
+//     public bool isBroken() {
+//         return broken;
+//     }
+
+//     // Start is called before the first frame update
+//     void Start() {
+// #if UNITY_EDITOR
+//         // TODO refactor Break logic as separate from DecalCollision.cs to avoid error, and remove last part of AND
+//         if (
+//             (
+//                 gameObject.GetComponentInParent<SimObjPhysics>() != null
+//                 && !gameObject
+//                     .GetComponentInParent<SimObjPhysics>()
+//                     .DoesThisObjectHaveThisSecondaryProperty(SimObjSecondaryProperty.CanBreak)
+//             ) && !gameObject.GetComponentInParent<SimObjPhysics>().IsReceptacle
+//         ) {
+//             Debug.LogError(gameObject.name + " is missing the CanBreak secondary property!");
+//         }
+
+//         if (gameObject.GetComponent<Dirty>()) {
+//             if (DirtyPrefabToSwapTo == null) {
+//                 Debug.LogError(gameObject.name + " is missing a DirtyPrefabToSpawnTo!");
+//             }
+//         }
+// #endif
+
+//         CurrentImpulseThreshold = ImpulseThreshold;
+//     }
+
+//     public void BreakObject(Collision collision) {
+//         // prefab swap will switch the entire object out with a new prefab object entirely
+//         if (breakType == BreakType.PrefabSwap) {
+//             // Disable this game object and spawn in the broken pieces
+//             Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+
+//             // Get the list of objects in the hierarchy
+//             Transform objectsTransform = GameObject.Find("Objects").transform;
+
+//             //before disabling things, if this object is a receptacle, unparent all objects contained
+//             if (gameObject.GetComponent<SimObjPhysics>().IsReceptacle) {
+//                 foreach (
+//                     GameObject go in gameObject.GetComponent<SimObjPhysics>().ContainedGameObjects()
+//                 ) {
+//                     //only reset rigidbody properties if contained object was pickupable/moveable
+//                     if (go.GetComponentInParent<SimObjPhysics>()) {
+//                         SimObjPhysics containedSOP = go.GetComponentInParent<SimObjPhysics>();
+//                         if (containedSOP.IsMoveable || containedSOP.IsPickupable) {
+//                             go.transform.SetParent(objectsTransform);
+//                             Rigidbody childrb = go.GetComponent<Rigidbody>();
+//                             childrb.isKinematic = false;
+//                             childrb.useGravity = true;
+//                             childrb.constraints = RigidbodyConstraints.None;
+//                             childrb.collisionDetectionMode =
+//                                 CollisionDetectionMode.ContinuousSpeculative;
+//                         }
+//                     }
+//                 }
+//             }
+
+//             // turn off everything except the top object
+//             foreach (Transform t in gameObject.transform) {
+//                 t.gameObject.SetActive(false);
+//             }
+
+//             // spawn in correct prefab to swap to at object's last location and rotation
+//             // make sure to change to the correct variant of Prefab if the object isDirty
+
+//             // if gameObject.GetComponent<Dirty>() - first check to make sure if this object can become dirty
+//             // if object is dirty - probably get this from the "Dirty" component to keep everything nice and self contained
+//             // PrefabToSwapTo = DirtyPrefabToSwapTo
+//             if (gameObject.GetComponent<Dirty>()) {
+//                 // if the object is not clean, swap to the dirty prefab
+//                 if (gameObject.GetComponent<Dirty>().IsDirty()) {
+//                     PrefabToSwapTo = DirtyPrefabToSwapTo;
+//                 }
+//             }
+
+//             GameObject resultObject = Instantiate(
+//                 original: PrefabToSwapTo,
+//                 position: transform.position,
+//                 rotation: transform.rotation
+//             );
+//             resultObject.transform.parent = objectsTransform;
+//             broken = true;
+
+//             // ContactPoint cp = collision.GetContact(0);
+//             foreach (Rigidbody subRb in resultObject.GetComponentsInChildren<Rigidbody>()) {
+//                 subRb.linearVelocity = rb.linearVelocity * 0.4f;
+//                 subRb.angularVelocity = rb.angularVelocity * 0.4f;
+//             }
+
+//             rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+//             rb.isKinematic = true;
+
+//             // if this object breaking is an egg, set rotation for the EggCracked object
+//             // quick if the result object is an egg hard set it's rotation because EGGS ARE WEIRD and are not the same form as their shelled version
+//             if (resultObject.GetComponent<SimObjPhysics>()) {
+//                 if (resultObject.GetComponent<SimObjPhysics>().Type == SimObjType.EggCracked) {
+//                     resultObject.transform.rotation = Quaternion.Euler(Vector3.zero);
+//                     PhysicsSceneManager psm = GameObject
+//                         .Find("PhysicsSceneManager")
+//                         .GetComponent<PhysicsSceneManager>();
+//                     psm.Generate_InheritedObjectID(
+//                         gameObject.GetComponent<SimObjPhysics>(),
+//                         resultObject.GetComponent<SimObjPhysics>(),
+//                         0
+//                     );
+
+//                     Rigidbody resultrb = resultObject.GetComponent<Rigidbody>();
+//                     resultrb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+//                     resultrb.isKinematic = false;
+//                 }
+//             }
+
+//             // it's broken, make sure that it cant trigger this call again
+//             readytobreak = false;
+//         }
+
+//         // if decal type, do not switch out the object but instead swap materials to show cracked/broken parts
+//         if (breakType == BreakType.MaterialSwap) {
+//             // decal logic here
+//             if (MaterialSwapObjects.Length > 0) {
+//                 for (int i = 0; i < MaterialSwapObjects.Length; i++) {
+//                     MaterialSwapObjects[i].MyObject.GetComponent<MeshRenderer>().materials =
+//                         MaterialSwapObjects[i].OnMaterials;
+//                 }
+//             }
+
+//             // if the object can be toggled on/off, if it is on, turn it off since it is now broken
+//             if (gameObject.GetComponent<CanToggleOnOff>()) {
+//                 gameObject.GetComponent<CanToggleOnOff>().isOn = false;
+//             }
+
+//             broken = true;
+//             // it's broken, make sure that it cant trigger this call again
+//             readytobreak = false;
+//         }
+
+//         if (breakType == BreakType.Decal) {
+//             // move shattered decal to location of the collision, or if there was no collision and this is being called
+//             // directly from the Break() action, create a default decal i guess?
+//             BreakForDecalType(collision);
+//         }
+
+//         BaseFPSAgentController primaryAgent = GameObject
+//             .Find("PhysicsSceneManager")
+//             .GetComponent<AgentManager>()
+//             .PrimaryAgent;
+//         if (primaryAgent.imageSynthesis) {
+//             if (primaryAgent.imageSynthesis.enabled) {
+//                 primaryAgent.imageSynthesis.OnSceneChange();
+//             }
+//         }
+//     }
+
+//     // Override for Decal behavior
+//     protected virtual void BreakForDecalType(Collision collision) { }
+
+//     void OnCollisionEnter(Collision col) {
+//         // do nothing if this specific breakable sim objects has been set to unbreakable
+//         if (Unbreakable) {
+//             return;
+//         }
+
+//         // first see if the object (col) or this object is in the list of objects that are too small or too soft
+//         // if(TooSmalOrSoftToBreakOtherObjects.Contains(gameObject.GetComponent<SimObjPhysics>().Type))
+//         // {
+//         //     return;
+//         // }
+
+//         // if the other collider hit is on the list of things that shouldn't cause this object to break, return and do nothing
+//         if (col.transform.GetComponentInParent<SimObjPhysics>()) {
+//             if (
+//                 TooSmalOrSoftToBreakOtherObjects.Contains(
+//                     col.transform.GetComponentInParent<SimObjPhysics>().Type
+//                 )
+//             ) {
+//                 return;
+//             }
+//         }
+
+//         // ImpulseForce.Add(col.impulse.magnitude);
+//         if (
+//             col.impulse.magnitude > CurrentImpulseThreshold
+//             && !col.transform.GetComponentInParent<BaseAgentComponent>()
+//         ) {
+//             if (readytobreak) {
+//                 readytobreak = false;
+//                 BreakObject(col);
+//             }
+//         }
+//     }
+
+//     // change the ImpulseThreshold to higher if we are in a high friction zone, to simulate throwing an object at a "soft" object requiring
+//     // more force to break - ie: dropping mug on floor vs on a rug
+//     public void OnTriggerEnter(Collider other) {
+//         if (other.CompareTag("HighFriction")) {
+//             CurrentImpulseThreshold = ImpulseThreshold + HighFrictionImpulseOffset;
+//         }
+//     }
+
+//     public void OnTriggerExit(Collider other) {
+//         if (other.CompareTag("HighFriction")) {
+//             CurrentImpulseThreshold = ImpulseThreshold;
+//         }
+//     }
+// }
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Break : MonoBehaviour, IUniqueStateManager
+{
+    [SerializeField]
+    private GameObject PrefabToSwapTo = null;
+
+
+    [SerializeField]
+    private GameObject DirtyPrefabToSwapTo = null;
+
+    [SerializeField]
+    private float mass;
+    [SerializeField]
+    protected float ImpulseThreshold; // 破碎需要的阈值
+    [SerializeField]
+    private float squeezeThreshold; // 捏的力度阈值
+    [SerializeField]
+    protected float HighFrictionImpulseOffset = 2.0f;// 高摩擦区域下的冲击力阈值偏移
+    private float minImpulseThreshold; // 最小冲击力阈值
+    private float maxImpulseThreshold; // 最大冲击力阈值
+    [SerializeField]
+    private float fallImpactForce ; // 下落时受到的冲击力
+    [SerializeField]
+    private float currentSqueezeForce; // 当前捏的力度
+    protected float CurrentImpulseThreshold; // modify this with ImpulseThreshold and HighFrictionImpulseOffset based on trigger callback functions
+
+    private SceneStateManager sceneManager;
+
+    [SerializeField]
+    protected bool broken; // 是否已经破碎
+    [SerializeField]
+    public bool Unbreakable=false; // 是否不可破碎
+    [SerializeField]
+    protected bool readyToBreak = true; // 是否准备好破碎
+
+    // 不会导致其他物体破碎的物体类型列表
+    //todo：后续还需要精简里面的物体类型
+    private static readonly HashSet<SimObjType> TooSmallOrSoftToBreakOtherObjects = new()
+    {
+        SimObjType.TeddyBear,
+        SimObjType.Pillow,
+        SimObjType.Cloth,
+        SimObjType.Bed,
+        SimObjType.Bread,
+        SimObjType.BreadSliced,
+        SimObjType.Egg,
+        SimObjType.EggShell,
+        SimObjType.Omelette,
+        SimObjType.EggCracked,
+        SimObjType.LettuceSliced,
+        SimObjType.TissueBox,
+        SimObjType.Newspaper,
+        SimObjType.TissueBoxEmpty,
+        SimObjType.CreditCard,
+        SimObjType.ToiletPaper,
+        SimObjType.ToiletPaperRoll,
+        SimObjType.SoapBar,
+        SimObjType.Pen,
+        SimObjType.Pencil,
+        SimObjType.Towel,
+        SimObjType.Watch,
+        SimObjType.DishSponge,
+        SimObjType.Tissue,
+        SimObjType.CD,
+        SimObjType.HandTowel
+    };
+    protected enum BreakType {
+        PrefabSwap,
+        MaterialSwap,
+        Decal
+    };
+     [SerializeField]
+    protected BreakType breakType; // please select how this object should be broken here
+
+    [SerializeField]
+    protected SwapObjList[] MaterialSwapObjects; // swap screen/surface with cracked version
+
+    public void SaveState(ObjectState objectState)
+    {
+        objectState.breakState = new BreakState
+        {
+            isReadyToBreak = readyToBreak,
+            broken = broken,
+            isUnbreakable = Unbreakable,
+        };
+    }
+
+    public void LoadState(ObjectState objectState)
+    {
+        readyToBreak = objectState.breakState.isReadyToBreak;
+        broken = objectState.breakState.broken;
+        Unbreakable = objectState.breakState.isUnbreakable;
+    }
+
+
+    public bool isBroken => broken;
+
+    private void Start()
+    {
+#if UNITY_EDITOR
+        PropertyValidator.ValidateProperty(gameObject, SimObjSecondaryProperty.CanBreak);
+#endif
+
+        minImpulseThreshold = ImpulseThreshold;
+        maxImpulseThreshold = ImpulseThreshold + HighFrictionImpulseOffset;
+
+        if (!TryGetComponent<Rigidbody>(out var rb)) return;
+        
+        // 计算冲击力
+        fallImpactForce = CalculateFallImpactForce(rb);
+        mass= rb.mass;
+        sceneManager = GameObject.Find("SceneManager").GetComponent<SceneStateManager>();
+    }
+
+    //private void Update()
+    //{
+    //    // 处理捏的输入，假定使用Input.GetButton()方法来模拟捏的力度。
+    //    // 这里需要根据实际输入系统进行调整
+    //    if (Input.GetKeyDown(KeyCode.B))
+    //    {
+    //        // 假设通过某种方式获取捏的力度，这里使用0-1范围的值作为示例
+    //        float squeezeValue = GetSqueezeInput(); // 你需要实现这个方法
+    //        //print(squeezeValue);
+    //        // 根据捏的力度设置当前捏力
+    //        currentSqueezeForce = squeezeValue * 10.0f; // 可根据需要调整缩放因子
+    //        if(currentSqueezeForce > squeezeThreshold)
+    //        {
+    //            if (isReadyToBreak)
+    //            {
+    //                isReadyToBreak = false;
+    //                BreakObject();
+    //            }
+    //        }
+    //    }
+    //    //else
+    //    //{
+    //    //    currentSqueezeForce = 0;
+    //    //}
+    //}
+
+    public float CalculateFallImpactForce(Rigidbody rb)
+    {
+        float gravity = Physics.gravity.y; // 获取重力加速度 (通常为 -9.81)
+        float height = transform.position.y / transform.parent.parent.localScale.y; // 还原高度
+        // 根据高度和重力计算最终速度
+        float finalVelocity = Mathf.Sqrt(-2 * gravity * height); // 注意重力是负值，所以需要取负号
+        // 计算冲击力
+        return (rb.mass * finalVelocity) / 0.1f; // 保持原来的调整因子
+    }
+    public float CalculateFallImpactForce(Rigidbody rb, Collider collider)
+    {
+        float gravity = Physics.gravity.y; // 获取重力加速度 (通常为 -9.81)
+        float heightDifference = (transform.position.y - collider.bounds.max.y)/ transform.parent.parent.localScale.y; // 获取碰撞体下边界的y值
+        // 根据高度和重力计算最终速度
+        float finalVelocity = Mathf.Sqrt(-2 * gravity * heightDifference);
+        // 计算冲击力
+        return (rb.mass * finalVelocity) / 0.1f; // 保持原来的调整因子
+    }
+    public float CalculateCollisionImpactForce(Collision col)
+    {
+        // 获取碰撞的相对速度
+        Vector3 collisionVelocity = col.relativeVelocity;
+
+        // 计算冲击力，使用物体的质量和碰撞时的速度
+        float impactForce =mass * collisionVelocity.magnitude; // 使用速度的大小
+
+        return impactForce; // 返回计算出的冲击力
+    }
+
+    private void OnCollisionEnter(Collision col)
+    {
+        //col.impulse.magnitude单位为牛顿/秒，N/s，表示一秒改变了多少动量
+        float impactForce = CalculateCollisionImpactForce(col);
+        //print("impactForce: " + impactForce);
+        //float impactForce = CalculateFallImpactForce(GetComponent<Rigidbody>(), col.collider);
+        //print("impactForce: " + impactForce);
+        if (Unbreakable || impactForce <= ImpulseThreshold) return;
+        //if (isUnbreakable || fallImpactForce  <= impulseThreshold) return;
+
+        //如果碰撞物体在 TooSmalOrSoftToBreakOtherObjects 列表中，直接返回
+        SimObjPhysics collidedObject = col.transform.GetComponentInParent<SimObjPhysics>();
+        if (collidedObject != null && TooSmallOrSoftToBreakOtherObjects.Contains(collidedObject.Type))
+        {
+            return;
+        }
+
+        if (readyToBreak)
+        {
+            readyToBreak = false;
+            BreakObject();
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Robot")&& currentSqueezeForce > squeezeThreshold)
+        {
+            print("OnCollisionStay");
+
+            if (readyToBreak)
+                {
+                    readyToBreak = false;
+                    BreakObject();
+                }
+        }
+    }
+    public void BreakObject()
+    {
+        Debug.Log("break it !");
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        Debug.Log("prefabToSwapto: "+PrefabToSwapTo);
+        //实例化新的预制体，并将其设置为当前物体的位置和旋转
+        if (!sceneManager.SimObjectsDict.TryGetValue(PrefabToSwapTo.name, out GameObject breakedObject))
+        {
+
+            Debug.Log("not have swap object, return!");
+            return; // 如果未找到对应的对象，直接返回
+        }
+        breakedObject.transform.SetPositionAndRotation(transform.position, transform.rotation);
+        breakedObject.SetActive(true);
+        Breakdown breakdown = breakedObject.GetComponent<Breakdown>();
+        breakdown.StartBreak();
+        broken = true;
+
+        //将新物体的刚体速度和角速度设置为当前物体的速度和角速度
+        //为什么设为0.4f？
+        foreach (Rigidbody subRb in breakedObject.GetComponentsInChildren<Rigidbody>())
+        {
+            subRb.linearVelocity = rb.linearVelocity * 0.4f;
+            subRb.angularVelocity = rb.angularVelocity * 0.4f;
+        }
+        gameObject.SetActive(false);
+    }
+
+    //当物体进入高摩擦区域时，增加冲击力阈值
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("HighFriction"))
+        {
+            ImpulseThreshold = maxImpulseThreshold;
+            
+        }
+    }
+   
+    public void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("HighFriction"))
+        {
+            ImpulseThreshold = minImpulseThreshold;
+
+        }
+    }
+
+    private float GetSqueezeInput()
+    {
+
+        return 1; // 只是示例，替换为真实捏力度获取逻辑
+    }
+}

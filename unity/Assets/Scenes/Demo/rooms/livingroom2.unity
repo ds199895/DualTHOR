@@ -6781,6 +6781,36 @@ PrefabInstance:
       propertyPath: m_IsKinematic
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: Type
+      value: 93
+      objectReference: {fileID: 0}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: BoundingBox
+      value: 
+      objectReference: {fileID: 294223780}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: PrimaryProperty
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: SecondaryProperties.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: 'SecondaryProperties.Array.data[0]'
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 114065960580418940, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: 'SecondaryProperties.Array.data[1]'
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3506478695849289648, guid: 2f747246a56614a40af4a20baddb7da6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -6831,6 +6861,12 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4906640633772754432, guid: 2f747246a56614a40af4a20baddb7da6,
+        type: 3}
+      propertyPath: PrefabToSwapTo
+      value: 
+      objectReference: {fileID: 5378455558318367540, guid: 82a6b51d365033b4c97668257fec173d,
+        type: 3}
     - target: {fileID: 8939713208484133661, guid: 2f747246a56614a40af4a20baddb7da6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -6859,15 +6895,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1226349983266222, guid: 2f747246a56614a40af4a20baddb7da6,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 171124573}
-    - targetCorrespondingSourceObject: {fileID: 1226349983266222, guid: 2f747246a56614a40af4a20baddb7da6,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 171124574}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2f747246a56614a40af4a20baddb7da6, type: 3}
 --- !u!4 &171124571 stripped
 Transform:
@@ -6875,55 +6903,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 171124570}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &171124572 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1226349983266222, guid: 2f747246a56614a40af4a20baddb7da6,
-    type: 3}
-  m_PrefabInstance: {fileID: 171124570}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &171124573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171124572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objectID: 
-  type: 0
-  primaryProperty: 3
-  secondaryProperties: 0b000000
-  transferPoint: {fileID: 0}
-  interactablePoints: []
-  visiblePoints: []
-  receptacleTriggerBoxes: []
-  parentReceptacleObjects: []
---- !u!114 &171124574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171124572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c4d1ff88b299884cacdf2b03b5c2793, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prefabToSwapTo: Mug_Shards_1
-  mass: 0
-  impulseThreshold: 50
-  squeezeThreshold: 0
-  highFrictionImpulseOffset: 2
-  fallImpactForce: 0
-  currentSqueezeForce: 0
-  broken: 0
-  isUnbreakable: 0
-  isReadyToBreak: 1
 --- !u!1 &172781060
 GameObject:
   m_ObjectHideFlags: 0
@@ -12934,6 +12913,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 292562657}
   m_Mesh: {fileID: 4300000, guid: e479f7c5ce2a1c44ca4cff27fc791078, type: 2}
+--- !u!1 &294223780 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1128905488900288, guid: 2f747246a56614a40af4a20baddb7da6,
+    type: 3}
+  m_PrefabInstance: {fileID: 171124570}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &295843907
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22659,14 +22644,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectID: 
-  type: 0
-  primaryProperty: 3
-  secondaryProperties: 
+  assetID: 
+  Type: 0
+  PrimaryProperty: 0
+  SecondaryProperties: 
+  BoundingBox: {fileID: 0}
   transferPoint: {fileID: 0}
   interactablePoints: []
-  visiblePoints: []
-  receptacleTriggerBoxes: []
+  VisibilityPoints: []
+  ReceptacleTriggerBoxes: []
   parentReceptacleObjects: []
+  debugIsVisible: 0
+  debugIsInteractable: 0
+  isInAgentHand: 0
+  MyColliders: []
+  HFdynamicfriction: 0
+  HFstaticfriction: 0
+  HFbounciness: 0
+  HFrbdrag: 0
+  HFrbangulardrag: 0
+  salientMaterials: 
+  MySpawnPoints: []
+  CurrentTemperature: 0
+  HowManySecondsUntilRoomTemp: 10
+  inMotion: 0
+  numSimObjHit: 0
+  numFloorHit: 0
+  numStructureHit: 0
+  lastVelocity: 0
+  IsReceptacle: 0
+  IsPickupable: 0
+  IsMoveable: 0
+  isStatic: 0
+  IsToggleable: 0
+  IsOpenable: 0
+  IsBreakable: 0
+  IsFillable: 0
+  IsDirtyable: 0
+  IsCookable: 0
+  IsSliceable: 0
+  isHeatSource: 0
+  isColdSource: 0
+  CanBeUsedUp: 0
 --- !u!1 &554854641
 GameObject:
   m_ObjectHideFlags: 0
@@ -46078,14 +46097,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectID: LivingRoom_Vase_02
-  type: 110
-  primaryProperty: 3
-  secondaryProperties: 
+  assetID: 
+  Type: 0
+  PrimaryProperty: 0
+  SecondaryProperties: 
+  BoundingBox: {fileID: 0}
   transferPoint: {fileID: 0}
   interactablePoints: []
-  visiblePoints: []
-  receptacleTriggerBoxes: []
+  VisibilityPoints: []
+  ReceptacleTriggerBoxes: []
   parentReceptacleObjects: []
+  debugIsVisible: 0
+  debugIsInteractable: 0
+  isInAgentHand: 0
+  MyColliders: []
+  HFdynamicfriction: 0
+  HFstaticfriction: 0
+  HFbounciness: 0
+  HFrbdrag: 0
+  HFrbangulardrag: 0
+  salientMaterials: 
+  MySpawnPoints: []
+  CurrentTemperature: 0
+  HowManySecondsUntilRoomTemp: 10
+  inMotion: 0
+  numSimObjHit: 0
+  numFloorHit: 0
+  numStructureHit: 0
+  lastVelocity: 0
+  IsReceptacle: 0
+  IsPickupable: 0
+  IsMoveable: 0
+  isStatic: 0
+  IsToggleable: 0
+  IsOpenable: 0
+  IsBreakable: 0
+  IsFillable: 0
+  IsDirtyable: 0
+  IsCookable: 0
+  IsSliceable: 0
+  isHeatSource: 0
+  isColdSource: 0
+  CanBeUsedUp: 0
 --- !u!1 &1087419008
 GameObject:
   m_ObjectHideFlags: 0
@@ -83683,6 +83736,31 @@ PrefabInstance:
       propertyPath: m_IsKinematic
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114896115455511940, guid: 93356650085f30e4889ea60259d2d701,
+        type: 3}
+      propertyPath: SecondaryProperties.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114896115455511940, guid: 93356650085f30e4889ea60259d2d701,
+        type: 3}
+      propertyPath: secondaryProperties.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114896115455511940, guid: 93356650085f30e4889ea60259d2d701,
+        type: 3}
+      propertyPath: 'SecondaryProperties.Array.data[0]'
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 114896115455511940, guid: 93356650085f30e4889ea60259d2d701,
+        type: 3}
+      propertyPath: 'SecondaryProperties.Array.data[1]'
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 114896115455511940, guid: 93356650085f30e4889ea60259d2d701,
+        type: 3}
+      propertyPath: 'secondaryProperties.Array.data[0]'
+      value: 11
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -83711,14 +83789,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectID: LivingRoom_Vase_01
-  type: 110
-  primaryProperty: 3
-  secondaryProperties: 
+  assetID: 
+  Type: 0
+  PrimaryProperty: 0
+  SecondaryProperties: 
+  BoundingBox: {fileID: 0}
   transferPoint: {fileID: 0}
   interactablePoints: []
-  visiblePoints: []
-  receptacleTriggerBoxes: []
+  VisibilityPoints: []
+  ReceptacleTriggerBoxes: []
   parentReceptacleObjects: []
+  debugIsVisible: 0
+  debugIsInteractable: 0
+  isInAgentHand: 0
+  MyColliders: []
+  HFdynamicfriction: 0
+  HFstaticfriction: 0
+  HFbounciness: 0
+  HFrbdrag: 0
+  HFrbangulardrag: 0
+  salientMaterials: 
+  MySpawnPoints: []
+  CurrentTemperature: 0
+  HowManySecondsUntilRoomTemp: 10
+  inMotion: 0
+  numSimObjHit: 0
+  numFloorHit: 0
+  numStructureHit: 0
+  lastVelocity: 0
+  IsReceptacle: 0
+  IsPickupable: 0
+  IsMoveable: 0
+  isStatic: 0
+  IsToggleable: 0
+  IsOpenable: 0
+  IsBreakable: 0
+  IsFillable: 0
+  IsDirtyable: 0
+  IsCookable: 0
+  IsSliceable: 0
+  isHeatSource: 0
+  isColdSource: 0
+  CanBeUsedUp: 0
 --- !u!1 &2083776554
 GameObject:
   m_ObjectHideFlags: 0

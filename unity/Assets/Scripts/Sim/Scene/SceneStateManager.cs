@@ -314,6 +314,8 @@ public class SceneStateManager : MonoBehaviour
     private ObjectStateA2T SaveInteractableObjectState(GameObject obj)
     {
         SimObjPhysics sop = obj.GetComponent<SimObjPhysics>();
+        Debug.Log("obj: "+obj);
+        Debug.Log("sop: "+sop);
         ObjectStateA2T objectStateA2T = new()
         {
             name = obj.name,
@@ -334,7 +336,7 @@ public class SceneStateManager : MonoBehaviour
             pickupable = sop.PrimaryProperty == SimObjPrimaryProperty.CanPickup,
             isPickedUp = obj.transform.parent.CompareTag("Hand"),
             isToggled = sop.IsToggleable ? (obj.GetComponent<CanToggleOnOff>().IsOn) : false,
-            isBroken = sop.IsBreakable ? obj.GetComponent<Break>().Broken : false,
+            isBroken = sop.IsBreakable ? obj.GetComponent<Break>().isBroken : false,
             isFilledWithLiquid = sop.IsFillable ? obj.GetComponent<Fill>().IsFilled : false,
             isUsedUp = sop.CanBeUsedUp ? obj.GetComponent<UsedUp>().IsUsedUp : false,
             isCooked = sop.IsCookable ? obj.GetComponent<CookObject>().IsCooked : false,
@@ -491,6 +493,7 @@ public class SceneStateManager : MonoBehaviour
 
     public SceneStateA2T GetCurrentSceneStateA2T()
     {
+        Debug.Log("currentIndex: "+currentStateIndex);
         return stateHistoryA2T[currentStateIndex];
     }
 

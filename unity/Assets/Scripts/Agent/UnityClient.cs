@@ -156,6 +156,7 @@ public class UnityClient : MonoBehaviour
                 SendFeedbackToPython( false,"Error: Missing state ID for LoadSceneState.");
             }
         } else if (actionData.action == "loadrobot") {
+
             if (agentMovement == null) {
                 Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
                 await Task.Delay(2000);
@@ -165,9 +166,11 @@ public class UnityClient : MonoBehaviour
             Debug.Log($"Loaded robot of type: {actionData.robotType}");
             SendFeedbackToPython( result,"load robot feedback");
         } else if (actionData.action == "resetscene") {
+    
             var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
             Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
             Init();
+            sceneStateManager.SaveCurrentState();
             SendFeedbackToPython(result);
         } else if (actionData.action=="getcurstate") {
             SendFeedbackToPython(true,"get current scene");

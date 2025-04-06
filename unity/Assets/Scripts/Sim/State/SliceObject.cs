@@ -5,7 +5,7 @@ public class SliceObject : MonoBehaviour, IUniqueStateManager
 {
     [Header("Object To Change To")]
     [SerializeField]
-    private string objectToChangeTo; // 切割后生成的新对象的预制体。
+    public GameObject ObjectToChangeTo; // 切割后生成的新对象的预制体。
 
     [SerializeField]
     private bool isSliced = false;
@@ -31,7 +31,7 @@ public class SliceObject : MonoBehaviour, IUniqueStateManager
 
 #if UNITY_EDITOR
         PropertyValidator.ValidateProperty(gameObject, SimObjSecondaryProperty.CanBeSliced);
-        if (string.IsNullOrEmpty(objectToChangeTo))
+        if (string.IsNullOrEmpty(ObjectToChangeTo.name))
         {
             Debug.LogError($"{gameObject.transform.name} is missing Object To Change To!");
         }
@@ -55,7 +55,7 @@ public class SliceObject : MonoBehaviour, IUniqueStateManager
             return;
         }
 
-        if (!sceneManager.SimObjectsDict.TryGetValue(objectToChangeTo, out GameObject resultObject))
+        if (!sceneManager.SimObjectsDict.TryGetValue(ObjectToChangeTo.name, out GameObject resultObject))
         {
             return; // 如果未找到对应的对象，直接返回
         }
