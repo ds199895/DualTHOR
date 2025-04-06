@@ -52,7 +52,7 @@ public class CameraController : MonoBehaviour
         // 添加自动记录功能
         if (record)
         {
-            Debug.Log("Image path: "+baseDir);
+            // Debug.Log("Image path: "+baseDir);
             // imgeDir=baseDir+"/test";
             // 检查是否到达记录间隔
             if (Time.time - lastRecordTime >= RECORD_INTERVAL)
@@ -192,6 +192,6 @@ public class CameraController : MonoBehaviour
         File.WriteAllBytes(filePath, pngData);
 
         Destroy(texture);
-        Debug.Log($"已保存 {cameraName} 图像到 {filePath}");
+        // Debug.Log($"已保存 {cameraName} 图像到 {filePath}");
     }
 }

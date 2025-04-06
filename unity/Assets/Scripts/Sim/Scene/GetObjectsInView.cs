@@ -152,7 +152,7 @@ public class GetObjectsInView : MonoBehaviour
                 // 检测射线是否与物体相交
                 if (Physics.Raycast(ray, out RaycastHit hit, viewDistance))
                 {
-                    print("find hit: " + hit.transform.parent.name);
+                    // print("find hit: " + hit.transform.parent.name);
                     if (hit.transform.IsChildOf(parent.transform) || hit.transform == parent)
                     {
                         // print("GetObjectsInView IsVisible: " + parent);

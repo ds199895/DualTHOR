@@ -3933,12 +3933,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100735929}
   m_Mesh: {fileID: 4300000, guid: cf487c7427004ac4aa7db8cb4b7bd106, type: 2}
---- !u!1 &105384506 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1252929262092846, guid: 93356650085f30e4889ea60259d2d701,
-    type: 3}
-  m_PrefabInstance: {fileID: 2083464472}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &110066490
 GameObject:
   m_ObjectHideFlags: 0
@@ -17510,12 +17504,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 747717417}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &426771948 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1419015464811414, guid: 1bfeb1bf51597d1429e05d6a1034fd7b,
-    type: 3}
-  m_PrefabInstance: {fileID: 1086491715}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &430367662
 GameObject:
   m_ObjectHideFlags: 0
@@ -22643,49 +22631,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectID: 
-  assetID: 
-  Type: 0
-  PrimaryProperty: 0
-  SecondaryProperties: 
-  BoundingBox: {fileID: 0}
-  transferPoint: {fileID: 0}
-  interactablePoints: []
-  VisibilityPoints: []
-  ReceptacleTriggerBoxes: []
-  parentReceptacleObjects: []
-  debugIsVisible: 0
-  debugIsInteractable: 0
-  isInAgentHand: 0
-  MyColliders: []
-  HFdynamicfriction: 0
-  HFstaticfriction: 0
-  HFbounciness: 0
-  HFrbdrag: 0
-  HFrbangulardrag: 0
-  salientMaterials: 
-  MySpawnPoints: []
-  CurrentTemperature: 0
-  HowManySecondsUntilRoomTemp: 10
-  inMotion: 0
-  numSimObjHit: 0
-  numFloorHit: 0
-  numStructureHit: 0
-  lastVelocity: 0
-  IsReceptacle: 0
-  IsPickupable: 0
-  IsMoveable: 0
-  isStatic: 0
-  IsToggleable: 0
-  IsOpenable: 0
-  IsBreakable: 0
-  IsFillable: 0
-  IsDirtyable: 0
-  IsCookable: 0
-  IsSliceable: 0
-  isHeatSource: 0
-  isColdSource: 0
-  CanBeUsedUp: 0
 --- !u!1 &554854641
 GameObject:
   m_ObjectHideFlags: 0
@@ -46072,11 +46017,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1419015464811414, guid: 1bfeb1bf51597d1429e05d6a1034fd7b,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1086491718}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1bfeb1bf51597d1429e05d6a1034fd7b, type: 3}
 --- !u!4 &1086491716 stripped
 Transform:
@@ -46084,61 +46025,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1086491715}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1086491718
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426771948}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objectID: LivingRoom_Vase_02
-  assetID: 
-  Type: 0
-  PrimaryProperty: 0
-  SecondaryProperties: 
-  BoundingBox: {fileID: 0}
-  transferPoint: {fileID: 0}
-  interactablePoints: []
-  VisibilityPoints: []
-  ReceptacleTriggerBoxes: []
-  parentReceptacleObjects: []
-  debugIsVisible: 0
-  debugIsInteractable: 0
-  isInAgentHand: 0
-  MyColliders: []
-  HFdynamicfriction: 0
-  HFstaticfriction: 0
-  HFbounciness: 0
-  HFrbdrag: 0
-  HFrbangulardrag: 0
-  salientMaterials: 
-  MySpawnPoints: []
-  CurrentTemperature: 0
-  HowManySecondsUntilRoomTemp: 10
-  inMotion: 0
-  numSimObjHit: 0
-  numFloorHit: 0
-  numStructureHit: 0
-  lastVelocity: 0
-  IsReceptacle: 0
-  IsPickupable: 0
-  IsMoveable: 0
-  isStatic: 0
-  IsToggleable: 0
-  IsOpenable: 0
-  IsBreakable: 0
-  IsFillable: 0
-  IsDirtyable: 0
-  IsCookable: 0
-  IsSliceable: 0
-  isHeatSource: 0
-  isColdSource: 0
-  CanBeUsedUp: 0
 --- !u!1 &1087419008
 GameObject:
   m_ObjectHideFlags: 0
@@ -83764,11 +83650,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1252929262092846, guid: 93356650085f30e4889ea60259d2d701,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2083464475}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 93356650085f30e4889ea60259d2d701, type: 3}
 --- !u!4 &2083464473 stripped
 Transform:
@@ -83776,61 +83658,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2083464472}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2083464475
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 105384506}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e8ee1912a69c514cb7c4faa962e6e4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objectID: LivingRoom_Vase_01
-  assetID: 
-  Type: 0
-  PrimaryProperty: 0
-  SecondaryProperties: 
-  BoundingBox: {fileID: 0}
-  transferPoint: {fileID: 0}
-  interactablePoints: []
-  VisibilityPoints: []
-  ReceptacleTriggerBoxes: []
-  parentReceptacleObjects: []
-  debugIsVisible: 0
-  debugIsInteractable: 0
-  isInAgentHand: 0
-  MyColliders: []
-  HFdynamicfriction: 0
-  HFstaticfriction: 0
-  HFbounciness: 0
-  HFrbdrag: 0
-  HFrbangulardrag: 0
-  salientMaterials: 
-  MySpawnPoints: []
-  CurrentTemperature: 0
-  HowManySecondsUntilRoomTemp: 10
-  inMotion: 0
-  numSimObjHit: 0
-  numFloorHit: 0
-  numStructureHit: 0
-  lastVelocity: 0
-  IsReceptacle: 0
-  IsPickupable: 0
-  IsMoveable: 0
-  isStatic: 0
-  IsToggleable: 0
-  IsOpenable: 0
-  IsBreakable: 0
-  IsFillable: 0
-  IsDirtyable: 0
-  IsCookable: 0
-  IsSliceable: 0
-  isHeatSource: 0
-  isColdSource: 0
-  CanBeUsedUp: 0
 --- !u!1 &2083776554
 GameObject:
   m_ObjectHideFlags: 0

@@ -502,7 +502,7 @@ public class Break : MonoBehaviour, IUniqueStateManager
         breakedObject.transform.SetPositionAndRotation(transform.position, transform.rotation);
         breakedObject.SetActive(true);
         Breakdown breakdown = breakedObject.GetComponent<Breakdown>();
-        breakdown.StartBreak();
+        // breakdown.StartBreak();
         broken = true;
 
         //将新物体的刚体速度和角速度设置为当前物体的速度和角速度

@@ -314,8 +314,8 @@ public class SceneStateManager : MonoBehaviour
     private ObjectStateA2T SaveInteractableObjectState(GameObject obj)
     {
         SimObjPhysics sop = obj.GetComponent<SimObjPhysics>();
-        Debug.Log("obj: "+obj);
-        Debug.Log("sop: "+sop);
+        // Debug.Log("obj: "+obj);
+        // Debug.Log("sop: "+sop);
         ObjectStateA2T objectStateA2T = new()
         {
             name = obj.name,
@@ -335,13 +335,13 @@ public class SceneStateManager : MonoBehaviour
             openable = sop.IsOpenable,
             pickupable = sop.PrimaryProperty == SimObjPrimaryProperty.CanPickup,
             isPickedUp = obj.transform.parent.CompareTag("Hand"),
-            isToggled = sop.IsToggleable ? (obj.GetComponent<CanToggleOnOff>().IsOn) : false,
+            isToggled = sop.IsToggleable ? (obj.GetComponent<CanToggleOnOff>().isOn) : false,
             isBroken = sop.IsBreakable ? obj.GetComponent<Break>().isBroken : false,
-            isFilledWithLiquid = sop.IsFillable ? obj.GetComponent<Fill>().IsFilled : false,
-            isUsedUp = sop.CanBeUsedUp ? obj.GetComponent<UsedUp>().IsUsedUp : false,
-            isCooked = sop.IsCookable ? obj.GetComponent<CookObject>().IsCooked : false,
-            isSliced = sop.IsSliceable ? obj.GetComponent<SliceObject>().IsSliced : false,
-            isOpen = sop.IsOpenable ? obj.GetComponent<CanOpen_Object>().IsOpen : false,
+            isFilledWithLiquid = sop.IsFillable ? obj.GetComponent<Fill>().isFilled : false,
+            isUsedUp = sop.CanBeUsedUp ? obj.GetComponent<UsedUp>().isUsedUp : false,
+            isCooked = sop.IsCookable ? obj.GetComponent<CookObject>().isCooked : false,
+            isSliced = sop.IsSliceable ? obj.GetComponent<SliceObject>().isSliced : false,
+            isOpen = sop.IsOpenable ? obj.GetComponent<CanOpen_Object>().isOpen : false,
             parentReceptacles = sop.ParentReceptacleObjectsIds()
         };
         if (objectStateA2T.receptacle)

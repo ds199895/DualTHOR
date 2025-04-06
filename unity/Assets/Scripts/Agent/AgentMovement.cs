@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 using NUnit.Framework.Constraints;
 using System.IO;
 using Newtonsoft.Json;
+using Unity.VisualScripting;
 
 
 public class AgentMovement : MonoBehaviour
@@ -258,7 +259,7 @@ public class AgentMovement : MonoBehaviour
                         //colliderObj.AddComponent<CollisionReporter>();
                         // 添加碰撞处理器
                         CollisionHandler handler = colliderObj.AddComponent<CollisionHandler>();
-                        Debug.Log("add collision Handler");
+                        // Debug.Log("add collision Handler");
                         handler.OnCollisionEnterEvent += (collision) => HandleCollision(body, collision, colliderObj);
                     }
                 }
@@ -412,7 +413,7 @@ public class AgentMovement : MonoBehaviour
 
         if(simobj.GetComponent<SimObjPhysics>().IsFillable){
             Debug.Log("test get fill");
-            if(simobj.gameObject.GetComponent<Fill>().IsFilled){
+            if(simobj.gameObject.GetComponent<Fill>().isFilled){
                 Debug.Log("isfilled");
                 propertyMap.TryGetValue("Filled",out ActionMap filledmap);
 
@@ -1046,8 +1047,13 @@ public class AgentMovement : MonoBehaviour
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
-        // DisableArticulationBodies();
-
+        // DisableArticulationBodies()
+        GameObject cur_robot=robots[0];;
+        if(CurrentRobotType==RobotType.H1){
+            cur_robot=robots[0];
+        }else{
+            cur_robot=robots[1];
+        }
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = startPosition + transform.TransformDirection(localDirection) * moveSpeed * magnitude;
          
@@ -1058,14 +1064,25 @@ public class AgentMovement : MonoBehaviour
         {
             Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
 
-            rootArt.TeleportRoot(pos_temp, originRot);
+            
             transform.position = pos_temp;
+            if(!collisionDetected){
+                rootArt.TeleportRoot(transform.position, originRot);
+            }
+            
+           
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+        
 
-        rootArt.TeleportRoot(targetPosition, originRot);
         transform.position = targetPosition; // 确保到达目标位置
+        if(!collisionDetected){
+            rootArt.TeleportRoot(transform.position, originRot);
+        }
+
+        transform.position=cur_robot.transform.position;
+
         // EnableArticulationBodies();
     }
 
