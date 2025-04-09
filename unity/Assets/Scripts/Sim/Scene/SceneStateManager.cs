@@ -124,6 +124,10 @@ public class SceneStateManager : MonoBehaviour
 
         
         StartCoroutine(DelayedSave());
+
+        // 保存初始状态
+        SaveCurrentState();
+        Debug.Log($"Initial state saved - currentStateIndex: {currentStateIndex}");
     }
     
     private void LoadActionConfigs(){
@@ -232,6 +236,8 @@ public class SceneStateManager : MonoBehaviour
 
     public void SaveCurrentState()
     {
+        Debug.Log($"Before SaveCurrentState - currentStateIndex: {currentStateIndex}");
+        
         #region 保存版本控制的场景信息
         // 保存当前状态
         SceneState state = new()
@@ -287,6 +293,8 @@ public class SceneStateManager : MonoBehaviour
         //print(JsonUtility.ToJson(state));
         print(JsonUtility.ToJson(stateA2T));
         currentStateIndex++;
+        Debug.Log($"After SaveCurrentState - currentStateIndex: {currentStateIndex}");
+        Debug.Log($"StateHistory count: {stateHistory.Count}");
     }
 
     // 保存单个物体的状态

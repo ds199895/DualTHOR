@@ -166,7 +166,6 @@ public class UnityClient : MonoBehaviour
             Debug.Log($"Loaded robot of type: {actionData.robotType}");
             SendFeedbackToPython( result,"load robot feedback");
         } else if (actionData.action == "resetscene") {
-    
             var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
             Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
             Init();
@@ -178,6 +177,10 @@ public class UnityClient : MonoBehaviour
             Debug.Log("reset pose action!");
             agentMovement.ResetPose();
             SendFeedbackToPython(true,"reset pose");
+        } else if (actionData.action=="resetstate"){
+            Debug.Log("reset state action!");
+            agentMovement.LoadState("0");
+            SendFeedbackToPython(true,"reset state");
         } 
         else {
             agentMovement.ExecuteActionWithCallback(actionData, () => {

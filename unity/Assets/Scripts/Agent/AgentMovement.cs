@@ -340,7 +340,7 @@ public class AgentMovement : MonoBehaviour
 
     public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action callback)
     {
-        Debug.Log("ExecuteActionWithCallback");
+        Debug.Log($"Executing action: {actionData.action}");
         // 获取方法
         MethodInfo method = typeof(AgentMovement).GetMethod(actionData.action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
         
@@ -373,7 +373,10 @@ public class AgentMovement : MonoBehaviour
             {
                 Debug.Log("test log5");
                 // 如果是协程方法，启动协程并在结束时调用回调
-                StartCoroutine(ExecuteCoroutineAction(method, args, callback));
+                StartCoroutine(ExecuteCoroutineAction(method, args, () => {
+                    Debug.Log($"Coroutine action completed: {actionData.action}");
+                    callback?.Invoke();
+                }));
                 Debug.Log("ExecuteCoroutineAction");
             }
             else
@@ -381,8 +384,8 @@ public class AgentMovement : MonoBehaviour
                 Debug.Log("非协程");
                 // 非协程方法，立即调用并触发回调
                 method.Invoke(this, args);
+                Debug.Log($"Non-coroutine action completed: {actionData.action}");
                 callback?.Invoke();
-                Debug.Log("立即调用并返回");
             }
         }
         catch (Exception ex)
@@ -1047,43 +1050,42 @@ public class AgentMovement : MonoBehaviour
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
-        // DisableArticulationBodies()
-        GameObject cur_robot=robots[0];;
+        GameObject cur_robot=robots[0];
         if(CurrentRobotType==RobotType.H1){
-            cur_robot=robots[0];
-        }else{
             cur_robot=robots[1];
+        }else{
+            cur_robot=robots[0];
         }
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = startPosition + transform.TransformDirection(localDirection) * moveSpeed * magnitude;
          
         Quaternion originRot= transform.rotation;
         float elapsedTime = 0f;
+        Debug.Log("collideStructure: "+cur_robot.name);
+        bool collideStructure=cur_robot.transform.GetComponent<StructureCollisionDetector>().CollideStructure;
 
         while (elapsedTime < duration)
         {
-            Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
-
-            
-            transform.position = pos_temp;
-            if(!collisionDetected){
+            if(!collideStructure) {
+                Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
+                transform.position = pos_temp;
                 rootArt.TeleportRoot(transform.position, originRot);
+            } else {
+                // 如果发生碰撞，立即退出循环
+                break;
             }
             
-           
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        
 
-        transform.position = targetPosition; // 确保到达目标位置
-        if(!collisionDetected){
+        // 只有在没有碰撞的情况下才更新最终位置
+        if(!collideStructure) {
+            transform.position = targetPosition;
             rootArt.TeleportRoot(transform.position, originRot);
         }
 
-        transform.position=cur_robot.transform.position;
-
-        // EnableArticulationBodies();
+        transform.position = cur_robot.transform.position;
     }
 
     // 平滑旋转的协程，使用局部坐标系的方向
