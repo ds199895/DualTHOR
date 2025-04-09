@@ -25,7 +25,16 @@ def test_controller():
 
     controller.step("rotateright",magnitude=2)
 
-    controller.step("moveahead",magnitude=1.5)
+    # feed_back=controller.step("moveahead",magnitude=0.2)
+
+
+    # print(feed_back)
+
+    controller.reset_environment()
+
+    
+    # controller.step("resetstate")
+
 
     # controller.step("tp",objectID="Kitchen_Faucet_01")
 

@@ -197,7 +197,7 @@ class Controller:
         重置环境。
         """
         logging.info("Resetting environment...")
-        self.step("reset")
+        self.step("resetstate")
 
     def undo_last_action(self):
         """
