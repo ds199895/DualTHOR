@@ -12,10 +12,10 @@ public class GripperController : MonoBehaviour
     public ArticulationBody h1_rightArmLeftGripper;
     public ArticulationBody h1_rightArmRightGripper;
 
-    private ArticulationBody currentLeftLeftGripper;
-    private ArticulationBody currentLeftRightGripper;
-    private ArticulationBody currentRightLeftGripper;
-    private ArticulationBody currentRightRightGripper;
+    public ArticulationBody currentLeftLeftGripper { get; private set; }
+    public ArticulationBody currentLeftRightGripper { get; private set; }
+    public ArticulationBody currentRightLeftGripper { get; private set; }
+    public ArticulationBody currentRightRightGripper { get; private set; }
 
 
 

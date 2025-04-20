@@ -165,6 +165,11 @@ public class AgentMovement : MonoBehaviour
     // 添加用于跟踪最后一次移动是否成功的公共变量
     public bool lastMoveSuccessful = true;
 
+    // 在类的成员变量部分添加
+    // 用于记录当前正在交互的物体ID
+    private string currentInteractingObjectID = string.Empty;
+    private List<string> ignoredCollisionObjects = new List<string>();
+
     void Start()
     {
        Loadpropertymap();
@@ -290,19 +295,49 @@ public class AgentMovement : MonoBehaviour
             }else{
                 Debug.Log("Haven't interacted with object "+obj.gameObject.name);
             }
-
         }
-        if(!collisionDetected){
+        
+        // 检查是否是与当前交互物体的碰撞，使用RobotCollisionManager的判断逻辑
+        bool isInteractingWithTarget = false;
+        
+        // 如果RobotCollisionManager存在，使用它的判断
+        if (RobotCollisionManager.Instance != null)
+        {
+            isInteractingWithTarget = RobotCollisionManager.Instance.IsInteractingObject(collision.gameObject);
+            if (isInteractingWithTarget)
+            {
+                Debug.Log($"与交互目标物体碰撞，不触发失败 (由RobotCollisionManager判断)");
+            }
+        }
+        else
+        {
+            // 作为备份，保留原来的判断逻辑
+            SimObjPhysics collisionPhysics = collision.gameObject.GetComponent<SimObjPhysics>();
+            if (collisionPhysics != null && 
+                (collisionPhysics.ObjectID == currentInteractingObjectID || 
+                 ignoredCollisionObjects.Contains(collisionPhysics.ObjectID)))
+            {
+                isInteractingWithTarget = true;
+                Debug.Log($"与交互目标物体碰撞，ID: {collisionPhysics.ObjectID}, 不触发失败 (由本地判断)");
+            }
+        }
+        
+        if(!collisionDetected && !isInteractingWithTarget){
             for(int i=0;i<collidedObjects.Count;i++){
                 if(!sceneManager.ObjectsInOperation.Contains(collidedObjects[i])){
                     Debug.Log($"检测到异常碰撞: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
-                    collisionDetected=true;
-                    collisionA=articulationBody.name;
-                    collisionB=collision.gameObject.name;
+                    collisionDetected = true;
+                    collisionA = articulationBody.name;
+                    collisionB = collision.gameObject.name;
+                    
+                    // 通知RobotCollisionManager记录这个碰撞
+                    if (RobotCollisionManager.Instance != null)
+                    {
+                        RobotCollisionManager.Instance.ReportCollision(articulationBody, collision.gameObject);
+                    }
                 }
             }
         }
-
     }
 
     public void ClearCollisions(){
@@ -313,6 +348,9 @@ public class AgentMovement : MonoBehaviour
         
         // 清理碰撞物体列表
         collidedObjects.Clear();
+        
+        // 清理当前交互物体ID
+        currentInteractingObjectID = string.Empty;
         
         // 清理RobotCollisionManager中的碰撞状态
         if (RobotCollisionManager.Instance != null)
@@ -546,7 +584,40 @@ public class AgentMovement : MonoBehaviour
 
         try
         {
-            coroutine = (IEnumerator)method.Invoke(this, args); // 启动协程方法
+            // 根据方法名选择相应的Success帮助方法
+            if (method.Name.Equals("Pick", StringComparison.OrdinalIgnoreCase) && args.Length >= 2)
+            {
+                // 使用PickSuccess替代直接调用Pick方法
+                string objectID = args[0].ToString();
+                bool isLeftArm = (bool)args[1];
+                coroutine = PickSuccess(objectID, isLeftArm);
+            }
+            else if (method.Name.Equals("Place", StringComparison.OrdinalIgnoreCase) && args.Length >= 2)
+            {
+                // 使用PlaceSuccess替代直接调用Place方法
+                string objectID = args[0].ToString();
+                bool isLeftArm = (bool)args[1];
+                coroutine = PlaceSuccess(objectID, isLeftArm);
+            }
+            else if (method.Name.Equals("Toggle", StringComparison.OrdinalIgnoreCase) && args.Length >= 2)
+            {
+                // 使用ToggleSuccess替代直接调用Toggle方法
+                string objectID = args[0].ToString();
+                bool isLeftArm = (bool)args[1];
+                coroutine = ToggleSuccess(objectID, isLeftArm);
+            }
+            else if (method.Name.Equals("Open", StringComparison.OrdinalIgnoreCase) && args.Length >= 2)
+            {
+                // 使用OpenSuccess替代直接调用Open方法
+                string objectID = args[0].ToString();
+                bool isLeftArm = (bool)args[1];
+                coroutine = OpenSuccess(objectID, isLeftArm);
+            }
+            else
+            {
+                // 对于其他方法，使用原来的调用方式
+                coroutine = (IEnumerator)method.Invoke(this, args);
+            }
         }
         catch (Exception ex)
         {
@@ -590,9 +661,8 @@ public class AgentMovement : MonoBehaviour
             else if (actionType.Contains("pick") || actionType.Contains("place") || 
                      actionType.Contains("toggle") || actionType.Contains("open"))
             {
-                // 如果存在碰撞或其他错误条件，设置结果为失败
-                if (collisionDetected || 
-                    (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+                // 直接使用lastMoveSuccessful标志
+                if (!lastMoveSuccessful)
                 {
                     result.success = false;
                     result.msg = "物体交互过程中发生碰撞，动作执行失败";
@@ -716,6 +786,22 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Toggle(string objectID, bool isLeftArm)
     {
+        // 设置当前交互物体ID
+        SetCurrentInteractingObject(objectID);
+        
+        // 执行前检查是否已存在碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Toggle动作开始前已检测到碰撞，无法继续");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+        
+        // 清理之前的碰撞状态
+        ClearCollisions();
+        // 重新设置当前交互物体ID，因为ClearCollisions会清除它
+        SetCurrentInteractingObject(objectID);
+        
         // 获取目标交互点和 Toggle 脚本
         Transform interactPoint = SceneStateManager.GetInteractablePoint(objectID);
         CanToggleOnOff toggleScript = interactPoint?.GetComponentInParent<CanToggleOnOff>();
@@ -726,17 +812,61 @@ public class AgentMovement : MonoBehaviour
         if (!hasMovedToPosition && interactPoint != null)
         {
             yield return StartCoroutine(ArmMovetoPosition(interactPoint.position, isLeftArm));
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("移动到交互点时发生碰撞，Toggle动作中断");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
 
+        // 切换开关前再次检查碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("切换开关前检测到碰撞，可能无法正确执行Toggle");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+
         // 切换开关
         toggleScript?.Toggle();
-        yield return new WaitForSeconds(1f);
+        
+        // 执行切换后等待一段时间，让物理系统处理可能的碰撞
+        yield return new WaitForSeconds(0.5f);
+        
+        // 切换后检查是否有碰撞发生
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Toggle动作执行后检测到碰撞，可能影响操作结果");
+            // 这里不中断，Toggle已经执行完成
+        }
+        
+        yield return new WaitForSeconds(0.5f);
     }
 
     public IEnumerator Open(string objectID, bool isLeftArm)
     {
+        // 设置当前交互物体ID
+        SetCurrentInteractingObject(objectID);
+        
+        // 执行前检查是否已存在碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Open动作开始前已检测到碰撞，无法继续");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+        
+        // 清理之前的碰撞状态
+        ClearCollisions();
+        // 重新设置当前交互物体ID，因为ClearCollisions会清除它
+        SetCurrentInteractingObject(objectID);
+        
         // 获取目标交互点和 Open 脚本
         Transform interactPoint = SceneStateManager.GetInteractablePoint(objectID);
         CanOpen_Object openScript = interactPoint?.GetComponentInParent<CanOpen_Object>();
@@ -745,13 +875,41 @@ public class AgentMovement : MonoBehaviour
         if (!hasMovedToPosition && interactPoint != null)
         {
             yield return StartCoroutine(ArmMovetoPosition(interactPoint.position, isLeftArm));
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("移动到交互点时发生碰撞，Open动作中断");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
             hasMovedToPosition = true; // 标记为已到达
         }
 
+        // 打开对象前再次检查碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("打开对象前检测到碰撞，可能无法正确执行Open");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+
         // 打开对象
         openScript?.Interact();
-        yield return new WaitForSeconds(1f);
+        
+        // 执行打开后等待一段时间，让物理系统处理可能的碰撞
+        yield return new WaitForSeconds(0.5f);
+        
+        // 打开后检查是否有碰撞发生
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Open动作执行后检测到碰撞，可能影响操作结果");
+            // 这里不中断，Open已经执行完成
+        }
+        
+        yield return new WaitForSeconds(0.5f);
     }
 
     public JsonData TP(string objectID)
@@ -775,6 +933,22 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Pick(string objectID, bool isLeftArm)
     {
+        // 设置当前交互物体ID
+        SetCurrentInteractingObject(objectID);
+        
+        // 执行前检查是否已存在碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Pick动作开始前已检测到碰撞，无法继续");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+
+        // 清理之前的碰撞状态
+        ClearCollisions();
+        // 重新设置当前交互物体ID，因为ClearCollisions会清除它
+        SetCurrentInteractingObject(objectID);
+        
         if (CurrentRobotType == RobotType.X1)
         {
             Vector3 offset = new Vector3(0, 0.1f, 0);
@@ -791,6 +965,31 @@ public class AgentMovement : MonoBehaviour
             // 移动到夹取位置上方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                if (collisionDetected)
+                {
+                    Debug.LogWarning($"移动到物体上方时发生碰撞，碰撞关节: {collisionA}，碰撞物体: {collisionB}，Pick动作中断");
+                }
+                else if (RobotCollisionManager.Instance != null)
+                {
+                    var collisions = RobotCollisionManager.Instance.GetAllNonInteractingCollisions();
+                    if (collisions.Count > 0)
+                    {
+                        string collisionInfo = string.Join("\n", collisions.Select(c => $"关节: {c.Key.name}, 碰撞物体: {c.Value.name}"));
+                        Debug.LogWarning($"移动到物体上方时发生碰撞 (由RobotCollisionManager报告):\n{collisionInfo}\nPick动作中断");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("移动到物体上方时发生碰撞 (由RobotCollisionManager报告)，但未找到具体碰撞详情，Pick动作中断");
+                    }
+                }
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
 
             // 打开夹爪准备夹取
@@ -801,6 +1000,15 @@ public class AgentMovement : MonoBehaviour
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
             yield return StartCoroutine(ArmMovetoPosition(pickPosition.position, isLeftArm));
+            
+            // 检查下降过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("下降到夹取位置时发生碰撞，Pick动作中断");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
 
             // 夹紧物体
@@ -808,9 +1016,17 @@ public class AgentMovement : MonoBehaviour
             gripperController.SetGripper(isLeftArm, false);
             yield return new WaitForSeconds(1f);
         
-
+            // 提升物体
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
+            
+            // 检查提升过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("提升物体时发生碰撞，Pick动作可能不完整");
+                // 不中断，因为物体已经被抓取
+            }
+            
             yield return new WaitForSeconds(1f);
         
             sceneManager.SetParent(gripperController.transform, objectID);
@@ -827,28 +1043,14 @@ public class AgentMovement : MonoBehaviour
             
             Transform interactablePoint = SceneStateManager.GetInteractablePoint(objectID);
             Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
-
-
-            Vector3 ref_vec = transferPoint.position - transform.position;
-
-            float arm_dis = 0.43f;
-
-            if (isLeftArm)
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
             {
-                arm_dis = 0.33f;
+                Debug.LogWarning("移动机器人位置时发生碰撞，Pick动作中断");
+                lastMoveSuccessful = false;
+                yield break;
             }
-            else
-            {
-                arm_dis = -0.33f;
-            }
-
-            Vector3 arm_vec = transferPoint.right * arm_dis;
-
-            Vector3 move_vec = arm_vec + ref_vec + transform.position;
-
-
-            StartCoroutine(MoveToPosition(move_vec));
-            yield return new WaitForSeconds(1f);
 
             if (interactablePoint == null)
             {
@@ -856,12 +1058,22 @@ public class AgentMovement : MonoBehaviour
                 yield break;
             }
 
-            Vector3 pickPosition = interactablePoint.position + interactablePoint.forward * -0.1f + interactablePoint.up * 0.05f;
+            Vector3 pickPosition = interactablePoint.position + interactablePoint.forward * -0.1f + interactablePoint.up * 0.1f;
             Vector3 frontPickPosition = pickPosition + interactablePoint.up * 0.1f;
 
             // 移动到夹取位置前方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                
+                Debug.LogWarning("移动到物体前方时发生碰撞，Pick动作中断");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
 
             // 打开夹爪准备夹取
@@ -872,6 +1084,15 @@ public class AgentMovement : MonoBehaviour
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(pickPosition, isLeftArm));
+            
+            // 检查下降过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("下降到夹取位置时发生碰撞，Pick动作中断");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+            
             yield return new WaitForSeconds(1f);
             
             // 夹紧物体
@@ -890,15 +1111,58 @@ public class AgentMovement : MonoBehaviour
 
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
+            
+            // 检查退回过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("退回时发生碰撞，Pick动作可能不完整");
+                // 不中断，因为物体已经被抓取
+            }
+            
             yield return new WaitForSeconds(1f);
 
             // 调整物体的旋转以保持与世界坐标正交
             AdjustRotationToWorldAxes(objectID);
         }
+        
+        // 方法末尾添加：
+        // 设置操作成功标志
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+            Debug.Log($"Pick动作成功完成：{objectID}");
+        }
+        else
+        {
+            lastMoveSuccessful = false;
+            Debug.LogWarning($"Pick动作有碰撞，可能未完全成功：{objectID}");
+        }
     }
 
     public IEnumerator Place(string objectID, bool isLeftArm)
     {
+        // 设置当前交互物体ID
+        SetCurrentInteractingObject(objectID);
+        
+        // 执行前检查是否已存在碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("Place动作开始前已检测到碰撞，无法继续");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+
+        // 为Place操作添加之前被抓取的物体到忽略列表
+        // 这样放置过程中与目标物体的碰撞不会被视为错误
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                AddIgnoredCollisionObject(objectID);
+            }
+        }
+        
         Transform pickPosition = SceneStateManager.GetInteractablePoint(objectID);
 
         if (pickPosition == null)
@@ -914,6 +1178,15 @@ public class AgentMovement : MonoBehaviour
         // 移动到放置位置
         Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
         yield return StartCoroutine(ArmMovetoPosition(placePosition, isLeftArm));
+        
+        // 检查移动过程中是否发生碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("移动到放置位置时发生碰撞，Place动作中断");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+        
         yield return new WaitForSeconds(1f);
 
         // 打开夹爪放置物体
@@ -930,13 +1203,42 @@ public class AgentMovement : MonoBehaviour
         AdjustRotationToWorldAxes(objectID);
         yield return new WaitForSeconds(1f);
         
+        // 释放物体前再次检查碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("放置前检测到碰撞，物体可能无法正确放置");
+            // 这里仍然继续执行，因为需要释放物体
+        }
+        
         sceneManager.Release(objectID);
         AdjustRotationToWorldAxes(objectID);
         yield return new WaitForSeconds(1f);
         
+        // 物体放置后再次检查碰撞，可能是物体与环境的自然碰撞
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.Log("物体已放置，检测到与环境的自然碰撞");
+            // 这是预期的碰撞，清除碰撞状态
+            ClearCollisions();
+        }
+        
         AdjustRotationToWorldAxes(objectID);
         
+        // 从操作列表中移除物体
         sceneManager.RemoveOperation(objectID);
+        
+        // 方法末尾添加：
+        // 设置操作成功标志
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+            Debug.Log($"Place动作成功完成：{objectID}");
+        }
+        else
+        {
+            lastMoveSuccessful = false;
+            Debug.LogWarning($"Place动作有碰撞，可能未完全成功：{objectID}");
+        }
     }
 
     public IEnumerator ResetJoint(bool isLeftArm)
@@ -1893,5 +2195,113 @@ public class AgentMovement : MonoBehaviour
 
         // 返回计算后的offset
         return new Vector3(0, 0f, zOffset);
+    }
+
+    // 在Pick方法的最后添加成功标记
+    private IEnumerator PickSuccess(string objectID, bool isLeftArm)
+    {
+        yield return StartCoroutine(Pick(objectID, isLeftArm));
+        
+        // 如果没有碰撞且方法正常执行完成，则标记为成功
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+        }
+    }
+    
+    // 在Place方法的最后添加成功标记
+    private IEnumerator PlaceSuccess(string objectID, bool isLeftArm)
+    {
+        yield return StartCoroutine(Place(objectID, isLeftArm));
+        
+        // 如果没有碰撞且方法正常执行完成，则标记为成功
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+        }
+    }
+    
+    // 在Toggle方法的最后添加成功标记
+    private IEnumerator ToggleSuccess(string objectID, bool isLeftArm)
+    {
+        yield return StartCoroutine(Toggle(objectID, isLeftArm));
+        
+        // 如果没有碰撞且方法正常执行完成，则标记为成功
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+        }
+    }
+    
+    // 在Open方法的最后添加成功标记
+    private IEnumerator OpenSuccess(string objectID, bool isLeftArm)
+    {
+        yield return StartCoroutine(Open(objectID, isLeftArm));
+        
+        // 如果没有碰撞且方法正常执行完成，则标记为成功
+        if (!collisionDetected && (RobotCollisionManager.Instance == null || !RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            lastMoveSuccessful = true;
+        }
+    }
+
+    // 设置当前交互物体ID的方法
+    public void SetCurrentInteractingObject(string objectID)
+    {
+        currentInteractingObjectID = objectID;
+        Debug.Log($"设置当前交互物体ID: {objectID}");
+        
+        // 同步更新RobotCollisionManager
+        if (RobotCollisionManager.Instance != null)
+        {
+            RobotCollisionManager.Instance.SetCurrentInteractingObject(objectID);
+        }
+    }
+    
+    // 添加忽略碰撞的物体ID
+    public void AddIgnoredCollisionObject(string objectID)
+    {
+        if (!string.IsNullOrEmpty(objectID) && !ignoredCollisionObjects.Contains(objectID))
+        {
+            ignoredCollisionObjects.Add(objectID);
+            Debug.Log($"添加忽略碰撞物体ID: {objectID}");
+            
+            // 同步更新RobotCollisionManager
+            if (RobotCollisionManager.Instance != null)
+            {
+                RobotCollisionManager.Instance.AddIgnoredCollisionObject(objectID);
+            }
+        }
+    }
+    
+    // 清空忽略列表
+    public void ClearIgnoredCollisionObjects()
+    {
+        ignoredCollisionObjects.Clear();
+        currentInteractingObjectID = string.Empty;
+        Debug.Log("已清空忽略碰撞物体列表");
+        
+        // 同步更新RobotCollisionManager
+        if (RobotCollisionManager.Instance != null)
+        {
+            RobotCollisionManager.Instance.ClearIgnoredCollisionObjects();
+        }
+    }
+
+    // 检查指定物体ID是否为当前交互物体或在忽略列表中
+    public bool IsCurrentInteractingObject(string objectID)
+    {
+        if (string.IsNullOrEmpty(objectID))
+            return false;
+            
+        // 检查当前交互物体
+        if (objectID == currentInteractingObjectID)
+            return true;
+            
+        // 检查忽略列表
+        if (ignoredCollisionObjects.Contains(objectID))
+            return true;
+            
+        return false;
     }
 }

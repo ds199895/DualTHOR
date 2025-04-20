@@ -184,6 +184,15 @@ public class UnityClient : MonoBehaviour
             SendFeedbackToPython(result,"reset state");
         } 
         else {
+            // 判断是否为交互类操作(pick、place、toggle、open)
+            bool isInteractionAction = IsInteractionAction(actionData.action);
+            
+            // 如果是交互操作且提供了objectID，设置当前交互物体
+            if (isInteractionAction && !string.IsNullOrEmpty(actionData.objectID)) {
+                Debug.Log($"设置交互物体: {actionData.objectID} 用于 {actionData.action} 操作");
+                agentMovement.SetCurrentInteractingObject(actionData.objectID);
+            }
+            
             // 执行动作并获取 JsonData 结果
             agentMovement.ExecuteActionWithCallback(actionData, (result) => {
                 // 根据动作结果发送反馈
@@ -198,8 +207,24 @@ public class UnityClient : MonoBehaviour
 
                 // 发送反馈，根据 result 中的信息
                 SendActionFeedbackToPython(result.success, result.msg);
+                
+                // 操作完成后清除交互物体ID和忽略碰撞列表
+                if (isInteractionAction) {
+                    agentMovement.ClearIgnoredCollisionObjects();
+                    Debug.Log($"已清除交互物体ID和忽略碰撞列表，操作: {actionData.action}");
+                }
             });
         }
+    }
+
+    // 判断是否为交互类操作的辅助方法
+    private bool IsInteractionAction(string action)
+    {
+        string lowerAction = action.ToLower();
+        return lowerAction.Contains("pick") || 
+               lowerAction.Contains("place") || 
+               lowerAction.Contains("toggle") || 
+               lowerAction.Contains("open");
     }
 
     public void SendActionFeedbackToPython(bool success, string msg)

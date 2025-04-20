@@ -248,6 +248,100 @@ public class SceneStateManager : MonoBehaviour
             
             objects = new ObjectState[simObjects.Count]
         };
+        
+        // 保存机器人关节角度
+        AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
+        if (agentMovement != null && agentMovement.articulationChain != null)
+        {
+            state.jointAngles = new List<float>();
+            state.gripperAngles = new List<float>();
+            
+            // 保存所有关节角度
+            foreach (ArticulationBody joint in agentMovement.articulationChain)
+            {
+                if (joint.jointType != ArticulationJointType.FixedJoint)
+                {
+                    // 只检查dofCount是否大于0
+                    if (joint.dofCount > 0)
+                    {
+                        state.jointAngles.Add(joint.jointPosition[0]);
+                    }
+                    else
+                    {
+                        // 如果关节未初始化，添加默认值0
+                        state.jointAngles.Add(0f);
+                        Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+            }
+            
+            // 保存爪子角度
+            if (agentMovement.gripperController != null)
+            {
+                // 获取当前左臂爪子
+                ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
+                ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
+                
+                // 获取当前右臂爪子
+                ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
+                ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
+                
+                // 保存左臂爪子角度
+                if (leftArmLeftGripper != null)
+                {
+                    if (leftArmLeftGripper.dofCount > 0)
+                    {
+                        state.gripperAngles.Add(leftArmLeftGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        state.gripperAngles.Add(0f);
+                        Debug.LogWarning($"左臂左爪 {leftArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                if (leftArmRightGripper != null)
+                {
+                    if (leftArmRightGripper.dofCount > 0)
+                    {
+                        state.gripperAngles.Add(leftArmRightGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        state.gripperAngles.Add(0f);
+                        Debug.LogWarning($"左臂右爪 {leftArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                // 保存右臂爪子角度
+                if (rightArmLeftGripper != null)
+                {
+                    if (rightArmLeftGripper.dofCount > 0)
+                    {
+                        state.gripperAngles.Add(rightArmLeftGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        state.gripperAngles.Add(0f);
+                        Debug.LogWarning($"右臂左爪 {rightArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                if (rightArmRightGripper != null)
+                {
+                    if (rightArmRightGripper.dofCount > 0)
+                    {
+                        state.gripperAngles.Add(rightArmRightGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        state.gripperAngles.Add(0f);
+                        Debug.LogWarning($"右臂右爪 {rightArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+            }
+        }
+        
         stateIndexText.text = "CurrentIndex: " + state.id;
 
         // 保存每个 simObject 的状态
@@ -273,6 +367,98 @@ public class SceneStateManager : MonoBehaviour
             },
             reachablePositons = canTransferPoints.Select(t => t.transform.position).ToArray()
         };
+        
+        // 保存机器人关节角度到A2T状态
+        if (agentMovement != null && agentMovement.articulationChain != null)
+        {
+            stateA2T.agent.jointAngles = new List<float>();
+            stateA2T.agent.gripperAngles = new List<float>();
+            
+            // 保存所有关节角度
+            foreach (ArticulationBody joint in agentMovement.articulationChain)
+            {
+                if (joint.jointType != ArticulationJointType.FixedJoint)
+                {
+                    // 只检查dofCount是否大于0
+                    if (joint.dofCount > 0)
+                    {
+                        stateA2T.agent.jointAngles.Add(joint.jointPosition[0]);
+                    }
+                    else
+                    {
+                        // 如果关节未初始化，添加默认值0
+                        stateA2T.agent.jointAngles.Add(0f);
+                        Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+            }
+            
+            // 保存爪子角度
+            if (agentMovement.gripperController != null)
+            {
+                // 获取当前左臂爪子
+                ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
+                ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
+                
+                // 获取当前右臂爪子
+                ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
+                ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
+                
+                // 保存左臂爪子角度
+                if (leftArmLeftGripper != null)
+                {
+                    if (leftArmLeftGripper.dofCount > 0)
+                    {
+                        stateA2T.agent.gripperAngles.Add(leftArmLeftGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        stateA2T.agent.gripperAngles.Add(0f);
+                        Debug.LogWarning($"左臂左爪 {leftArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                if (leftArmRightGripper != null)
+                {
+                    if (leftArmRightGripper.dofCount > 0)
+                    {
+                        stateA2T.agent.gripperAngles.Add(leftArmRightGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        stateA2T.agent.gripperAngles.Add(0f);
+                        Debug.LogWarning($"左臂右爪 {leftArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                // 保存右臂爪子角度
+                if (rightArmLeftGripper != null)
+                {
+                    if (rightArmLeftGripper.dofCount > 0)
+                    {
+                        stateA2T.agent.gripperAngles.Add(rightArmLeftGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        stateA2T.agent.gripperAngles.Add(0f);
+                        Debug.LogWarning($"右臂左爪 {rightArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+                
+                if (rightArmRightGripper != null)
+                {
+                    if (rightArmRightGripper.dofCount > 0)
+                    {
+                        stateA2T.agent.gripperAngles.Add(rightArmRightGripper.jointPosition[0]);
+                    }
+                    else
+                    {
+                        stateA2T.agent.gripperAngles.Add(0f);
+                        Debug.LogWarning($"右臂右爪 {rightArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                    }
+                }
+            }
+        }
 
         for (int i = 0; i < interactableObjects.Count; i++)
         {
@@ -306,6 +492,7 @@ public class SceneStateManager : MonoBehaviour
             position = obj.transform.position,
             rotation = obj.transform.rotation,
             isActive = obj.activeSelf,
+            isPickedUp = obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"), // 检查父物体是否为Hand
         };
 
         // 保存可序列化状态
@@ -379,11 +566,145 @@ public class SceneStateManager : MonoBehaviour
         if (currentStateIndex > 0)
         {
             currentStateIndex--;
-            //LoadState(stateHistory[currentStateIndex]);
-            LoadState(stateHistory[currentStateIndex],stateHistoryA2T[currentStateIndex]);
+            
+            // 先恢复所有交互物体的从属关系
+            RestorePickedObjectsParent();
+            
+            LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
             return true;
         }
         return false;
+    }
+
+    // 恢复所有交互物体的从属关系
+    private void RestorePickedObjectsParent()
+    {
+        Debug.Log("开始恢复所有被拿起的物体...");
+        List<Transform> possibleGrippers = new List<Transform>();
+        
+        // 1. 查找所有带Hand标签的物体（整个手部）
+        GameObject[] hands = GameObject.FindGameObjectsWithTag("Hand");
+        foreach (GameObject hand in hands)
+        {
+            possibleGrippers.Add(hand.transform);
+        }
+        
+        // 2. 查找GripperController组件中的所有夹爪关节
+        AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
+        if (agentMovement != null && agentMovement.gripperController != null)
+        {
+            GripperController gc = agentMovement.gripperController;
+            
+            // 添加X1机器人夹爪
+            if (gc.leftArmLeftGripper != null) possibleGrippers.Add(gc.leftArmLeftGripper.transform);
+            if (gc.leftArmRightGripper != null) possibleGrippers.Add(gc.leftArmRightGripper.transform);
+            if (gc.rightArmLeftGripper != null) possibleGrippers.Add(gc.rightArmLeftGripper.transform);
+            if (gc.rightArmRightGripper != null) possibleGrippers.Add(gc.rightArmRightGripper.transform);
+            
+            // 添加H1机器人夹爪
+            if (gc.h1_leftArmLeftGripper != null) possibleGrippers.Add(gc.h1_leftArmLeftGripper.transform);
+            if (gc.h1_leftArmRightGripper != null) possibleGrippers.Add(gc.h1_leftArmRightGripper.transform);
+            if (gc.h1_rightArmLeftGripper != null) possibleGrippers.Add(gc.h1_rightArmLeftGripper.transform);
+            if (gc.h1_rightArmRightGripper != null) possibleGrippers.Add(gc.h1_rightArmRightGripper.transform);
+            
+            // 添加当前激活的夹爪
+            if (gc.currentLeftLeftGripper != null) possibleGrippers.Add(gc.currentLeftLeftGripper.transform);
+            if (gc.currentLeftRightGripper != null) possibleGrippers.Add(gc.currentLeftRightGripper.transform);
+            if (gc.currentRightLeftGripper != null) possibleGrippers.Add(gc.currentRightLeftGripper.transform);
+            if (gc.currentRightRightGripper != null) possibleGrippers.Add(gc.currentRightRightGripper.transform);
+        }
+        
+        // 3. 额外查找可能的手指关节（按名称）
+        string[] possibleGripperNames = new[] { 
+            "hand_left_link", "hand_right_link", 
+            "gripper_left", "gripper_right",
+            "finger", "thumb", "claw", "pinch"
+        };
+        
+        var allArticulationBodies = FindObjectsOfType<ArticulationBody>();
+        foreach (var joint in allArticulationBodies)
+        {
+            foreach (var name in possibleGripperNames)
+            {
+                if (joint.name.ToLower().Contains(name.ToLower()))
+                {
+                    possibleGrippers.Add(joint.transform);
+                    break;
+                }
+            }
+        }
+        
+        Debug.Log($"找到 {possibleGrippers.Count} 个可能的夹爪/手指位置");
+        
+        // 遍历所有可能的夹爪，检查子物体
+        int releasedCount = 0;
+        foreach (Transform gripper in possibleGrippers)
+        {
+            // 跳过null引用
+            if (gripper == null) continue;
+            
+            Debug.Log($"检查夹爪/手指: {gripper.name}，子物体数量: {gripper.childCount}");
+            
+            // 获取该夹爪下的所有子物体
+            for (int i = gripper.childCount - 1; i >= 0; i--)
+            {
+                Transform child = gripper.GetChild(i);
+                SimObjPhysics simObj = child.GetComponent<SimObjPhysics>();
+                
+                // 只处理具有SimObjPhysics组件的物体（交互物体）
+                if (simObj != null)
+                {
+                    Debug.Log($"Undo/Redo: 将物体 {child.name} (ID: {simObj.ObjectID}) 从夹爪 {gripper.name} 释放");
+                    releasedCount++;
+                    
+                    // 彻底释放物体，确保物体回归ObjectsParent
+                    Vector3 currentPosition = child.position; // 记录当前世界坐标位置
+                    Quaternion currentRotation = child.rotation; // 记录当前世界旋转
+                    
+                    // 断开与夹爪的连接，设置为场景根物体
+                    child.SetParent(ObjectsParent);
+                    
+                    // 恢复物理属性之前确保位置不变
+                    child.position = currentPosition;
+                    child.rotation = currentRotation;
+                    
+                    // 恢复物理属性
+                    Rigidbody rigidbody = child.GetComponent<Rigidbody>();
+                    if (rigidbody != null)
+                    {
+                        // 先设为运动学以确保位置不变
+                        rigidbody.isKinematic = true;
+                        
+                        // 调整旋转为世界坐标系
+                        AdjustRotationToWorldAxes(child);
+                        
+                        // 完全恢复物理
+                        rigidbody.isKinematic = false;
+                        rigidbody.useGravity = true;
+                        rigidbody.detectCollisions = true;
+                        rigidbody.linearVelocity = Vector3.zero; // 清除速度
+                        rigidbody.angularVelocity = Vector3.zero; // 清除角速度
+                    }
+                    
+                    // 从操作列表中移除
+                    if (ObjectsInOperation.Contains(child.gameObject))
+                    {
+                        ObjectsInOperation.Remove(child.gameObject);
+                        Debug.Log($"已从操作列表中移除物体: {child.name}");
+                    }
+                }
+            }
+        }
+        
+        // 更新Agent组件中的currentInteractingObjectID
+        AgentMovement agentMovementForClear = agent.GetComponent<AgentMovement>();
+        if (agentMovementForClear != null)
+        {
+            // 通知AgentMovement清除当前交互物体
+            agentMovementForClear.ClearIgnoredCollisionObjects();
+        }
+        
+        Debug.Log($"恢复操作完成，共释放了 {releasedCount} 个物体回到场景");
     }
 
     public bool Redo()
@@ -391,7 +712,10 @@ public class SceneStateManager : MonoBehaviour
         if (currentStateIndex < stateHistory.Count - 1)
         {
             currentStateIndex++;
-            //LoadState(stateHistory[currentStateIndex]);
+            
+            // 先恢复所有交互物体的从属关系
+            RestorePickedObjectsParent();
+            
             LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
             return true;
         }
@@ -406,6 +730,10 @@ public class SceneStateManager : MonoBehaviour
             if (index >= 0 && index <= stateHistory.Count-1) // 检查索引是否在有效范围内
             {
                 currentStateIndex = index; // 索引从0开始，用户输入从1开始
+                
+                // 先恢复所有交互物体的从属关系
+                RestorePickedObjectsParent();
+                
                 LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
                 return true;
             }
@@ -430,6 +758,68 @@ public class SceneStateManager : MonoBehaviour
         root.TeleportRoot(state.agentPosition,state.agentRotation);
         stateIndexText.text = "CurrentIndex: " + state.id;
 
+        // 恢复关节角度
+        AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
+        if (agentMovement != null && agentMovement.articulationChain != null)
+        {
+            if (state.jointAngles != null && state.jointAngles.Count > 0)
+            {
+                int jointIndex = 0;
+                foreach (ArticulationBody joint in agentMovement.articulationChain)
+                {
+                    if (joint.jointType != ArticulationJointType.FixedJoint && jointIndex < state.jointAngles.Count)
+                    {
+                        var drive = joint.xDrive;
+                        drive.target = state.jointAngles[jointIndex];
+                        joint.xDrive = drive;
+                        jointIndex++;
+                    }
+                }
+            }
+            
+            // 恢复爪子角度
+            if (state.gripperAngles != null && state.gripperAngles.Count > 0 && agentMovement.gripperController != null)
+            {
+                // 获取当前左臂爪子
+                ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
+                ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
+                
+                // 获取当前右臂爪子
+                ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
+                ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
+                
+                // 恢复左臂爪子角度
+                if (leftArmLeftGripper != null && state.gripperAngles.Count > 0)
+                {
+                    var drive = leftArmLeftGripper.xDrive;
+                    drive.target = state.gripperAngles[0];
+                    leftArmLeftGripper.xDrive = drive;
+                }
+                
+                if (leftArmRightGripper != null && state.gripperAngles.Count > 1)
+                {
+                    var drive = leftArmRightGripper.xDrive;
+                    drive.target = state.gripperAngles[1];
+                    leftArmRightGripper.xDrive = drive;
+                }
+                
+                // 恢复右臂爪子角度
+                if (rightArmLeftGripper != null && state.gripperAngles.Count > 2)
+                {
+                    var drive = rightArmLeftGripper.xDrive;
+                    drive.target = state.gripperAngles[2];
+                    rightArmLeftGripper.xDrive = drive;
+                }
+                
+                if (rightArmRightGripper != null && state.gripperAngles.Count > 3)
+                {
+                    var drive = rightArmRightGripper.xDrive;
+                    drive.target = state.gripperAngles[3];
+                    rightArmRightGripper.xDrive = drive;
+                }
+            }
+        }
+
         // 还原其他物体的状态
         foreach (ObjectState objectState in state.objects)
         {
@@ -453,6 +843,68 @@ public class SceneStateManager : MonoBehaviour
 
         stateIndexText.text = "CurrentIndex: " + state.id;
 
+        // 恢复关节角度
+        AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
+        if (agentMovement != null && agentMovement.articulationChain != null)
+        {
+            if (state.jointAngles != null && state.jointAngles.Count > 0)
+            {
+                int jointIndex = 0;
+                foreach (ArticulationBody joint in agentMovement.articulationChain)
+                {
+                    if (joint.jointType != ArticulationJointType.FixedJoint && jointIndex < state.jointAngles.Count)
+                    {
+                        var drive = joint.xDrive;
+                        drive.target = state.jointAngles[jointIndex];
+                        joint.xDrive = drive;
+                        jointIndex++;
+                    }
+                }
+            }
+            
+            // 恢复爪子角度
+            if (state.gripperAngles != null && state.gripperAngles.Count > 0 && agentMovement.gripperController != null)
+            {
+                // 获取当前左臂爪子
+                ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
+                ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
+                
+                // 获取当前右臂爪子
+                ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
+                ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
+                
+                // 恢复左臂爪子角度
+                if (leftArmLeftGripper != null && state.gripperAngles.Count > 0)
+                {
+                    var drive = leftArmLeftGripper.xDrive;
+                    drive.target = state.gripperAngles[0];
+                    leftArmLeftGripper.xDrive = drive;
+                }
+                
+                if (leftArmRightGripper != null && state.gripperAngles.Count > 1)
+                {
+                    var drive = leftArmRightGripper.xDrive;
+                    drive.target = state.gripperAngles[1];
+                    leftArmRightGripper.xDrive = drive;
+                }
+                
+                // 恢复右臂爪子角度
+                if (rightArmLeftGripper != null && state.gripperAngles.Count > 2)
+                {
+                    var drive = rightArmLeftGripper.xDrive;
+                    drive.target = state.gripperAngles[2];
+                    rightArmLeftGripper.xDrive = drive;
+                }
+                
+                if (rightArmRightGripper != null && state.gripperAngles.Count > 3)
+                {
+                    var drive = rightArmRightGripper.xDrive;
+                    drive.target = state.gripperAngles[3];
+                    rightArmRightGripper.xDrive = drive;
+                }
+            }
+        }
+
         // 还原其他物体的状态
         foreach (ObjectState objectState in state.objects)
         {
@@ -467,38 +919,110 @@ public class SceneStateManager : MonoBehaviour
         // 查找动态物体
         if (simObjectsDict.TryGetValue(objectState.name, out GameObject obj))
         {
+            // 先处理父级关系
+            // 1. 如果物体当前在手中，但在保存的状态中不是被拿起的，则将其释放
+            if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand") && !objectState.isPickedUp)
+            {
+                Debug.Log($"LoadObjectState: 将物体 {obj.name} 从手部释放到场景中");
+                obj.transform.SetParent(ObjectsParent);
+                
+                // 从操作列表中移除
+                if (ObjectsInOperation.Contains(obj))
+                {
+                    ObjectsInOperation.Remove(obj);
+                }
+            }
+            // 2. 如果物体在保存的状态中是被拿起的，但当前不在手中，这种情况应该由Agent的Pick操作来处理
+            // 我们只恢复位置，不改变父级关系
+            
+            // 设置活动状态
             obj.SetActive(objectState.isActive);
 
-            // 处理物理状态
+            // 处理物理状态和位置
             HandlePhysicsState(obj, objectState);
-            //obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
 
-            // 恢复状态
+            // 恢复其他状态（通过IUniqueStateManager接口）
             IUniqueStateManager[] savables = obj.GetComponents<IUniqueStateManager>();
             foreach (var savable in savables)
             {
-                savable.LoadState(objectState); // 恢复状态
+                savable.LoadState(objectState);
             }
+            
+            // 再次检查刚体状态，确保根据父级关系正确设置
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
+                {
+                    // 如果在手中，禁用物理
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    rb.detectCollisions = false;
+                }
+                else if (!objectState.isPickedUp)
+                {
+                    // 如果不在手中且保存状态也不是被拿起，启用物理
+                    rb.isKinematic = false;
+                    rb.useGravity = true;
+                    rb.detectCollisions = true;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"无法找到物体: {objectState.name}");
         }
     }
 
     private void HandlePhysicsState(GameObject obj, ObjectState objectState)
     {
-        SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
-        if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup) // 确保 simObj 不为空
+        // 无论物体类型如何，都先暂停物理
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        bool hadRigidbody = rb != null;
+        bool wasKinematic = hadRigidbody && rb.isKinematic;
+        bool usedGravity = hadRigidbody && rb.useGravity;
+        bool detectCollisions = hadRigidbody && rb.detectCollisions;
+        
+        // 暂时禁用物理以确保位置设置正确
+        if (hadRigidbody)
         {
-            if (obj.TryGetComponent<Rigidbody>(out Rigidbody rb))
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.detectCollisions = false;
+        }
+        
+        // 设置位置和旋转
+        obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
+        
+        // 根据物体类型恢复物理属性
+        SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
+        if (hadRigidbody)
+        {
+            // 如果物体目前被拿起（在手中），保持kinematic=true
+            if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
             {
-                rb.isKinematic = true; // 暂时将刚体设为运动学
-                obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
-                rb.isKinematic = false; // 恢复物理运动
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.detectCollisions = false;
+            }
+            else if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup)
+            {
+                // 可拾取物体恢复为非运动学，有重力，有碰撞
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.detectCollisions = true;
+            }
+            else
+            {
+                // 其他物体恢复原有状态
+                rb.isKinematic = wasKinematic;
+                rb.useGravity = usedGravity;
+                rb.detectCollisions = detectCollisions;
             }
         }
-        else
-        {
-            obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
-
-        }
+        
+        // 记录调试信息
+        Debug.Log($"物体 {obj.name} 位置已恢复到: {objectState.position}, 旋转: {objectState.rotation.eulerAngles}");
     }
 
 
@@ -555,12 +1079,30 @@ public class SceneStateManager : MonoBehaviour
 
     public void SetParent(Transform parent, string objectID)
     {
+        Debug.Log($"SetParent: 将物体 {objectID} 设置为 {parent.name} 的子物体");
+        
+        // 确保父物体有Hand标签，便于后续恢复时查找
+        if (!parent.CompareTag("Hand"))
+        {
+            try
+            {
+                parent.tag = "Hand";
+                Debug.Log($"已为夹爪 {parent.name} 添加Hand标签");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"无法为夹爪添加Hand标签: {e.Message}");
+            }
+        }
+        
         SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
 
         foreach (SimObjPhysics obj in allObjects)
         {
             if (obj.ObjectID == objectID)
             {
+                Debug.Log($"找到物体 {obj.name} (ID: {objectID})，设置其父物体为 {parent.name}");
+                
                 ObjectsInOperation.Add(obj.gameObject);
                 obj.transform.SetParent(parent);
                 Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
@@ -570,6 +1112,8 @@ public class SceneStateManager : MonoBehaviour
                     rigidbody.useGravity = false; // 禁用重力
                     rigidbody.detectCollisions = false; // 禁用碰撞检测
                 }
+                
+                Debug.Log($"物体 {obj.name} 已成功设置为 {parent.name} 的子物体，并禁用了物理");
             }
         }
     }
@@ -611,18 +1155,48 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    public void UpdateLastActionSuccessCollision(string collisionA,string collisionB)
+    public void UpdateLastActionSuccessCollision(string collisionA, string collisionB)
     {
         if (stateHistoryA2T.Count > 0)
         {
             var currentAgent = stateHistoryA2T[currentStateIndex].agent;
-
-            currentAgent.lastActionSuccess = false;
-
-
-            // 尝试获取对应动作的错误信息
-
-            currentAgent.errorMessage =$"Collision Detected. Joint {collisionA} collision with object {collisionB}";
+            
+            // 检查碰撞对象是否为当前交互物体
+            bool isInteractingObject = false;
+            
+            // 获取AgentMovement组件
+            AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
+            if (agentMovement != null)
+            {
+                // 尝试判断collisionB是否为交互物体
+                SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+                foreach (SimObjPhysics obj in allObjects)
+                {
+                    if (obj.gameObject.name == collisionB)
+                    {
+                        // 从AgentMovement获取当前交互物体信息
+                        // 假设AgentMovement有一个方法来检查物体是否为当前交互物体
+                        if (agentMovement.IsCurrentInteractingObject(obj.ObjectID))
+                        {
+                            isInteractingObject = true;
+                            Debug.Log($"碰撞物体 {collisionB} 是当前交互物体，不视为错误碰撞");
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // 如果不是交互物体，则视为失败
+            if (!isInteractingObject)
+            {
+                currentAgent.lastActionSuccess = false;
+                currentAgent.errorMessage = $"Collision Detected. Joint {collisionA} collision with object {collisionB}";
+            }
+            else
+            {
+                // 如果是交互物体，仍然记录碰撞但不视为失败
+                Debug.Log($"检测到与交互物体的碰撞，不标记为失败: {collisionB}");
+            }
         }
         else
         {

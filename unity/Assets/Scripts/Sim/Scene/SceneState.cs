@@ -12,8 +12,8 @@ public class SceneState
     public ObjectState[] objects; 
 
     //每个手臂七个关节角+2个爪子角度
-    //public List<float> jointsStates; // 存储所有关节的状态
-    //public List<float> gripperStates; // 存储爪子的状态
+    public List<float> jointAngles; // 存储所有关节的角度
+    public List<float> gripperAngles; // 存储爪子的角度
 }
 
 [System.Serializable] //加了这个才能被JsonUtility.ToJson正确序列化
@@ -24,6 +24,7 @@ public class ObjectState
     public Vector3 position;//物体位置
     public Quaternion rotation;//物体朝向
     public bool isActive;
+    public bool isPickedUp; // 是否被拿起，即父物体是否为Hand
     //break物体具有的状态
     public BreakState breakState;
     //cook物体具有的状态

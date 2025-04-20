@@ -54,5 +54,7 @@ public class AgentStateA2T
     public string lastAction;//上一次执行的动作
     public bool lastActionSuccess;//上一次执行动作是否成功,不成功则状态不会发生改变
     public string errorMessage;//错误信息
+    public List<float> jointAngles; // 存储机器人关节角度
+    public List<float> gripperAngles; // 存储机器人爪子角度
 }
 

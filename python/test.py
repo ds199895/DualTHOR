@@ -24,33 +24,35 @@ def test_controller():
     logging.info("===== 测试极小距离移动 =====")
     
     # 测试几个极小的移动幅度
-    test_magnitudes = [0.005, 0.01, 0.02, 0.03]
-    for mag in test_magnitudes:
-        logging.info(f"测试极小移动: {mag}")
-        feedback = controller.step("moveahead", magnitude=mag)
-        logging.info(f"移动结果 [{mag}]: {feedback.get('success', False)}")
+    # test_magnitudes = [0.005, 0.01, 0.02, 0.03]
+    # for mag in test_magnitudes:
+    #     logging.info(f"测试极小移动: {mag}")
+    #     feedback = controller.step("moveahead", magnitude=mag)
+    #     logging.info(f"移动结果 [{mag}]: {feedback.get('success', False)}")
         
-        # 检查是否有碰撞信息
-        if 'collision_info' in feedback:
-            collision_info = feedback['collision_info']
-            logging.info(f"碰撞详情: 源={collision_info.get('source', '未知')}, 目标={collision_info.get('target', '未知')}")
+    #     # 检查是否有碰撞信息
+    #     if 'collision_info' in feedback:
+    #         collision_info = feedback['collision_info']
+    #         logging.info(f"碰撞详情: 源={collision_info.get('source', '未知')}, 目标={collision_info.get('target', '未知')}")
             
-        time.sleep(0.5)
+    #     time.sleep(0.5)
     
 
 
     # 简单菜单提供用户交互调试选项
     while True:
         print("\n==== 碰撞检测调试菜单 ====")
-        print("1. 微小距离前进 (0.01)")
-        print("2. 小距离前进 (0.05)")
-        print("3. 中等距离前进 (0.1)")
-        print("4. 大距离前进 (1)")
-
+        print("1. 小距离前进 (0.05)")
+        print("2. 中等距离前进 (0.1)")
+        print("3. 大距离前进 (1)")
+        print("4. undo")
         print("5. 向左移动 (0.05)")
         print("6. 向右移动 (0.05)")
         print("7. 向后移动 (0.05)")
         print("8. 旋转45度")
+        print("9. 拿起杯子")
+        print("10. 放下杯子")
+        print("11. 打开开关")
         print("0. 退出")
         
         try:
@@ -60,17 +62,17 @@ def test_controller():
                 logging.info("退出测试")
                 break
             elif choice == '1':
-                feedback = controller.step("moveahead", magnitude=0.01)
-                print_feedback_result(feedback, "微小距离前进")
-            elif choice == '2':
                 feedback = controller.step("moveahead", magnitude=0.05)
                 print_feedback_result(feedback, "小距离前进")
-            elif choice == '3':
+            elif choice == '2':
                 feedback = controller.step("moveahead", magnitude=0.1)
                 print_feedback_result(feedback, "中等距离前进")
-            elif choice == '4':
+            elif choice == '3':
                 feedback = controller.step("moveahead", magnitude=1)
                 print_feedback_result(feedback, "大距离前进")
+            elif choice == '4':
+                feedback = controller.step("undo")
+                print_feedback_result(feedback, "undo")
             elif choice == '5':
                 feedback = controller.step("moveleft", magnitude=0.05)
                 print_feedback_result(feedback, "向左移动")
@@ -83,6 +85,15 @@ def test_controller():
             elif choice == '8':
                 feedback = controller.step("rotateright", magnitude=0.5)
                 print_feedback_result(feedback, "旋转")
+            elif choice == '9':
+                feedback = controller.step("pick", objectID="Kitchen_Cup_01", isLeftArm=True)
+                print_feedback_result(feedback, "拿起杯子")
+            elif choice == '10':
+                feedback = controller.step("place", objectID="Kitchen_Cup_01", isLeftArm=True)
+                print_feedback_result(feedback, "放下杯子")
+            elif choice == '11':
+                feedback = controller.step("toggle", objectID="Kitchen_Faucet_01", isLeftArm=True)
+                print_feedback_result(feedback, "打开开关")
             else:
                 logging.warning("无效选择，请重试")
                 
