@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Linq;
 
 public class UnityClient : MonoBehaviour
 {
@@ -142,18 +143,18 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Parsed Action Data: "+actionData.ToString());
         if (string.IsNullOrEmpty(actionData.action)) {
             Debug.LogError("ActionData does not contain a valid action.");
-            SendFeedbackToPython( false,"Error: Missing action in ActionData.");
+            SendFeedbackToPython(false,"Error: Missing action in ActionData.");
             return;
         }
 
         if (actionData.action == "loadstate") {
             if (!string.IsNullOrEmpty(actionData.stateID)) {
-                agentMovement.LoadState(actionData.stateID);
+                var result = agentMovement.LoadState(actionData.stateID);
                 Debug.Log($"Loaded scene state with ID: {actionData.stateID}");
-                SendFeedbackToPython( true,$"Loaded state ID: {actionData.stateID}");
+                SendFeedbackToPython(result,"load state feedback");
             } else {
                 Debug.LogError("State ID is missing in ActionData for LoadSceneState.");
-                SendFeedbackToPython( false,"Error: Missing state ID for LoadSceneState.");
+                SendFeedbackToPython(false,"Error: Missing state ID for LoadSceneState.");
             }
         } else if (actionData.action == "loadrobot") {
 
@@ -164,29 +165,30 @@ public class UnityClient : MonoBehaviour
             }
             var result = agentMovement.LoadRobot(actionData.robotType);
             Debug.Log($"Loaded robot of type: {actionData.robotType}");
-            SendFeedbackToPython( result,"load robot feedback");
+            SendFeedbackToPython(result,"load robot feedback");
         } else if (actionData.action == "resetscene") {
             var result = agentMovement.LoadScene(actionData.scene,actionData.robotType);
             Debug.Log($"Loaded scene: {actionData.scene},Robot type:{actionData.robotType}");
             Init();
             sceneStateManager.SaveCurrentState();
-            SendFeedbackToPython(result);
+            SendFeedbackToPython(result,"reset scene feedback");
         } else if (actionData.action=="getcurstate") {
             SendFeedbackToPython(true,"get current scene");
         } else if (actionData.action=="resetpose"){
             Debug.Log("reset pose action!");
-            agentMovement.ResetPose();
-            SendFeedbackToPython(true,"reset pose");
+            var result = agentMovement.ResetPose();
+            SendFeedbackToPython(result,"reset pose");
         } else if (actionData.action=="resetstate"){
             Debug.Log("reset state action!");
-            agentMovement.LoadState("0");
-            SendFeedbackToPython(true,"reset state");
+            var result = agentMovement.LoadState("0");
+            SendFeedbackToPython(result,"reset state");
         } 
         else {
-            agentMovement.ExecuteActionWithCallback(actionData, () => {
-                bool success = true; // Assume success unless otherwise determined
-                string msg = "";
-
+            // 执行动作并获取 JsonData 结果
+            agentMovement.ExecuteActionWithCallback(actionData, (result) => {
+                // 根据动作结果发送反馈
+                Debug.Log($"Action result: success={result.success}, msg={result.msg}");
+                
                 if (actionData.action == "undo" || actionData.action == "redo") {
                     Debug.Log($"Skipping SaveCurrentState for action: {actionData.action}");
                 } else {
@@ -194,45 +196,42 @@ public class UnityClient : MonoBehaviour
                     Debug.Log($"Saved current state after action: {actionData.action}");
                 }
 
-                SendFeedbackToPython(success, msg);
-
+                // 发送反馈，根据 result 中的信息
+                SendActionFeedbackToPython(result.success, result.msg);
             });
         }
-        // sceneStateManager.camera_ctrl.record=false;
-        //  Debug.Log("Finish recording .....");
     }
 
-    public void SendFeedbackToPython( bool success, string msg = "")
+    public void SendActionFeedbackToPython(bool success, string msg)
     {
         if (client != null && stream != null)
         {
             try
             {
                 Vector3 currentPosition = transform.position;
-                string feedback ="";
-
-                if(agentMovement.collisionDetected){
-                    success=false;
-                    msg+=" Collision Detected";
-
-                    sceneStateManager.UpdateLastActionSuccessCollision(agentMovement.collisionA,agentMovement.collisionB);
-                }
-
-
-                if(sceneStateManager) {
-                    Debug.Log(sceneStateManager);
+                string feedback = "";
+                
+                if (sceneStateManager)
+                {
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
-                    Debug.Log(currentSceneState);
                     string sceneStateJson = JsonUtility.ToJson(currentSceneState);
                     string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
-                    feedback = $"{{\"success\": {(success ? 1 : 0)},\"imgpath\":\"{imagePath}\" ,\"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
+                    
+                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"imgpath\":\"{imagePath}\", \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
-              
-                // feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\", \"x1position\": \"{null}\", \"sceneState\": {null}}}";
+                else
+                {
+                    // 简化版反馈
+                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\"}}";
+                }
 
                 Debug.Log(feedback);
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
+                
+                // 清理状态
+                Debug.Log("反馈已发送，现在清理状态");
+                agentMovement.ClearCollisions();
             }
             catch (Exception ex)
             {
@@ -243,25 +242,48 @@ public class UnityClient : MonoBehaviour
         {
             Debug.LogWarning("Cannot send feedback: client or stream is null.");
         }
+        
         Debug.Log("Stop recording");
-        sceneStateManager.camera_ctrl.record=false;
+        sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
     }
 
-    public void SendFeedbackToPython( bool success)
+    public void SendFeedbackToPython(bool success)
+    {
+        SendFeedbackToPython(success, success ? "操作成功" : "操作失败");
+    }
+
+    public void SendFeedbackToPython(bool success, string msg = "")
     {
         if (client != null && stream != null)
         {
             try
             {
                 Vector3 currentPosition = transform.position;
-                string feedback ="";
-              
-                feedback = $"{{\"success\": {(success ? 1 : 0)}}}";
+                string feedback = "";
+                
+                if (sceneStateManager)
+                {
+                    SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
+                    string sceneStateJson = JsonUtility.ToJson(currentSceneState);
+                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
+                    
+                    // 简化后的反馈，不再检查碰撞信息
+                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"imgpath\":\"{imagePath}\", \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
+                }
+                else
+                {
+                    // 简化版反馈
+                    feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\"}}";
+                }
 
                 Debug.Log(feedback);
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
+                
+                // 清理状态
+                Debug.Log("反馈已发送，现在清理状态");
+                agentMovement.ClearCollisions();
             }
             catch (Exception ex)
             {
@@ -271,6 +293,13 @@ public class UnityClient : MonoBehaviour
         else
         {
             Debug.LogWarning("Cannot send feedback: client or stream is null.");
+        }
+        
+        Debug.Log("Stop recording");
+        if (sceneStateManager != null && sceneStateManager.camera_ctrl != null)
+        {
+            sceneStateManager.camera_ctrl.record = false;
+            sceneStateManager.camera_ctrl.ResetImageCount();
         }
     }
 

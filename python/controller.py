@@ -24,9 +24,10 @@ class Controller:
         self.tcp_server.on_connect = self.on_client_connect  # 设置连接事件回调
         self.scene=scene
         self.feedback_queue = queue.Queue()  # 用于存储反馈的队列
+        self.last_collision_info = None  # 存储最后一次碰撞信息
 
 
-            # 如果需要启动 Unity 可执行文件
+        # 如果需要启动 Unity 可执行文件
         unity_process = None
         if start_unity_exe:
             unity_process = unity_launcher.start_unity()
@@ -130,11 +131,44 @@ class Controller:
             feed_back=self.tcp_server.receive()
             # print("feedback string: ",feed_back)
             feedback_json=json.loads(feed_back)
-            # print("feed back json: ", feedback_json)
+            
+            # 处理碰撞信息
+            self._process_collision_info(feedback_json)
+            
+            # 在日志中输出详细信息
+            if not feedback_json.get('success', False):
+                logging.warning(f"动作 '{action_name}' 执行失败: {feedback_json.get('msg', '未知错误')}")
+                if self.last_collision_info:
+                    logging.warning(f"碰撞信息: {self.last_collision_info}")
+            
             return feedback_json
         except Exception as e:
             logging.error(f"Error executing action {action_name}: {e}")
             return None
+        
+    def _process_collision_info(self, feedback_json):
+        """
+        从反馈中提取并处理碰撞信息
+        """
+        # 清除上一次的碰撞信息
+        self.last_collision_info = None
+        
+        # 检查是否有碰撞信息
+        if 'collision_info' in feedback_json:
+            collision_info = feedback_json['collision_info']
+            self.last_collision_info = collision_info
+            
+            source = collision_info.get('source', 'unknown')
+            target = collision_info.get('target', 'unknown')
+            
+            # 记录详细的碰撞信息
+            logging.info(f"检测到碰撞: {source} 与 {target}")
+            
+    def get_last_collision_info(self):
+        """
+        获取最后一次碰撞信息
+        """
+        return self.last_collision_info
         
     def step_async(self,actions_json):
         # if "successRate" not in kwargs:
@@ -148,13 +182,14 @@ class Controller:
             feed_back=self.tcp_server.receive()
             # print("feedback string: ",feed_back)
             feedback_json=json.loads(feed_back)
-            # print("feed back json: ", feedback_json)
+            
+            # 处理碰撞信息
+            self._process_collision_info(feedback_json)
+            
             return feedback_json
         except Exception as e:
             logging.error(f"Error executing action {actions_json}: {e}")
             return None
-
-
 
     def handle_feedback(self):
         """

@@ -118,7 +118,7 @@ success_rate = 0
 test_num = 20
 test_epoch = 50
 
-controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
+controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
 
 controller.start()
 

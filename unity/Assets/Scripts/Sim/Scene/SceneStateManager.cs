@@ -374,28 +374,32 @@ public class SceneStateManager : MonoBehaviour
             Debug.LogWarning("No state history to update lastAction.");
         }
     }
-    public void Undo()
+    public bool Undo()
     {
         if (currentStateIndex > 0)
         {
             currentStateIndex--;
             //LoadState(stateHistory[currentStateIndex]);
             LoadState(stateHistory[currentStateIndex],stateHistoryA2T[currentStateIndex]);
+            return true;
         }
+        return false;
     }
 
-    public void Redo()
+    public bool Redo()
     {
         if (currentStateIndex < stateHistory.Count - 1)
         {
             currentStateIndex++;
             //LoadState(stateHistory[currentStateIndex]);
             LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
+            return true;
         }
+        return false;
     }
 
     // 加载指定索引的状态
-    public void LoadStateByIndex(string indexText)
+    public bool LoadStateByIndex(string indexText)
     {
         if (int.TryParse(indexText, out int index))
         {
@@ -403,6 +407,7 @@ public class SceneStateManager : MonoBehaviour
             {
                 currentStateIndex = index; // 索引从0开始，用户输入从1开始
                 LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
+                return true;
             }
             else
             {
@@ -413,6 +418,7 @@ public class SceneStateManager : MonoBehaviour
         {
             Debug.LogWarning("无效的索引输入！");
         }
+        return false;
     }
 
     private void LoadState(SceneState state)
@@ -452,6 +458,8 @@ public class SceneStateManager : MonoBehaviour
         {
             LoadObjectState(objectState);
         }
+
+        
     }
 
     private void LoadObjectState(ObjectState objectState)
@@ -628,6 +636,20 @@ public class SceneStateManager : MonoBehaviour
         {
             var currentAgent = stateHistoryA2T[currentStateIndex].agent;
 
+            // 如果动作是移动相关且被标记为失败，直接返回失败结果
+            if (actionType != null && (actionType.ToLower().Contains("move") || actionType.ToLower().Contains("rotate")))
+            {
+                // 检查是否有任何碰撞被报告或者移动动作失败
+                AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
+                if (agentMovement != null && !agentMovement.lastMoveSuccessful)
+                {
+                    currentAgent.lastActionSuccess = false;
+                    currentAgent.errorMessage = "移动被障碍物阻挡或无法安全执行";
+                    return false;
+                }
+            }
+            
+            // 如果没有特定的失败情况，使用配置文件中的概率处理
             if (actionConfigs.TryGetValue(actionType, out ActionConfig config))
             {
                 float randomValue = UnityEngine.Random.value;

@@ -20169,6 +20169,7 @@ MonoBehaviour:
     axis: {x: 1, y: 0, z: 0}
   CurrentRobotType: 0
   robots: []
+  lastMoveSuccessful: 1
 --- !u!114 &526372064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28230,7 +28231,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 51c7bebc84d3228439823862d6ca3bd7, type: 2}
   m_TargetDisplay: 0
@@ -37501,6 +37502,7 @@ MonoBehaviour:
   robots:
   - {fileID: 2020528277}
   - {fileID: 1476436543}
+  lastMoveSuccessful: 1
 --- !u!114 &936950131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49094,6 +49096,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0.107
       objectReference: {fileID: 0}
+    - target: {fileID: 1021822606258194444, guid: 3cb3ee3f96e302a45b4ab970499cca01,
+        type: 3}
+      propertyPath: m_Name
+      value: Kitchen_Sink_01
+      objectReference: {fileID: 0}
     - target: {fileID: 1191452287614849748, guid: 3cb3ee3f96e302a45b4ab970499cca01,
         type: 3}
       propertyPath: Type
@@ -53650,7 +53657,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: eda618130f898084880fc42dbf6c7b47, type: 2}
   m_TargetDisplay: 0
@@ -57213,7 +57220,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: c6b0aac678f496c42bb40c537ba8eddd, type: 2}
   m_TargetDisplay: 0
@@ -60878,7 +60885,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 2e3325032a638a04785850d94c2ff057, type: 2}
   m_TargetDisplay: 0
@@ -62340,8 +62347,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.47138995, y: 1.8726747, z: 0.37065783}
-  m_Center: {x: -0.018786559, y: -0.15226464, z: 0.048800655}
+  m_Size: {x: 0.47138995, y: 1.8396927, z: 0.37065783}
+  m_Center: {x: -0.018786551, y: -0.13576813, z: 0.048800655}
 --- !u!54 &1476436546
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -62381,6 +62388,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8efe76a35f3d489eb4b7b5d451c5327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  raycastDistance: 1
+  showDebugRays: 1
+  debugMode: 1
+  disableCollisionDetection: 0
+  useRaycastsOnly: 1
+  robotBodyTransform: {fileID: 0}
 --- !u!1001 &1481719797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -71154,7 +71167,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 4966e4dbb8bb0a74ebd2b9c58294444f, type: 2}
   m_TargetDisplay: 0
@@ -83054,6 +83067,7 @@ MonoBehaviour:
     axis: {x: 1, y: 0, z: 0}
   CurrentRobotType: 0
   robots: []
+  lastMoveSuccessful: 1
 --- !u!114 &2020528281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84162,7 +84176,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 127
+    m_Bits: 639
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -89746,6 +89760,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7579761148172197475, guid: d4f4a199425759691aed595032b47a93,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7588178021016659987, guid: d4f4a199425759691aed595032b47a93,
         type: 3}

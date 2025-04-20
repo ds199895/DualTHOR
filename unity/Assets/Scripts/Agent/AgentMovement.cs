@@ -161,6 +161,10 @@ public class AgentMovement : MonoBehaviour
     }
 
     public Dictionary<string,ActionMap> propertyMap;
+
+    // 添加用于跟踪最后一次移动是否成功的公共变量
+    public bool lastMoveSuccessful = true;
+
     void Start()
     {
        Loadpropertymap();
@@ -302,8 +306,65 @@ public class AgentMovement : MonoBehaviour
     }
 
     public void ClearCollisions(){
+        // 清理物理碰撞状态
+        collisionDetected = false;
+        collisionA = string.Empty;
+        collisionB = string.Empty;
+        
+        // 清理碰撞物体列表
         collidedObjects.Clear();
-        collisionDetected=false;
+        
+        // 清理RobotCollisionManager中的碰撞状态
+        if (RobotCollisionManager.Instance != null)
+        {
+            RobotCollisionManager.Instance.ClearAllCollisions();
+            Debug.Log("已清理RobotCollisionManager中的所有碰撞");
+        }
+        
+        // 清理射线碰撞状态
+        // 查找当前机器人的碰撞检测器
+        GameObject currentRobot = CurrentRobotType == RobotType.H1 ? robots[1] : robots[0];
+        if (currentRobot != null)
+        {
+            StructureCollisionDetector detector = currentRobot.GetComponent<StructureCollisionDetector>();
+            if (detector != null)
+            {
+                // 使用公共方法清理碰撞状态
+                detector.ClearCollisionState();
+            }
+        }
+        
+        // 清理所有机器人部件的碰撞状态
+        foreach (var robot in robots)
+        {
+            if (robot != null && robot.activeSelf)
+            {
+                // 查找并清理所有碰撞报告器
+                CollisionReporter[] reporters = robot.GetComponentsInChildren<CollisionReporter>(true);
+                foreach (var reporter in reporters)
+                {
+                    // 在此处，可能需要添加一个方法来重置碰撞状态
+                    // 或者直接处理关联的碰撞处理器
+                    if (reporter != null)
+                    {
+                        Debug.Log($"重置碰撞报告器: {reporter.gameObject.name}");
+                    }
+                }
+                
+                // 查找所有关节并检查碰撞
+                ArticulationBody[] joints = robot.GetComponentsInChildren<ArticulationBody>(true);
+                foreach (var joint in joints)
+                {
+                    // 重置所有关节的碰撞状态
+                    if (joint != null)
+                    {
+                        joint.gameObject.SendMessage("ClearCollision", null, SendMessageOptions.DontRequireReceiver);
+                    }
+                }
+            }
+        }
+        
+        Debug.Log("所有碰撞状态已清理");
     }
 
     public void Update(){
@@ -338,9 +399,12 @@ public class AgentMovement : MonoBehaviour
 
     }
 
-    public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action callback)
+    public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action<JsonData> callback)
     {
         Debug.Log($"Executing action: {actionData.action}");
+        // 重置移动成功状态
+        lastMoveSuccessful = true;
+        
         // 获取方法
         MethodInfo method = typeof(AgentMovement).GetMethod(actionData.action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
         
@@ -349,15 +413,19 @@ public class AgentMovement : MonoBehaviour
         if (method == null)
         {
             Debug.LogWarning($"Unknown action: {actionData.action}");
-            callback?.Invoke();
+            // 返回失败结果
+            JsonData result = new JsonData
+            {
+                success = false,
+                msg = $"未知动作: {actionData.action}"
+            };
+            callback?.Invoke(result);
             return;
         }
 
-    
         try
         {
             Debug.Log("ConstructArguments");
-
             Debug.Log(actionData);
             
             Debug.Log("test log1");
@@ -373,144 +441,108 @@ public class AgentMovement : MonoBehaviour
             {
                 Debug.Log("test log5");
                 // 如果是协程方法，启动协程并在结束时调用回调
-                StartCoroutine(ExecuteCoroutineAction(method, args, () => {
-                    Debug.Log($"Coroutine action completed: {actionData.action}");
-                    callback?.Invoke();
+                StartCoroutine(ExecuteCoroutineAction(method, args, actionData, (result) => {
+                    Debug.Log($"Coroutine action completed: {actionData.action}, success: {result.success}");
+                    
+                    // 更新 lastAction
+                    sceneManager?.UpdateLastAction(actionData.action);
+                    
+                    // 将结果传递给回调
+                    callback?.Invoke(result);
                 }));
                 Debug.Log("ExecuteCoroutineAction");
             }
             else
             {
                 Debug.Log("非协程");
-                // 非协程方法，立即调用并触发回调
-                method.Invoke(this, args);
+                // 非协程方法，立即调用并获取返回值
+                object returnValue = method.Invoke(this, args);
                 Debug.Log($"Non-coroutine action completed: {actionData.action}");
-                callback?.Invoke();
+                
+                // 创建结果对象
+                JsonData result;
+                
+                // 检查返回值类型
+                if (returnValue != null && returnValue is JsonData)
+                {
+                    // 如果方法直接返回了JsonData，直接使用它
+                    result = (JsonData)returnValue;
+                    Debug.Log($"使用方法直接返回的JsonData: {result.success}, {result.msg}");
+                }
+                else
+                {
+                    // 如果方法没有返回JsonData，创建一个新的
+                    result = new JsonData
+                    {
+                        success = true, // 默认成功
+                        msg = $"动作 {actionData.action} 执行成功"
+                    };
+                    
+                    // 如果方法返回了bool类型，使用它作为success标志
+                    if (returnValue is bool)
+                    {
+                        result.success = (bool)returnValue;
+                        if (!result.success)
+                        {
+                            result.msg = $"动作 {actionData.action} 执行失败";
+                        }
+                    }
+                }
+                
+                // 更新 lastAction
+                sceneManager?.UpdateLastAction(actionData.action);
+                
+                // 应用随机成功率逻辑
+                if (result.success && sceneManager != null)
+                {
+                    bool randomSuccess = sceneManager.UpdateLastActionSuccess(actionData.action);
+                    if (!randomSuccess)
+                    {
+                        result.success = false;
+                        // 使用SceneStateManager中设置的错误消息
+                        result.msg = sceneManager.GetCurrentSceneStateA2T().agent.errorMessage;
+                    }
+                }
+                
+                callback?.Invoke(result);
             }
         }
         catch (Exception ex)
         {
             Debug.LogError($"Error executing action {actionData.action}: {ex.Message}");
-            callback?.Invoke();
-        }
-
-        
-        // 更新 lastAction
-        sceneManager?.UpdateLastAction(actionData.action);
-
-        // var simobj=sceneManager.ObjectsInOperation[0].GetComponent<SimObjPhysics>();
-
-        // Debug.Log("sim object name: "+simobj.name);
-
-        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
-        GameObject simobj=null;
-        foreach (SimObjPhysics obj in allObjects)
-        {
-            if (obj.ObjectID == actionData.objectID)
+            
+            // 创建失败结果
+            JsonData result = new JsonData
             {
-                simobj=obj.gameObject;
+                success = false,
+                msg = $"执行动作失败: {ex.Message}"
+            };
+            
+            // 更新错误信息到SceneStateManager
+            if (sceneManager != null)
+            {
+                sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
+                sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
             }
+            
+            callback?.Invoke(result);
         }
-
-        Debug.Log("sim obj name: "+simobj.name);
-
-        if(simobj.GetComponent<SimObjPhysics>().IsFillable){
-            Debug.Log("test get fill");
-            if(simobj.gameObject.GetComponent<Fill>().isFilled){
-                Debug.Log("isfilled");
-                propertyMap.TryGetValue("Filled",out ActionMap filledmap);
-
-                Debug.Log(filledmap);
-                if(actionData.action=="pick"){
-                    Debug.Log("get pick state");
-                    filledmap.actionmap.TryGetValue("Pickup",out ActionState filled_pick_state);
-                    
-                    foreach (var outcome in filled_pick_state.actionstate)
-                    {
-                        Debug.Log($"    Outcome: {outcome.Key}, Probability: {outcome.Value}");
-                    }
-                }
-            }
-
-        }
-          
-
-
-        // if(collisionDetected){
-
-        //     Debug.Log("Collision Detected, action failed!");
-        //     sceneManager?.UpdateLastActionSuccessCollision(collisionA,collisionB);
-        // }else{
-            // 使用传入的 successRate 来执行概率判断
-            // bool isSuccessful = Probability(actionData.successRate);
-            bool isSuccessful= (bool)(sceneManager?.UpdateLastActionSuccess(actionData.action));
-            string msg="broken";
-            // var actionConfigs=sceneManager.actionConfigs;
-            // if (actionConfigs.TryGetValue(actionData.action, out SceneStateManager.ActionConfig config))
-            // {
-            //     float randomValue = UnityEngine.Random.value;
-            //     if (randomValue < config.successRate)
-            //     {
-            //         msg="success";
-            //     }
-            //     else
-            //     {
-            //         float cumulativeProbability = config.successRate;
-            //         foreach (var error in config.errorMessages)
-            //         {
-            //             cumulativeProbability += error.Value;
-            //             if (randomValue < cumulativeProbability)
-            //             {
-            //                 currentAgent.errorMessage = error.Key;
-            //                 break;
-            //             }
-            //         }
-            //         return false;
-            //     }
-            // }
-            // string msg=sceneManager?.UpdateLastActionSuccess(actionData.action);
-
-            // if(msg=="broken"){
-            //     SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
-            //     GameObject breakobj=null;
-            //     foreach (SimObjPhysics obj in allObjects)
-            //     {
-            //         if (obj.ObjectID == actionData.objectID)
-            //         {
-            //             breakobj=obj.gameObject;
-            //         }
-            //     }
-
-            //     Debug.Log(breakobj);
-            //     if (breakobj!=null){
-                    
-            //         // Transform pickPosition = SceneStateManager.GetInteractablePoint(actionData.objectID);
-            //         Debug.Log("test break control");
-            //         Break break_script=breakobj.GetComponent<Break>();
-            //         break_script.BreakObject();
-            //     }
-            // }else if(msg=="spill"){
-
-            // }
-
-
-            // if (!isSuccessful)
-            // {
-            //     Debug.LogWarning($"Action {actionData.action} failed due to random chance.");
-            //     callback?.Invoke();
-            //     return;
-            // }
-        // }
     }
 
+    // 定义JsonData类来存储返回结果
+    [Serializable]
+    public class JsonData
+    {
+        public bool success;
+        public string msg;
+    }
 
-
-
-    private IEnumerator ExecuteCoroutineAction(MethodInfo method, object[] args, Action callback)
+    private IEnumerator ExecuteCoroutineAction(MethodInfo method, object[] args, UnityClient.ActionData actionData, Action<JsonData> callback)
     {
         Debug.Log($"Executing coroutine: {method.Name} with arguments: {string.Join(", ", args ?? new object[0])}");
 
         IEnumerator coroutine = null;
+        JsonData result = new JsonData();
 
         try
         {
@@ -519,19 +551,101 @@ public class AgentMovement : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"Error invoking coroutine {method.Name}: {ex.Message}");
+            result.success = false;
+            result.msg = $"调用协程失败: {ex.Message}";
+            callback?.Invoke(result);
+            yield break;
         }
 
         if (coroutine != null)
         {
             yield return StartCoroutine(coroutine); // 等待协程执行完成
+            
+            // 根据动作类型确定结果
+            string actionType = actionData.action.ToLower();
+            
+            // 检查是否是移动类动作
+            if (actionType.Contains("move") || actionType.Contains("rotate"))
+            {
+                // 移动类动作，检查lastMoveSuccessful
+                if (!lastMoveSuccessful)
+                {
+                    result.success = false;
+                    result.msg = "移动被障碍物阻挡或无法安全执行";
+                    
+                    // 更新错误信息到SceneStateManager
+                    if (sceneManager != null)
+                    {
+                        sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
+                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
+                    }
+                }
+                else
+                {
+                    result.success = true;
+                    result.msg = $"动作 {actionData.action} 执行成功";
+                }
+            }
+            // 检查是否是物体交互类动作
+            else if (actionType.Contains("pick") || actionType.Contains("place") || 
+                     actionType.Contains("toggle") || actionType.Contains("open"))
+            {
+                // 如果存在碰撞或其他错误条件，设置结果为失败
+                if (collisionDetected || 
+                    (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+                {
+                    result.success = false;
+                    result.msg = "物体交互过程中发生碰撞，动作执行失败";
+                    
+                    // 更新错误信息到SceneStateManager
+                    if (sceneManager != null)
+                    {
+                        sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
+                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
+                    }
+                }
+                else
+                {
+                    result.success = true;
+                    result.msg = $"动作 {actionData.action} 执行成功";
+                }
+            }
+            else
+            {
+                // 其他动作，默认成功
+                result.success = true;
+                result.msg = $"动作 {actionData.action} 执行成功";
+            }
+            
+            // 应用随机成功率判断
+            if (result.success && sceneManager != null)
+            {
+                bool randomSuccess = sceneManager.UpdateLastActionSuccess(actionData.action);
+                if (!randomSuccess)
+                {
+                    result.success = false;
+                    // 使用SceneStateManager中设置的错误消息
+                    result.msg = sceneManager.GetCurrentSceneStateA2T().agent.errorMessage;
+                }
+            }
         }
         else
         {
             Debug.LogError($"Coroutine method returned null: {method.Name}");
+            result.success = false;
+            result.msg = "协程方法返回为空";
+            
+            // 更新错误信息到SceneStateManager
+            if (sceneManager != null)
+            {
+                sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
+                sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
+            }
         }
 
-        callback?.Invoke(); // 协程结束后触发回调
+        callback?.Invoke(result);
     }
+
     private object[] ConstructArguments(ParameterInfo[] parameters, UnityClient.ActionData actionData)
     {
         Debug.Log("parameters length : "+parameters.Length);
@@ -602,7 +716,6 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator Toggle(string objectID, bool isLeftArm)
     {
-        
         // 获取目标交互点和 Toggle 脚本
         Transform interactPoint = SceneStateManager.GetInteractablePoint(objectID);
         CanToggleOnOff toggleScript = interactPoint?.GetComponentInParent<CanToggleOnOff>();
@@ -641,7 +754,7 @@ public class AgentMovement : MonoBehaviour
         yield return new WaitForSeconds(1f);
     }
 
-    public void TP(string objectID)
+    public JsonData TP(string objectID)
     {
         // 查找物品的 TransferPoint
         Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
@@ -649,24 +762,15 @@ public class AgentMovement : MonoBehaviour
         if (transferPoint == null)
         {
             Debug.LogError($"TP action failed: objectID '{objectID}' not found.");
-            return;
+            
+            return new JsonData{success = false, msg = "未找到物品的传送点"};
         }
 
-        // 禁用机器人所有关节的 ArticulationBody
-        // DisableArticulationBodies();
-
-        // 直接修改机器人的位置和旋转
-        // Debug.Log($"Robot directly transported to {objectID}'s TransferPoint: {transferPoint.position}");
-        // transform.position = transferPoint.position;
-        // transform.rotation = transferPoint.rotation;
-
-        // 启用机器人所有关节的 ArticulationBody
-        // EnableArticulationBodies();
-
-        // StartCoroutine(ArmMovetoPosition(transferPoint.position, true));
+        // 开始执行传送
         StartCoroutine(TransferToPose(transferPoint));
 
         Debug.Log($"Robot successfully transported to {objectID}'s TransferPoint");
+        return new JsonData{success = true, msg = "传送成功"};
     }
 
     public IEnumerator Pick(string objectID, bool isLeftArm)
@@ -722,31 +826,29 @@ public class AgentMovement : MonoBehaviour
         {
             
             Transform interactablePoint = SceneStateManager.GetInteractablePoint(objectID);
-            Transform transferPoint=SceneStateManager.GetTransferPointByObjectID(objectID);
+            Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
 
 
-            Vector3 ref_vec=transferPoint.position-transform.position;
+            Vector3 ref_vec = transferPoint.position - transform.position;
 
-            float arm_dis=0.43f;
+            float arm_dis = 0.43f;
 
-            if(isLeftArm)
+            if (isLeftArm)
             {
-                arm_dis=0.33f;
-            }else{
-                arm_dis=-0.33f;
+                arm_dis = 0.33f;
+            }
+            else
+            {
+                arm_dis = -0.33f;
             }
 
-            Vector3 arm_vec=transferPoint.right*arm_dis;
+            Vector3 arm_vec = transferPoint.right * arm_dis;
 
-            Vector3 move_vec=arm_vec+ref_vec+transform.position;
+            Vector3 move_vec = arm_vec + ref_vec + transform.position;
 
 
             StartCoroutine(MoveToPosition(move_vec));
             yield return new WaitForSeconds(1f);
-
-            // var offset =CalculateOffset(interactablePoint);
-            // Debug.Log(offset);
-            // Vector3 offset = new Vector3(0.2f, 0f,0f);
 
             if (interactablePoint == null)
             {
@@ -754,35 +856,35 @@ public class AgentMovement : MonoBehaviour
                 yield break;
             }
 
-            Vector3 pickPosition = interactablePoint.position+interactablePoint.forward*-0.1f+interactablePoint.up*0.05f;
-            // Vector3 frontPickPosition = pickPosition +offset;
-            Vector3 frontPickPosition=pickPosition+interactablePoint.up*0.1f;
-
-            // Vector3 abovePickPosition = pickPosition + new Vector3(0f, 0.1f, 0f);
+            Vector3 pickPosition = interactablePoint.position + interactablePoint.forward * -0.1f + interactablePoint.up * 0.05f;
+            Vector3 frontPickPosition = pickPosition + interactablePoint.up * 0.1f;
 
             // 移动到夹取位置前方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置前方: {frontPickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(frontPickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
 
-            // // 打开夹爪准备夹取
+            // 打开夹爪准备夹取
             Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-            gripperController.SetRobotGripper(RobotType.H1,isLeftArm, true);
+            gripperController.SetRobotGripper(RobotType.H1, isLeftArm, true);
             yield return new WaitForSeconds(1f);
 
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(pickPosition, isLeftArm));
             yield return new WaitForSeconds(1f);
-
-            // // 夹紧物体
+            
+            // 夹紧物体
             Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-            gripperController.SetRobotGripper(RobotType.H1,isLeftArm, false);
+            gripperController.SetRobotGripper(RobotType.H1, isLeftArm, false);
             yield return new WaitForSeconds(1f);
-            if(isLeftArm)
+            
+            if (isLeftArm)
             {
                 sceneManager.SetParent(gripperController.h1_leftArmLeftGripper.transform, objectID);
-            }else{
+            }
+            else
+            {
                 sceneManager.SetParent(gripperController.h1_rightArmLeftGripper.transform, objectID);
             }
 
@@ -793,19 +895,6 @@ public class AgentMovement : MonoBehaviour
             // 调整物体的旋转以保持与世界坐标正交
             AdjustRotationToWorldAxes(objectID);
         }
-       
-    }
-
-    private Vector3 CalculateOffset(Transform target)
-    {
-        // 计算机器人和目标物体之间的相对位置
-        Vector3 relativePosition = target.position - transform.position;
-
-        // 根据相对位置的z轴值判断offset的z轴是否为负
-        float zOffset = relativePosition.z < 0 ? -0.1f : 0.1f;
-
-        // 返回计算后的offset
-        return new Vector3(0, 0f, zOffset);
     }
 
     public IEnumerator Place(string objectID, bool isLeftArm)
@@ -818,27 +907,29 @@ public class AgentMovement : MonoBehaviour
             yield break;
         }
 
-        // 使用CalculateOffset方法计算offset
-        // Vector3 offset = CalculateOffset(pickPosition);
-        // Vector3 offset = new Vector3(0.1f,0.1f,0.1f);
-        Vector3 offset=pickPosition.right*0.1f+pickPosition.up*0.1f+pickPosition.forward*0.1f;
-
+        // 计算放置位置的偏移
+        Vector3 offset = pickPosition.right * 0.1f + pickPosition.up * 0.1f + pickPosition.forward * 0.1f;
         Vector3 placePosition = pickPosition.position + offset; // 基于Pick的位置偏移
 
         // 移动到放置位置
         Debug.Log($"移动至{(isLeftArm ? "左臂" : "右臂")}放置位置: {placePosition}");
-        yield return ArmMovetoPosition(placePosition, isLeftArm);
+        yield return StartCoroutine(ArmMovetoPosition(placePosition, isLeftArm));
         yield return new WaitForSeconds(1f);
 
         // 打开夹爪放置物体
         Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪放置物体");
-        // handController.StartResetHand(isLeftArm);
-        // handController.ResetHandBase(isLeftArm);
-        gripperController.SetRobotGripper(RobotType.H1,isLeftArm, true);
+        if (CurrentRobotType == RobotType.X1)
+        {
+            gripperController.SetGripper(isLeftArm, true);
+        }
+        else if (CurrentRobotType == RobotType.H1)
+        {
+            gripperController.SetRobotGripper(RobotType.H1, isLeftArm, true);
+        }
+        
         AdjustRotationToWorldAxes(objectID);
         yield return new WaitForSeconds(1f);
         
-       
         sceneManager.Release(objectID);
         AdjustRotationToWorldAxes(objectID);
         yield return new WaitForSeconds(1f);
@@ -846,11 +937,7 @@ public class AgentMovement : MonoBehaviour
         AdjustRotationToWorldAxes(objectID);
         
         sceneManager.RemoveOperation(objectID);
-        
     }
-
-
-    
 
     public IEnumerator ResetJoint(bool isLeftArm)
     {
@@ -870,44 +957,8 @@ public class AgentMovement : MonoBehaviour
 
         Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}关节已成功重置！");
 
-        hasMovedToPosition = false; // 标记为已到达
-
+        hasMovedToPosition = false; // 标记为未到达位置
     }
-
-    private void InitializeAdjustments(bool isLeftArm)
-    {
-        var joints = isLeftArm ? leftArmJoints : rightArmJoints;
-        var defaultRotations = isLeftArm ? this.defaultRotations : rightDefaultRotations;
-        var adjustments = isLeftArm ? this.adjustments : rightAdjustments;
-
-        string logMessage = $"{(isLeftArm ? "左臂" : "右臂")}初始化关节调整信息：\n默认值:\n";
-
-        for (int i = 0; i < joints.Count; i++)
-        {
-            var joint = joints[i];
-            Vector3 initialRotation = joint.transform.localRotation.eulerAngles;
-
-            // 规范化读取到的角度
-            initialRotation.x = NormalizeAngle(initialRotation.x);
-            initialRotation.y = NormalizeAngle(initialRotation.y);
-            initialRotation.z = NormalizeAngle(initialRotation.z);
-
-            Vector3 defaultRotation = defaultRotations[i];
-            float adjustmentAngle = (i == 0 || i == 4)
-                ? defaultRotation.y - initialRotation.y
-                : defaultRotation.x - initialRotation.x;
-
-            adjustmentAngle = NormalizeAngle(adjustmentAngle);
-            adjustments[i].angle = adjustmentAngle;
-
-            logMessage += $"关节 {i + 1} 默认旋转: {defaultRotation}\n" +
-                          $"关节 {i + 1} 初始旋转: {initialRotation}\n" +
-                          $"关节 {i + 1} 调整角度: {adjustmentAngle}\n";
-        }
-
-        Debug.Log(logMessage);
-    }
-
 
     private void UpdateTargetJointAngles(List<float> updatedAngles)//事件
     {
@@ -1050,6 +1101,7 @@ public class AgentMovement : MonoBehaviour
     // 平滑移动的协程，改为使用局部坐标系的方向
     private IEnumerator SmoothMove(Vector3 localDirection, float magnitude, float duration)
     {
+        
         GameObject cur_robot=robots[0];
         if(CurrentRobotType==RobotType.H1){
             cur_robot=robots[1];
@@ -1061,31 +1113,216 @@ public class AgentMovement : MonoBehaviour
          
         Quaternion originRot= transform.rotation;
         float elapsedTime = 0f;
-        Debug.Log("collideStructure: "+cur_robot.name);
-        bool collideStructure=cur_robot.transform.GetComponent<StructureCollisionDetector>().CollideStructure;
-
-        while (elapsedTime < duration)
+        
+        // 获取StructureCollisionDetector组件
+        StructureCollisionDetector collisionDetector = cur_robot.GetComponent<StructureCollisionDetector>();
+        Debug.Log("collideStructure scripts: "+cur_robot.name);
+        
+        // 检查碰撞检测器是否存在
+        if (collisionDetector == null)
         {
-            if(!collideStructure) {
-                Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
-                transform.position = pos_temp;
-                rootArt.TeleportRoot(transform.position, originRot);
-            } else {
-                // 如果发生碰撞，立即退出循环
+            Debug.LogError("未找到StructureCollisionDetector组件！尝试添加...");
+            collisionDetector = cur_robot.AddComponent<StructureCollisionDetector>();
+            collisionDetector.robotBodyTransform = transform;
+            collisionDetector.raycastDistance = 0.3f; // 设置较小的默认值
+        }
+        
+        // 设置当前移动方向 - 这是关键修改
+        Vector3 worldMoveDirection = transform.TransformDirection(localDirection);
+        collisionDetector.SetMoveDirection(worldMoveDirection);
+        
+        // 输出详细的调试信息
+        collisionDetector.LogDebugInfo("移动开始");
+        
+        // 确保碰撞检测器正确设置
+        if (collisionDetector != null)
+        {
+            // 检查碰撞检测器的主体引用是否正确
+            if (collisionDetector.robotBodyTransform != transform)
+            {
+                collisionDetector.robotBodyTransform = transform;
+                collisionDetector.ResetPosition();
+                Debug.Log("已更新碰撞检测器的机器人主体引用");
+            }
+            
+            // 强制立即同步位置
+            collisionDetector.transform.position = transform.position;
+            collisionDetector.transform.rotation = transform.rotation;
+        }
+        
+        bool collideStructure = collisionDetector.CollideStructure;
+        
+        // 使用增强的射线检测功能检查移动路径是否安全
+        float moveDistance = Vector3.Distance(startPosition, targetPosition);
+        bool isSafeToMove = collisionDetector.IsSafeToMoveInDirection(localDirection, moveDistance * 1.1f);
+        
+        // 输出调试信息
+        Debug.Log($"移动信息 - 方向: {localDirection}, 距离: {moveDistance:F3}, 安全: {isSafeToMove}");
+        Debug.Log($"起点: {startPosition}, 目标点: {targetPosition}");
+        
+        // 检查是否有任何现有碰撞，如果有，则不允许移动
+        if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+        {
+            Debug.LogWarning("检测到现有碰撞，无法开始移动");
+            // 设置移动成功标志为false
+            lastMoveSuccessful = false;
+            yield break;
+        }
+        
+        if (!isSafeToMove)
+        {
+            // 检查碰撞物体
+            GameObject obstacle = collisionDetector.GetLastDetectedObstacle();
+            if (obstacle != null)
+            {
+                Debug.LogWarning($"移动路径上检测到障碍物: {obstacle.name}，位置: {obstacle.transform.position}");
+                
+                // 检查障碍物是否真的在移动方向上
+                Vector3 directionToObstacle = obstacle.transform.position - transform.position;
+                float angleToObstacle = Vector3.Angle(worldMoveDirection, directionToObstacle);
+                
+                Debug.Log($"与障碍物的角度: {angleToObstacle}度");
+                
+                // 如果障碍物在移动方向后方（角度>90度），可能是误检测
+                if (angleToObstacle > 90f)
+                {
+                    Debug.LogWarning($"障碍物位于移动方向后方，可能是误检测，尝试继续移动");
+                    isSafeToMove = true;
+                }
+                else
+                {
+                    // 明确标记为移动失败
+                    lastMoveSuccessful = false;
+                    yield break;
+                }
+            }
+            else
+            {
+                // 如果没有具体障碍物但仍然不安全，拒绝移动
+                Debug.LogWarning("移动路径不安全，无法开始移动");
+                lastMoveSuccessful = false;
+                yield break;
+            }
+        }
+
+        // 进行平滑移动
+        while (elapsedTime < duration && !collisionDetector.CollideStructure)
+        {
+            Vector3 pos_temp = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
+            
+            // 检查当前位置到下一个位置的短距离移动是否安全
+            Vector3 nextMoveDirection = pos_temp - transform.position;
+            float nextMoveDistance = nextMoveDirection.magnitude;
+            
+            if (nextMoveDistance > 0.01f && !collisionDetector.IsSafeToMoveInDirection(nextMoveDirection, nextMoveDistance * 1.2f))
+            {
+                Debug.LogWarning($"移动过程中检测到障碍物，停止移动，当前进度: {elapsedTime/duration:P0}");
+                // 如果移动中断，则标记为失败
+                lastMoveSuccessful = false;
                 break;
+            }
+            
+            // 移动机器人主体
+            transform.position = pos_temp;
+            rootArt.TeleportRoot(transform.position, originRot);
+            
+            // 确保碰撞检测器与机器人同步移动
+            if (collisionDetector != null && collisionDetector.transform.position != transform.position)
+            {
+                // 如果位置偏移太大，强制同步
+                float positionDiff = Vector3.Distance(collisionDetector.transform.position, transform.position);
+                if (positionDiff > 0.05f)
+                {
+                    Debug.LogWarning($"检测到碰撞检测器位置与机器人不一致，相差: {positionDiff}，强制同步");
+                    collisionDetector.transform.position = transform.position;
+                    collisionDetector.transform.rotation = transform.rotation;
+                    collisionDetector.ResetPosition();
+                }
             }
             
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        // 只有在没有碰撞的情况下才更新最终位置
-        if(!collideStructure) {
-            transform.position = targetPosition;
-            rootArt.TeleportRoot(transform.position, originRot);
+        // 如果移动过程中被中断，则保持失败状态
+        if (collisionDetector.CollideStructure)
+        {
+            Debug.LogWarning("检测到碰撞，移动已中断");
+            lastMoveSuccessful = false;
+            yield break;
         }
 
+        // 最终位置安全检查
+        if (!collisionDetector.CollideStructure)
+        {
+            // 检查最后的移动是否安全
+            Vector3 finalMoveDirection = targetPosition - transform.position;
+            float finalMoveDistance = finalMoveDirection.magnitude;
+            Debug.Log("finalMoveDistance: "+finalMoveDistance);
+            if (finalMoveDistance > 0.01f)
+            {
+                if(collisionDetector.IsSafeToMoveInDirection(finalMoveDirection, finalMoveDistance)){
+
+                    transform.position = targetPosition;
+                    rootArt.TeleportRoot(transform.position, originRot);
+                    
+                    // 确保碰撞检测器跟随最终位置
+                    if (collisionDetector != null)
+                    {
+                        collisionDetector.transform.position = transform.position;
+                        collisionDetector.transform.rotation = transform.rotation;
+                    }
+                    
+                    Debug.Log("已安全到达目标位置");
+                    // 成功完成整个移动
+                    lastMoveSuccessful = true;
+                }else{
+                    Debug.LogWarning("最终位置可能不安全，保持当前位置");
+                    lastMoveSuccessful = false;
+                    yield break;
+                }
+
+            }else{
+                transform.position = targetPosition;
+                rootArt.TeleportRoot(transform.position, originRot);
+                
+                // 确保碰撞检测器跟随最终位置
+                if (collisionDetector != null)
+                {
+                    collisionDetector.transform.position = transform.position;
+                    collisionDetector.transform.rotation = transform.rotation;
+                }
+                
+                Debug.Log("已安全到达目标位置");
+                // 成功完成整个移动
+                lastMoveSuccessful = true;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("检测到碰撞，移动已中断");
+            lastMoveSuccessful = false;
+            yield break;
+        }
+
+        // 确保机器人位置与物理引擎中的实际位置保持一致
         transform.position = cur_robot.transform.position;
+        
+        // 最后再次确保碰撞检测器与机器人位置同步
+        if (collisionDetector != null)
+        {
+            collisionDetector.transform.position = transform.position;
+            collisionDetector.transform.rotation = transform.rotation;
+        }
+        
+        // 清理移动方向，移动结束后不再需要检测
+        collisionDetector.SetMoveDirection(Vector3.zero);
+        
+        // 输出详细的调试信息
+        collisionDetector.LogDebugInfo("移动结束");
+        
+        // 这里设置一个公共变量，告知调用者移动是否成功
+        lastMoveSuccessful = lastMoveSuccessful;
     }
 
     // 平滑旋转的协程，使用局部坐标系的方向
@@ -1112,71 +1349,87 @@ public class AgentMovement : MonoBehaviour
         yield return new WaitForSeconds(1f);
     }
 
-    public IEnumerator MoveAhead(float Magnitude, Action callback = null)
+    public IEnumerator MoveAhead(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.forward, Magnitude, 1.0f); 
-        callback?.Invoke(); 
     }
 
-    public IEnumerator MoveRight(float Magnitude, Action callback = null)
+    public IEnumerator MoveRight(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.right, Magnitude, 1.0f);
-        callback?.Invoke();
     }
 
-    public IEnumerator MoveBack(float Magnitude, Action callback = null)
+    public IEnumerator MoveBack(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.back, Magnitude, 1.0f);
-        callback?.Invoke();
     }
 
-    public IEnumerator MoveLeft(float Magnitude, Action callback = null)
+    public IEnumerator MoveLeft(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.left, Magnitude, 1.0f);
-        callback?.Invoke();
     }
-    public IEnumerator MoveUp(float Magnitude, Action callback = null)
+    
+    public IEnumerator MoveUp(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.up, Magnitude * 0.1f, 1.0f);
-        callback?.Invoke();
     }
 
-    public IEnumerator MoveDown(float Magnitude, Action callback = null)
+    public IEnumerator MoveDown(float Magnitude)
     {
+        // 确保每次移动前重置状态
+        lastMoveSuccessful = true;
+        
         yield return SmoothMove(Vector3.down, Magnitude * 0.1f, 1.0f);
-        callback?.Invoke();
     }
-    public IEnumerator RotateRight(float Magnitude, Action callback = null)
+    
+    public IEnumerator RotateRight(float Magnitude)
     {
         yield return SmoothRotate(Vector3.up, Mathf.Abs(Magnitude), 1.0f);
-        callback?.Invoke();
     }
 
-    public IEnumerator RotateLeft(float Magnitude, Action callback = null)
+    public IEnumerator RotateLeft(float Magnitude)
     {
         yield return SmoothRotate(Vector3.up, -Mathf.Abs(Magnitude), 1.0f);
-        callback?.Invoke();
     }
-    public void Undo()
+    public bool Undo()
+    {
+        
+        // DisableArticulationBodies();
+        bool result=sceneManager.Undo();
+        // EnableArticulationBodies();
+        return result;
+    }
+    public bool Redo()
     {
         // DisableArticulationBodies();
-        sceneManager.Undo();
+        bool result=sceneManager.Redo();
         // EnableArticulationBodies();
-    }
-    public void Redo()
-    {
-        // DisableArticulationBodies();
-        sceneManager.Redo();
-        // EnableArticulationBodies();
+        return result;
     }
 
     // 调用 SceneStateManager 的 LoadStateByIndex 方法
-    public void LoadState(string stateID)
+    public bool LoadState(string stateID)
     {
         Debug.Log($"Attempting to load scene state with ID: {stateID}");
         // DisableArticulationBodies();
-        sceneManager.LoadStateByIndex(stateID);
+        bool result=sceneManager.LoadStateByIndex(stateID);
         // EnableArticulationBodies();
+        return result;
     }
     public void DisableArticulationBodies()
     {
@@ -1321,10 +1574,13 @@ public class AgentMovement : MonoBehaviour
             robot.SetActive(false);
         }
 
+        GameObject activeRobot = null;
+
         switch (robotType.ToLower())
         {
             case "x1":
-                robots[0].SetActive(true);
+                activeRobot = robots[0];
+                activeRobot.SetActive(true);
                 SetRobot();
                 cameraTransform = Camera.main.transform;
                 CurrentRobotType = RobotType.X1;
@@ -1332,9 +1588,31 @@ public class AgentMovement : MonoBehaviour
                 InitializeAdjustments(false);
                 ikX1.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
                 sceneManager.getObjectsInView.viewDistance=1.5f;
+                
+                // 确保碰撞检测管理器存在
+                EnsureCollisionDetectorManagerExists();
+                
+                // 配置X1机器人的碰撞检测器
+                StructureCollisionDetector detector = activeRobot.GetComponent<StructureCollisionDetector>();
+                if (detector != null)
+                {
+                    detector.robotBodyTransform = transform; // 确保引用正确的机器人主体
+                    detector.ResetPosition(); // 重置位置和偏移量
+                    CollisionDetectorManager.Instance.RegisterDetector(detector);
+                    Debug.Log("已配置X1机器人的碰撞检测器");
+                }
+                else
+                {
+                    detector = activeRobot.AddComponent<StructureCollisionDetector>();
+                    detector.robotBodyTransform = transform;
+                    // 碰撞检测管理器会自动配置其他参数
+                    Debug.Log("为X1机器人添加并配置碰撞检测器");
+                }
                 break;
+            
             case "h1":
-                robots[1].SetActive(true);
+                activeRobot = robots[1];
+                activeRobot.SetActive(true);
                 Debug.Log("Set robot!");
                 SetRobot();
                 cameraTransform = Camera.main.transform;
@@ -1342,30 +1620,113 @@ public class AgentMovement : MonoBehaviour
                 ikH1.InitBodies();
                 ikH1.IniitTarget();
                 sceneManager.getObjectsInView.viewDistance=2.0f;
-
-                // InitializeAdjustments(true);
-                // InitializeAdjustments(false);
-                // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
+                
+                // 确保碰撞检测管理器存在
+                EnsureCollisionDetectorManagerExists();
+                
+                // 将X1的射线距离设置得更大一些
+                if (CollisionDetectorManager.Instance != null)
+                {
+                    CollisionDetectorManager.Instance.SetRayDistance(0.3f);
+                }
+                
+                // 配置H1机器人的碰撞检测器
+                detector = activeRobot.GetComponent<StructureCollisionDetector>();
+                if (detector != null)
+                {
+                    detector.robotBodyTransform = transform; // 确保引用正确的机器人主体
+                    detector.ResetPosition(); // 重置位置和偏移量
+                    CollisionDetectorManager.Instance.RegisterDetector(detector);
+                    Debug.Log("已配置H1机器人的碰撞检测器");
+                }
+                else
+                {
+                    detector = activeRobot.AddComponent<StructureCollisionDetector>();
+                    detector.robotBodyTransform = transform;
+                    // 碰撞检测管理器会自动配置其他参数
+                    Debug.Log("为H1机器人添加并配置碰撞检测器");
+                }
                 break;
+            
             case "g1":
-                robots[2].SetActive(true);
+                activeRobot = robots[2];
+                activeRobot.SetActive(true);
                 CurrentRobotType = RobotType.G1;
+                
+                // 确保碰撞检测管理器存在
+                EnsureCollisionDetectorManagerExists();
+                
+                // 配置G1机器人的碰撞检测器
+                detector = activeRobot.GetComponent<StructureCollisionDetector>();
+                if (detector != null)
+                {
+                    detector.robotBodyTransform = transform; // 确保引用正确的机器人主体
+                    detector.ResetPosition(); // 重置位置和偏移量
+                    CollisionDetectorManager.Instance.RegisterDetector(detector);
+                    Debug.Log("已配置G1机器人的碰撞检测器");
+                }
+                else
+                {
+                    detector = activeRobot.AddComponent<StructureCollisionDetector>();
+                    detector.robotBodyTransform = transform;
+                    // 碰撞检测管理器会自动配置其他参数
+                    Debug.Log("为G1机器人添加并配置碰撞检测器");
+                }
                 break;
+            
             default:
                 Debug.LogError($"Unknown robot type: {robotType}");
-                break;
+                return false;
         }
+        
+        // 确保碰撞检测器立即更新位置
+        if (activeRobot != null)
+        {
+            // 让碰撞检测器立即与机器人位置同步
+            StructureCollisionDetector activeDetector = activeRobot.GetComponent<StructureCollisionDetector>();
+            if (activeDetector != null)
+            {
+                // 强制立即更新位置
+                activeDetector.transform.position = transform.position;
+                activeDetector.transform.rotation = transform.rotation;
+                // 再次调用重置位置以确保正确的偏移计算
+                activeDetector.ResetPosition();
+                
+                // 输出检测器信息进行调试
+                activeDetector.LogDebugInfo("机器人加载后");
+            }
+            
+            // 重置所有检测器
+            if (CollisionDetectorManager.Instance != null)
+            {
+                CollisionDetectorManager.Instance.ResetAllDetectors();
+                CollisionDetectorManager.Instance.LogAllDetectorsInfo();
+            }
+        }
+        
         return true;
     }
 
+    // 确保碰撞检测管理器存在
+    private void EnsureCollisionDetectorManagerExists()
+    {
+        if (CollisionDetectorManager.Instance == null)
+        {
+            GameObject managerObj = new GameObject("CollisionDetectorManager");
+            CollisionDetectorManager manager = managerObj.AddComponent<CollisionDetectorManager>();
+            manager.defaultRayDistance = 0.3f;  // 设置较小的默认检测距离
+            manager.disableCollisionDetection = false;
+            Debug.Log("创建了碰撞检测管理器");
+        }
+    }
 
-
-    public void ResetPose(){
+    public bool ResetPose(){
         // if(CurrentRobotType==RobotType.H1){
         //     Debug.Log("reset h1 pose!");
         //     ikH1.ResetTarget();
         // }
         ikH1.ResetTarget();
+        return true;
     }
 
 
@@ -1409,22 +1770,19 @@ public class AgentMovement : MonoBehaviour
 
     private void AdjustRotationToWorldAxes(string objectID)
     {
-        
+        // 查找对应ID的物体
         SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
-        Transform objectTransform = null;
         foreach (SimObjPhysics obj in allObjects)
         {
             if (obj.ObjectID == objectID)
             {
-                objectTransform = obj.transform;
+                // 将物体的旋转调整为与世界坐标轴对齐
+                obj.transform.rotation = Quaternion.identity;
+                return;
             }
         }
-
-        if (objectTransform != null)
-        {
-            // 将物体的旋转调整为与世界坐标轴对齐
-            objectTransform.rotation = Quaternion.identity;
-        }
+        
+        Debug.LogWarning($"未找到ID为 {objectID} 的物品，无法调整旋转");
     }
 
     private List<float> savedTargets = new List<float>();
@@ -1489,5 +1847,51 @@ public class AgentMovement : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void InitializeAdjustments(bool isLeftArm)
+    {
+        var joints = isLeftArm ? leftArmJoints : rightArmJoints;
+        var defaultRotations = isLeftArm ? this.defaultRotations : rightDefaultRotations;
+        var adjustments = isLeftArm ? this.adjustments : rightAdjustments;
+
+        string logMessage = $"{(isLeftArm ? "左臂" : "右臂")}初始化关节调整信息：\n默认值:\n";
+
+        for (int i = 0; i < joints.Count; i++)
+        {
+            var joint = joints[i];
+            Vector3 initialRotation = joint.transform.localRotation.eulerAngles;
+
+            // 规范化读取到的角度
+            initialRotation.x = NormalizeAngle(initialRotation.x);
+            initialRotation.y = NormalizeAngle(initialRotation.y);
+            initialRotation.z = NormalizeAngle(initialRotation.z);
+
+            Vector3 defaultRotation = defaultRotations[i];
+            float adjustmentAngle = (i == 0 || i == 4)
+                ? defaultRotation.y - initialRotation.y
+                : defaultRotation.x - initialRotation.x;
+
+            adjustmentAngle = NormalizeAngle(adjustmentAngle);
+            adjustments[i].angle = adjustmentAngle;
+
+            logMessage += $"关节 {i + 1} 默认旋转: {defaultRotation}\n" +
+                         $"关节 {i + 1} 初始旋转: {initialRotation}\n" +
+                         $"关节 {i + 1} 调整角度: {adjustmentAngle}\n";
+        }
+
+        Debug.Log(logMessage);
+    }
+
+    private Vector3 CalculateOffset(Transform target)
+    {
+        // 计算机器人和目标物体之间的相对位置
+        Vector3 relativePosition = target.position - transform.position;
+
+        // 根据相对位置的z轴值判断offset的z轴是否为负
+        float zOffset = relativePosition.z < 0 ? -0.1f : 0.1f;
+
+        // 返回计算后的offset
+        return new Vector3(0, 0f, zOffset);
     }
 }
