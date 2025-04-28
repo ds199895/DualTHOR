@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     
     # 启动控制器
     controller.start()
@@ -52,7 +52,7 @@ def test_controller():
         print("8. 旋转45度")
         print("9. 拿起杯子")
         print("10. 放下杯子")
-        print("11. 打开开关")
+        print("11. reset")
         print("0. 退出")
         
         try:
@@ -92,8 +92,9 @@ def test_controller():
                 feedback = controller.step("place", objectID="Kitchen_Cup_01", isLeftArm=True)
                 print_feedback_result(feedback, "放下杯子")
             elif choice == '11':
-                feedback = controller.step("toggle", objectID="Kitchen_Faucet_01", isLeftArm=True)
-                print_feedback_result(feedback, "打开开关")
+                # feedback = controller.step("reset")
+                feedback=controller.reset_environment()
+                print_feedback_result(feedback, "reset")
             else:
                 logging.warning("无效选择，请重试")
                 

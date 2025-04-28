@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using System.Linq;
+using System.Collections;
 
 public class UnityClient : MonoBehaviour
 {
@@ -180,8 +181,8 @@ public class UnityClient : MonoBehaviour
             SendFeedbackToPython(result,"reset pose");
         } else if (actionData.action=="resetstate"){
             Debug.Log("reset state action!");
-            var result = agentMovement.LoadState("0");
-            SendFeedbackToPython(result,"reset state");
+            // 不再直接执行LoadState，而是启动协程处理
+            StartCoroutine(ResetStateWithScreenshots());
         } 
         else {
             // 判断是否为交互类操作(pick、place、toggle、open)
@@ -349,6 +350,39 @@ public class UnityClient : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"Exception occurred while closing client/stream: {ex.GetType().Name} - {ex.Message}");
+        }
+    }
+
+    // 添加一个新的协程来处理重置状态前后的截图
+    private IEnumerator ResetStateWithScreenshots()
+    {
+        Debug.Log("开始重置状态过程 - 捕获初始截图");
+        
+        // 设置图像保存路径，使用resetstate前缀和唯一ID
+        sceneStateManager.camera_ctrl.imgeDir = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        
+        // 确保相机控制器开始记录
+        sceneStateManager.camera_ctrl.record = true;
+        
+        // 等待几帧以确保截图完成
+        yield return new WaitForSeconds(0.5f);
+        
+        // 执行状态重置
+        Debug.Log("执行状态重置操作");
+        bool result = agentMovement.LoadState("0");
+        
+        // 等待状态加载和渲染完成
+        yield return new WaitForSeconds(1.0f);
+        
+        // 再等待几帧确保场景稳定
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        
+        // 结果反馈
+        if(result){
+            SendActionFeedbackToPython(result, "reset state success");
+        }else{
+            SendActionFeedbackToPython(result, "reset state failed");
         }
     }
 }
