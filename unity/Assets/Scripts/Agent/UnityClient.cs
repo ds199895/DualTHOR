@@ -192,10 +192,20 @@ public class UnityClient : MonoBehaviour
             if (isInteractionAction && !string.IsNullOrEmpty(actionData.objectID)) {
                 Debug.Log($"设置交互物体: {actionData.objectID} 用于 {actionData.action} 操作");
                 agentMovement.SetCurrentInteractingObject(actionData.objectID);
+                
+                // 添加物体到忽略碰撞列表，避免交互中的碰撞被视为失败
+                agentMovement.AddIgnoredCollisionObject(actionData.objectID);
             }
+            
+            // 记录动作开始时间，用于性能分析
+            float startTime = Time.realtimeSinceStartup;
             
             // 执行动作并获取 JsonData 结果
             agentMovement.ExecuteActionWithCallback(actionData, (result) => {
+                // 计算执行时间
+                float executionTime = Time.realtimeSinceStartup - startTime;
+                Debug.Log($"动作 {actionData.action} 执行时间: {executionTime:F3} 秒");
+                
                 // 根据动作结果发送反馈
                 Debug.Log($"Action result: success={result.success}, msg={result.msg}");
                 

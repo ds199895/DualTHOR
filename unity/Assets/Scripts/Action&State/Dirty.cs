@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dirty : MonoBehaviour {
+public class Dirty : MonoBehaviour, IStateComponent {
     [SerializeField]
     public SwapObjList[] MaterialSwapObjects; // put objects that need amterial swaps here, use OnMaterials for Dirty, OffMaterials for Clean
 
@@ -93,6 +93,11 @@ public class Dirty : MonoBehaviour {
 
             isDirty = false;
         }
+    }
+
+    public void Execute()
+    {
+        ToggleCleanOrDirty();
     }
 
     // similar to Fire and Candles, if touching water and this object is dirty, auto toggle to clean

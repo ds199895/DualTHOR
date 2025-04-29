@@ -439,132 +439,224 @@ public class AgentMovement : MonoBehaviour
 
     public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action<JsonData> callback)
     {
-        Debug.Log($"Executing action: {actionData.action}");
-        // 重置移动成功状态
-        lastMoveSuccessful = true;
-        
-        // 获取方法
-        MethodInfo method = typeof(AgentMovement).GetMethod(actionData.action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
-        
-        Debug.Log(method);
-        // 如果方法不存在，执行回调并返回
-        if (method == null)
-        {
-            Debug.LogWarning($"Unknown action: {actionData.action}");
-            // 返回失败结果
-            JsonData result = new JsonData
-            {
-                success = false,
-                msg = $"未知动作: {actionData.action}"
-            };
-            callback?.Invoke(result);
-            return;
-        }
+        Debug.Log($"Executing action: {actionData.action} with arm: {actionData.arm}, objectID: {actionData.objectID}, magnitude: {actionData.magnitude}");
+        JsonData jsonData = new JsonData();
 
-        try
+        // 先在场景状态管理器中更新最后执行的动作名称
+        sceneManager.UpdateLastAction(actionData.action);
+
+        // 根据动作类型和物体ID，先检查动作成功率
+        bool shouldExecuteAction = true;
+        string errorMessage = string.Empty;
+        string targetState = string.Empty;
+
+        // 检查是否是需要进行成功率检查的动作类型
+        if (NeedsSuccessRateCheck(actionData.action))
         {
-            Debug.Log("ConstructArguments");
-            Debug.Log(actionData);
-            
-            Debug.Log("test log1");
-            Debug.Log(method.GetParameters());
-            
-            Debug.Log("test log2");
-            // 构造参数并执行方法
-            object[] args = ConstructArguments(method.GetParameters(), actionData);
-            Debug.Log("test log3");
-            Debug.Log(method.ReturnType);
-            Debug.Log("test log4");
-            if (method.ReturnType == typeof(IEnumerator))
+            // 获取动作配置信息
+            var config = sceneManager.GetActionConfig(actionData.action, actionData.objectID);
+
+            // 随机判断成功或失败
+            // float randomValue = UnityEngine.Random.value;
+            float randomValue = 0.98f;
+            if (randomValue > config.successRate)
             {
-                Debug.Log("test log5");
-                // 如果是协程方法，启动协程并在结束时调用回调
-                StartCoroutine(ExecuteCoroutineAction(method, args, actionData, (result) => {
-                    Debug.Log($"Coroutine action completed: {actionData.action}, success: {result.success}");
-                    
-                    // 更新 lastAction
-                    sceneManager?.UpdateLastAction(actionData.action);
-                    
-                    // 将结果传递给回调
-                    callback?.Invoke(result);
-                }));
-                Debug.Log("ExecuteCoroutineAction");
+                // 如果随机值大于成功率，则动作失败
+                shouldExecuteAction = false;
+                
+                (errorMessage, targetState) = config.GetRandomErrorMessage();
+                Debug.Log($"动作 {actionData.action} 成功率检查结果: 失败，错误消息: {errorMessage}，目标状态: {targetState}");
             }
             else
             {
-                Debug.Log("非协程");
-                // 非协程方法，立即调用并获取返回值
-                object returnValue = method.Invoke(this, args);
-                Debug.Log($"Non-coroutine action completed: {actionData.action}");
-                
-                // 创建结果对象
-                JsonData result;
-                
-                // 检查返回值类型
-                if (returnValue != null && returnValue is JsonData)
+                // 如果随机值小于等于成功率，则动作成功
+                shouldExecuteAction = true;
+                Debug.Log($"动作 {actionData.action} 成功率检查结果: 成功");
+            }
+        }
+        
+        if (!shouldExecuteAction)
+        {
+            // 如果动作不应执行，但有目标状态，尝试根据目标状态调用对应方法
+            if (!string.IsNullOrEmpty(targetState) && !string.IsNullOrEmpty(actionData.objectID))
+            {
+                // 获取目标物体
+                GameObject targetObject = null;
+                if (sceneManager.SimObjectsDict.TryGetValue(actionData.objectID, out targetObject) && targetObject != null)
                 {
-                    // 如果方法直接返回了JsonData，直接使用它
-                    result = (JsonData)returnValue;
-                    Debug.Log($"使用方法直接返回的JsonData: {result.success}, {result.msg}");
+                    bool stateExecuted = false;
+                    
+                    // 根据目标状态找到相应的组件
+                    IStateComponent stateComponent = null;
+                    
+                    switch (targetState.ToLower())
+                    {
+                        case "broken":
+                            stateComponent = targetObject.GetComponent<Break>();
+                            break;
+                        case "dirty":
+                            stateComponent = targetObject.GetComponent<Dirty>();
+                            break;
+                        case "spilled":
+                            stateComponent = targetObject.GetComponent<Spill>();
+                            break;
+                        // 可以添加更多状态...
+                    }
+                    
+                    // 如果找到了相应的组件，执行状态变化
+                    if (stateComponent != null)
+                    {
+                        stateComponent.Execute();
+                        stateExecuted = true;
+                        Debug.Log($"自动执行了物体 {actionData.objectID} 的 {targetState} 状态变化");
+                    }
+                    
+                    // 如果成功执行了状态变化，更新结果
+                    if (stateExecuted)
+                    {
+                        jsonData.success = true;
+                        jsonData.msg = $"已自动处理物体状态变为: {targetState}";
+                        callback?.Invoke(jsonData);
+                        return;
+                    }
+                }
+            }
+            
+            // 如果无法自动处理状态变化，返回原始失败结果
+            jsonData.success = false;
+            jsonData.msg = errorMessage;
+            
+            // 更新动作执行状态
+            sceneManager.UpdateLastActionSuccess(actionData.action, actionData.objectID);
+            
+            // 调用回调函数
+            callback?.Invoke(jsonData);
+            return;
+        }
+
+        // 以下是原有的动作处理逻辑
+        try
+        {
+            Type thisType = this.GetType();
+            
+            // 检查参数是否有效
+            if (string.IsNullOrEmpty(actionData.action))
+            {
+                Debug.LogError("Action name cannot be null or empty.");
+                jsonData.success = false;
+                jsonData.msg = "Action name cannot be null or empty.";
+                callback?.Invoke(jsonData);
+                return;
+            }
+
+            // 方法名处理
+            string methodName = actionData.action;
+
+            // 尝试获取方法信息
+            MethodInfo method = thisType.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            
+            if (method == null)
+            {
+                Debug.LogError($"Method {methodName} not found in {thisType.Name}.");
+                jsonData.success = false;
+                jsonData.msg = $"Method {methodName} not found.";
+                callback?.Invoke(jsonData);
+                return;
+            }
+
+            ClearCollidedObjects(); // 清除之前的碰撞对象
+            
+            // 获取方法参数
+            ParameterInfo[] parameters = method.GetParameters();
+            object[] args = ConstructArguments(parameters, actionData);
+
+            // 设置最后动作结果为成功（默认）
+            lastMoveSuccessful = true;
+
+            // 根据方法返回类型决定调用方式
+            if (method.ReturnType == typeof(IEnumerator))
+            {
+                // 协程方法
+                StartCoroutine(ExecuteCoroutineAction(method, args, actionData, callback));
+            }
+            else if (method.ReturnType == typeof(JsonData))
+            {
+                // 直接返回JsonData的方法
+                jsonData = (JsonData)method.Invoke(this, args);
+                callback?.Invoke(jsonData);
+            }
+            else
+            {
+                // 其他方法（假设返回bool或void）
+                object result = method.Invoke(this, args);
+                
+                if (result is bool boolResult)
+                {
+                    jsonData.success = boolResult;
+                    jsonData.msg = boolResult ? "Action executed successfully." : "Action failed.";
                 }
                 else
                 {
-                    // 如果方法没有返回JsonData，创建一个新的
-                    result = new JsonData
-                    {
-                        success = true, // 默认成功
-                        msg = $"动作 {actionData.action} 执行成功"
-                    };
-                    
-                    // 如果方法返回了bool类型，使用它作为success标志
-                    if (returnValue is bool)
-                    {
-                        result.success = (bool)returnValue;
-                        if (!result.success)
-                        {
-                            result.msg = $"动作 {actionData.action} 执行失败";
-                        }
-                    }
+                    jsonData.success = true;
+                    jsonData.msg = "Action executed.";
                 }
                 
-                // 更新 lastAction
-                sceneManager?.UpdateLastAction(actionData.action);
+                // 更新动作执行状态
+                bool actionSuccess = sceneManager.UpdateLastActionSuccess(actionData.action, actionData.objectID);
+                jsonData.success = actionSuccess;
                 
-                // 应用随机成功率逻辑
-                if (result.success && sceneManager != null)
+                if (!actionSuccess)
                 {
-                    bool randomSuccess = sceneManager.UpdateLastActionSuccess(actionData.action);
-                    if (!randomSuccess)
-                    {
-                        result.success = false;
-                        // 使用SceneStateManager中设置的错误消息
-                        result.msg = sceneManager.GetCurrentSceneStateA2T().agent.errorMessage;
-                    }
+                    jsonData.msg = sceneManager.GetCurrentSceneStateA2T().agent.errorMessage;
                 }
                 
-                callback?.Invoke(result);
+                callback?.Invoke(jsonData);
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Debug.LogError($"Error executing action {actionData.action}: {ex.Message}");
-            
-            // 创建失败结果
-            JsonData result = new JsonData
-            {
-                success = false,
-                msg = $"执行动作失败: {ex.Message}"
-            };
-            
-            // 更新错误信息到SceneStateManager
-            if (sceneManager != null)
-            {
-                sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
-                sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
-            }
-            
-            callback?.Invoke(result);
+            Debug.LogError($"Error executing action: {e.Message}\n{e.StackTrace}");
+            jsonData.success = false;
+            jsonData.msg = $"Error: {e.Message}";
+            callback?.Invoke(jsonData);
         }
+    }
+    
+    // 添加：判断是否需要进行成功率检查的辅助方法
+    private bool NeedsSuccessRateCheck(string actionName)
+    {
+        if (string.IsNullOrEmpty(actionName))
+            return false;
+            
+        // 列出不需要进行成功率检查的动作类型
+        string[] actionsToSkip = {
+            "undo", "redo", "loadstate", "loadrobot", 
+            "resetpose", "resetscene", "getcurstate", "resetstate"
+        };
+        
+        // 检查是否是需要跳过的动作
+        foreach (var skipAction in actionsToSkip)
+        {
+            if (actionName.ToLower().Equals(skipAction.ToLower()))
+                return false;
+        }
+            
+        // 列出需要进行成功率检查的动作类型
+        string[] actionsToCheck = {
+            "pick", "place", "toggle", "open",
+            "slice", "break", "fill", "empty",
+            "cook", "clean", "move", "rotate"
+        };
+        
+        // 检查动作名称是否在列表中（不区分大小写）
+        foreach (var action in actionsToCheck)
+        {
+            if (actionName.ToLower().Contains(action.ToLower()))
+                return true;
+        }
+        
+        // 默认情况下不检查
+        return false;
     }
 
     // 定义JsonData类来存储返回结果
@@ -577,111 +669,57 @@ public class AgentMovement : MonoBehaviour
 
     private IEnumerator ExecuteCoroutineAction(MethodInfo method, object[] args, UnityClient.ActionData actionData, Action<JsonData> callback)
     {
-        Debug.Log($"Executing coroutine: {method.Name} with arguments: {string.Join(", ", args ?? new object[0])}");
-
+        Debug.Log($"Starting coroutine action: {actionData.action}");
+        JsonData jsonData = new JsonData();
         IEnumerator coroutine = null;
-        JsonData result = new JsonData();
-
+        
         try
         {
-            // 直接调用原始方法，不使用Success方法替代
+            // 调用协程方法但不等待其完成
             coroutine = (IEnumerator)method.Invoke(this, args);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Debug.LogError($"Error invoking coroutine {method.Name}: {ex.Message}");
-            result.success = false;
-            result.msg = $"调用协程失败: {ex.Message}";
-            callback?.Invoke(result);
+            Debug.LogError($"Error in coroutine action {actionData.action}: {e.Message}\n{e.StackTrace}");
+            jsonData.success = false;
+            jsonData.msg = $"Error: {e.Message}";
+            callback?.Invoke(jsonData);
             yield break;
         }
-
+        
+        // 在try-catch块外执行协程
         if (coroutine != null)
         {
-            yield return StartCoroutine(coroutine); // 等待协程执行完成
-            
-            // 根据动作类型确定结果
-            string actionType = actionData.action.ToLower();
-            
-            // 检查是否是移动类动作
-            if (actionType.Contains("move") || actionType.Contains("rotate"))
+            // 执行协程直到完成
+            while (coroutine.MoveNext())
             {
-                // 移动类动作，检查lastMoveSuccessful
-                if (!lastMoveSuccessful)
-                {
-                    result.success = false;
-                    result.msg = "移动被障碍物阻挡或无法安全执行";
-                    
-                    // 更新错误信息到SceneStateManager
-                    if (sceneManager != null)
-                    {
-                        sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
-                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
-                    }
-                }
-                else
-                {
-                    result.success = true;
-                    result.msg = $"动作 {actionData.action} 执行成功";
-                }
+                yield return coroutine.Current;
             }
-            // 检查是否是物体交互类动作
-            else if (actionType.Contains("pick") || actionType.Contains("place") || 
-                     actionType.Contains("toggle") || actionType.Contains("open"))
+            
+            // 检查协程的最终结果
+            if (coroutine.Current is JsonData coroutineResult)
             {
-                // 直接使用lastMoveSuccessful标志
-                if (!lastMoveSuccessful)
-                {
-                    result.success = false;
-                    result.msg = "物体交互过程中发生碰撞，动作执行失败";
-                    
-                    // 更新错误信息到SceneStateManager
-                    if (sceneManager != null)
-                    {
-                        sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
-                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
-                    }
-                }
-                else
-                {
-                    result.success = true;
-                    result.msg = $"动作 {actionData.action} 执行成功";
-                }
+                jsonData = coroutineResult;
             }
             else
             {
-                // 其他动作，默认成功
-                result.success = true;
-                result.msg = $"动作 {actionData.action} 执行成功";
+                // 如果协程没有返回特定结果，则认为成功
+                jsonData.success = true;
+                jsonData.msg = $"Action {actionData.action} completed successfully.";
             }
             
-            // 应用随机成功率判断
-            if (result.success && sceneManager != null)
-            {
-                bool randomSuccess = sceneManager.UpdateLastActionSuccess(actionData.action);
-                if (!randomSuccess)
-                {
-                    result.success = false;
-                    // 使用SceneStateManager中设置的错误消息
-                    result.msg = sceneManager.GetCurrentSceneStateA2T().agent.errorMessage;
-                }
-            }
+            Debug.Log($"Coroutine action completed: {actionData.action}, initial success: {jsonData.success}");
         }
         else
         {
-            Debug.LogError($"Coroutine method returned null: {method.Name}");
-            result.success = false;
-            result.msg = "协程方法返回为空";
-            
-            // 更新错误信息到SceneStateManager
-            if (sceneManager != null)
-            {
-                sceneManager.GetCurrentSceneStateA2T().agent.lastActionSuccess = false;
-                sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = result.msg;
-            }
+            // 如果协程为空
+            jsonData.success = false;
+            jsonData.msg = "无法执行动作：协程初始化失败";
+            Debug.LogError($"协程初始化失败: {actionData.action}");
         }
-
-        callback?.Invoke(result);
+        
+        // 调用回调函数，传递结果
+        callback?.Invoke(jsonData);
     }
 
     private object[] ConstructArguments(ParameterInfo[] parameters, UnityClient.ActionData actionData)

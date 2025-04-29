@@ -82,19 +82,50 @@ public class SceneStateManager : MonoBehaviour
     public Dictionary<string, ActionConfig> actionConfigs;
 
     // 定义ActionConfig类
+    [Serializable]
     public class ActionConfig
     {
         public float successRate;
-        public Dictionary<string, float> errorMessages;
+        public Dictionary<string, ErrorEffectConfig> errorMessages;
+        // 添加基于物体状态的配置
+        public Dictionary<string, ObjectStateConfig> objectStateConfigs;
 
         public override string ToString()
         {
-            string errorMessagesString = string.Join(", ", errorMessages.Select(kv => $"{kv.Key}: {kv.Value}"));
+            string errorMessagesString = string.Join(", ", errorMessages.Select(kv => $"{kv.Key}: {kv.Value.probability}"));
             return $"Success Rate: {successRate}, Error Messages: [{errorMessagesString}]";
         }
     }
 
-    
+    // 新增错误效果配置类，用于存储错误消息对应的概率和状态效果
+    [Serializable]
+    public class ErrorEffectConfig
+    {
+        public float probability; // 概率
+        public string targetState; // 目标状态
+        
+        // 构造函数，方便从旧配置转换
+        public ErrorEffectConfig(float prob, string state = "")
+        {
+            probability = prob;
+            targetState = state;
+        }
+        
+        public override string ToString()
+        {
+            return $"{probability}(→{targetState})";
+        }
+    }
+
+    // 新增ObjectStateConfig类，用于存储物体特定状态的成功率配置
+    [Serializable]
+    public class ObjectStateConfig
+    {
+        public string objectType; // 物体类型 (cup, plate等)
+        public string stateCondition; // 状态条件 (filled, broken, open等)
+        public float successRate; // 该状态下的成功率
+        public Dictionary<string, ErrorEffectConfig> errorMessages; // 该状态下的错误消息及概率
+    }
 
     void Start()
     {
@@ -135,17 +166,230 @@ public class SceneStateManager : MonoBehaviour
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            actionConfigs = JsonConvert.DeserializeObject<Dictionary<string, ActionConfig>>(json);
-
-            // foreach(var config in actionConfigs){
-            //     print(config.Value);
-            // }
+            try 
+            {
+                actionConfigs = JsonConvert.DeserializeObject<Dictionary<string, ActionConfig>>(json);
+                Debug.Log("动作配置文件加载成功");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"动作配置文件加载失败: {e.Message}");
+                actionConfigs = CreateDefaultActionConfigs();
+            }
         }
         else
         {
             Debug.LogError("ErrorConfig.json not found!");
+            // 创建默认配置
+            actionConfigs = CreateDefaultActionConfigs();
         }
     }
+
+    // 新增方法：创建默认配置
+    private Dictionary<string, ActionConfig> CreateDefaultActionConfigs()
+    {
+        var configs = new Dictionary<string, ActionConfig>();
+        
+        // 添加默认Pick动作配置
+        var pickConfig = new ActionConfig
+        {
+            successRate = 0.91f,
+            errorMessages = new Dictionary<string, ErrorEffectConfig> 
+            {
+                { "抓取失败，物体掉落", new ErrorEffectConfig(0.05f, "") },
+                { "无法抓取到物体", new ErrorEffectConfig(0.04f, "") }
+            },
+            objectStateConfigs = new Dictionary<string, ObjectStateConfig>()
+        };
+        
+        // 为cup添加特殊状态配置
+        var filledCupConfig = new ObjectStateConfig
+        {
+            objectType = "Cup",
+            stateCondition = "isFilled",
+            successRate = 0.91f,
+            errorMessages = new Dictionary<string, ErrorEffectConfig>
+            {
+                { "抓取失败，杯子碎裂", new ErrorEffectConfig(0.02f, "broken") },
+                { "无法抓取到杯子", new ErrorEffectConfig(0.03f, "") },
+                { "抓取失败，杯子内容物泼洒", new ErrorEffectConfig(0.04f, "spilled") }
+            }
+        };
+        
+        pickConfig.objectStateConfigs.Add("Cup_filled", filledCupConfig);
+        configs.Add("pick", pickConfig);
+        
+        // 可以添加更多默认配置...
+        
+        return configs;
+    }
+
+    // 简化的配置结果类
+    public class ActionConfigResult
+    {
+        public float successRate;
+        public Dictionary<string, ErrorEffectConfig> errorMessages;
+        
+        public (string message, string effectState) GetRandomErrorMessage() {  
+            float total = errorMessages.Values.Sum(e => e.probability);  
+            if(total <= 0) return ("未知错误", "");  
+
+            float randomValue = UnityEngine.Random.value;  
+            float cumulative = 0;  
+  
+            foreach (var error in errorMessages) {  
+                float normalizedProb = error.Value.probability / total; // 归一化  
+                cumulative += normalizedProb;  
+                if(randomValue <= cumulative) {  
+                    return (error.Key, error.Value.targetState);  
+                }  
+            }  
+            return ("未知错误", "");  
+        }  
+
+        public override string ToString()
+        {
+            return $"Success Rate: {successRate}, Error Messages: [{string.Join(", ", errorMessages.Select(kv => $"{kv.Key}: {kv.Value}"))}]";
+        }
+    }
+
+    // 新增：根据物体状态获取动作配置
+    public ActionConfigResult GetActionConfigByObjectState(string actionType, SimObjPhysics targetObj)
+    {
+        ActionConfigResult result = new ActionConfigResult
+        {
+            successRate = 0.95f, // 默认高成功率
+            errorMessages = new Dictionary<string, ErrorEffectConfig>
+            {
+                { "操作失败", new ErrorEffectConfig(0.05f, "") }
+            }
+        };
+        
+        if (actionConfigs == null || !actionConfigs.TryGetValue(actionType.ToLower(), out ActionConfig config))
+        {
+            Debug.LogWarning($"未找到动作类型的配置: {actionType}，使用默认配置");
+            return result;
+        }
+        
+        // 先使用基础配置
+        result.successRate = config.successRate;
+        result.errorMessages = new Dictionary<string, ErrorEffectConfig>(config.errorMessages);
+        
+        // 如果没有目标物体或没有对象状态配置，使用基础配置
+        if (targetObj == null || config.objectStateConfigs == null || config.objectStateConfigs.Count == 0)
+        {
+            return result;
+        }
+        
+        // 尝试根据物体状态查找特定配置
+        foreach (var stateConfig in config.objectStateConfigs)
+        {
+            // 检查物体类型是否匹配
+            if (!targetObj.Type.ToString().Equals(stateConfig.Value.objectType, StringComparison.OrdinalIgnoreCase))
+                continue;
+                
+            // 检查物体状态是否匹配
+            bool stateMatches = false;
+            switch (stateConfig.Value.stateCondition)
+            {
+                case "isFilled":
+                    stateMatches = targetObj.IsFillable && targetObj.GetComponent<Fill>().isFilled;
+                    break;
+                case "isBroken":
+                    stateMatches = targetObj.IsBreakable && targetObj.GetComponent<Break>().isBroken;
+                    break;
+                case "isOpen":
+                    stateMatches = targetObj.IsOpenable && targetObj.GetComponent<CanOpen_Object>().isOpen;
+                    break;
+                case "isToggled":
+                    stateMatches = targetObj.IsToggleable && targetObj.GetComponent<CanToggleOnOff>().isOn;
+                    break;
+                case "default":
+                    stateMatches = true; // 默认状态总是匹配
+                    break;
+                // 可以添加更多状态检查...
+            }
+            
+            // 如果状态匹配，使用特定配置
+            if (stateMatches)
+            {
+                result.successRate = stateConfig.Value.successRate;
+                result.errorMessages = stateConfig.Value.errorMessages;
+                Debug.Log($"使用物体 {targetObj.ObjectID} 的特定状态配置: {stateConfig.Value.stateCondition}");
+                break;
+            }
+        }
+        
+        return result;
+    }
+
+    // 修改：返回动作配置信息，而不执行随机判断
+    public ActionConfigResult GetActionConfig(string actionType, string objectID)
+    {
+        // 查找目标物体
+        SimObjPhysics targetObj = null;
+        if (!string.IsNullOrEmpty(objectID))
+        {
+            SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+            foreach (var obj in allObjects)
+            {
+                if (obj.ObjectID == objectID)
+                {
+                    targetObj = obj;
+                    break;
+                }
+            }
+        }
+        
+        // 获取基于物体状态的配置
+        ActionConfigResult config = GetActionConfigByObjectState(actionType, targetObj);
+        Debug.Log($"Action config: {config}");
+        Debug.Log($"Action config successRate: {config.successRate}");
+        
+        // 返回完整的配置信息，由AgentMovement决定是否成功
+        return config;
+    }
+    
+    // 保留兼容现有代码，但不执行随机判断
+    public (bool success, string errorMessage, string targetState) CheckActionSuccess(string actionType, string objectID)
+    {
+        // 获取配置信息
+        var config = GetActionConfig(actionType, objectID);
+        
+        // 为了与现有代码兼容，返回一个默认的结果
+        // 实际的成功/失败判断由AgentMovement执行
+        return (true, string.Empty, string.Empty);
+    }
+
+    public bool UpdateLastActionSuccess(string actionType = null, string objectID = null)
+    {
+        if (stateHistoryA2T.Count > 0)
+        {
+            var currentAgent = stateHistoryA2T[currentStateIndex].agent;
+
+            // 如果动作是移动相关且被标记为失败，直接返回失败结果
+            if (actionType != null && (actionType.ToLower().Contains("move") || actionType.ToLower().Contains("rotate")))
+            {
+                // 检查是否有任何碰撞被报告或者移动动作失败
+                AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
+                if (agentMovement != null && !agentMovement.lastMoveSuccessful)
+                {
+                    currentAgent.lastActionSuccess = false;
+                    currentAgent.errorMessage = "移动被障碍物阻挡或无法安全执行";
+                    return false;
+                }
+            }
+            
+            // 不再进行动作成功率检查，由AgentMovement负责
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning("No state history to update lastActionSuccess or errorMessage.");
+            return false;
+        }
+    }
+
     // 填充列表的方法
     private void FillList(List<GameObject> list, string[] tags)
     {
@@ -1201,66 +1445,6 @@ public class SceneStateManager : MonoBehaviour
         else
         {
             Debug.LogWarning("No state history to update lastActionSuccess or errorMessage.");
-        }
-    }
-
-    public bool UpdateLastActionSuccess(string actionType = null)
-    {
-        if (stateHistoryA2T.Count > 0)
-        {
-            var currentAgent = stateHistoryA2T[currentStateIndex].agent;
-
-            // 如果动作是移动相关且被标记为失败，直接返回失败结果
-            if (actionType != null && (actionType.ToLower().Contains("move") || actionType.ToLower().Contains("rotate")))
-            {
-                // 检查是否有任何碰撞被报告或者移动动作失败
-                AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
-                if (agentMovement != null && !agentMovement.lastMoveSuccessful)
-                {
-                    currentAgent.lastActionSuccess = false;
-                    currentAgent.errorMessage = "移动被障碍物阻挡或无法安全执行";
-                    return false;
-                }
-            }
-            
-            // 如果没有特定的失败情况，使用配置文件中的概率处理
-            if (actionConfigs.TryGetValue(actionType, out ActionConfig config))
-            {
-                float randomValue = UnityEngine.Random.value;
-                if (randomValue < config.successRate)
-                {
-                    currentAgent.lastActionSuccess = true;
-                    currentAgent.errorMessage = string.Empty;
-                    return true;
-                }
-                else
-                {
-                    currentAgent.lastActionSuccess = false;
-                    float cumulativeProbability = config.successRate;
-                    foreach (var error in config.errorMessages)
-                    {
-                        cumulativeProbability += error.Value;
-                        if (randomValue < cumulativeProbability)
-                        {
-                            currentAgent.errorMessage = error.Key;
-                            break;
-                        }
-                    }
-                    return false;
-                }
-            }
-            else
-            {
-                Debug.LogWarning("No configuration found for action: " + actionType);
-                currentAgent.lastActionSuccess = true;
-                currentAgent.errorMessage =  "Error message not defined for this action, Default to Success.";
-                return true;
-            }
-        }
-        else
-        {
-            Debug.LogWarning("No state history to update lastActionSuccess or errorMessage.");
-            return false;
         }
     }
 }

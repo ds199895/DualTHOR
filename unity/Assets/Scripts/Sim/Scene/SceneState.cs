@@ -39,6 +39,8 @@ public class ObjectState
     public UsedUpState usedUpState;
     //slice物体状态
     public SlicedState slicedState;
+    //spill物体状态
+    public SpillState spillState;
 }
 
 [System.Serializable]
@@ -113,7 +115,11 @@ public class SlicedState
     public bool isSliced;
 }
 
-
+[System.Serializable]
+public class SpillState
+{
+    public bool isSpilled;
+}
 
 public class jointsStates
 {
