@@ -62,6 +62,7 @@ public class SimObjPhysics : MonoBehaviour
     [Header("Object Type")]
     [SerializeField]
     public SimObjType Type = SimObjType.Undefined;
+    public SimObjType objType=SimObjType.Mug;
 
     [Header("Primary Property (Must Have only 1)")]
     [SerializeField]
@@ -183,6 +184,7 @@ public class SimObjPhysics : MonoBehaviour
     void Start()
     {
         objectID = gameObject.name;
+
         InitializeInteractablePoints();
         InitializeTransferPoint();
 
@@ -263,6 +265,10 @@ public class SimObjPhysics : MonoBehaviour
         {
             Debug.LogWarning($"{gameObject.name} 没有找到名为 'VisibilityPoints' 的子物体。");
         }
+    }
+
+    public SimObjType GetObjectType(){
+        return Type;
     }
 
     private void InitializeProperties()

@@ -457,8 +457,8 @@ public class AgentMovement : MonoBehaviour
             var config = sceneManager.GetActionConfig(actionData.action, actionData.objectID);
 
             // 随机判断成功或失败
-            // float randomValue = UnityEngine.Random.value;
-            float randomValue = 0.98f;
+            float randomValue = UnityEngine.Random.value;
+            // float randomValue = 0.98f;
             if (randomValue > config.successRate)
             {
                 // 如果随机值大于成功率，则动作失败

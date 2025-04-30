@@ -212,12 +212,13 @@ public class Break : MonoBehaviour, IUniqueStateManager, IStateComponent
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         Debug.Log("prefabToSwapto: "+PrefabToSwapTo);
         //实例化新的预制体，并将其设置为当前物体的位置和旋转
-        if (!sceneManager.SimObjectsDict.TryGetValue(PrefabToSwapTo.name, out GameObject breakedObject))
-        {
+        // if (!sceneManager.SimObjectsDict.TryGetValue(PrefabToSwapTo.name, out GameObject breakedObject))
+        // {
 
-            Debug.Log("not have swap object, return!");
-            return; // 如果未找到对应的对象，直接返回
-        }
+        //     Debug.Log("not have swap object, return!");
+        //     return; // 如果未找到对应的对象，直接返回
+        // }
+        GameObject breakedObject = Instantiate(PrefabToSwapTo, transform.position, transform.rotation);
         breakedObject.transform.SetPositionAndRotation(transform.position, transform.rotation);
         breakedObject.SetActive(true);
         Breakdown breakdown = breakedObject.GetComponent<Breakdown>();

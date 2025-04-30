@@ -13,26 +13,26 @@
         },
         "objectStateConfigs": {
             "Cup_filled": {
-                "objectType": "Cup",
+                "objectType": "Mug",
                 "stateCondition": "isFilled",
-                "successRate": 0.91,
+                "successRate": 1,
                 "errorMessages": {
                     "抓取失败，杯子碎裂": {
-                        "probability": 0.02,
+                        "probability": 0,
                         "targetState": "broken"
                     },
                     "无法抓取到杯子": {
-                        "probability": 0.03,
+                        "probability": 0,
                         "targetState": ""
                     },
                     "抓取失败，杯子内容物泼洒": {
-                        "probability": 0.04,
+                        "probability": 0,
                         "targetState": "spilled"
                     }
                 }
             },
             "Cup_empty": {
-                "objectType": "Cup",
+                "objectType": "Mug",
                 "stateCondition": "notFilled",
                 "successRate": 0.93,
                 "errorMessages": {

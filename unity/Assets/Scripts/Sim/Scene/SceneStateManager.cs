@@ -280,20 +280,26 @@ public class SceneStateManager : MonoBehaviour
         {
             return result;
         }
-        
+        Debug.Log($"尝试根据物体状态查找特定配置");
+
         // 尝试根据物体状态查找特定配置
         foreach (var stateConfig in config.objectStateConfigs)
         {
+
+            Debug.Log(targetObj.objType);
+            Debug.Log($"检查物体类型: {targetObj.Type} 与配置的物体类型: {stateConfig.Value.objectType}");
             // 检查物体类型是否匹配
             if (!targetObj.Type.ToString().Equals(stateConfig.Value.objectType, StringComparison.OrdinalIgnoreCase))
                 continue;
                 
+            Debug.Log($"检查物体 {targetObj.ObjectID} 的状态: {stateConfig.Value.stateCondition}");
             // 检查物体状态是否匹配
             bool stateMatches = false;
             switch (stateConfig.Value.stateCondition)
             {
                 case "isFilled":
-                    stateMatches = targetObj.IsFillable && targetObj.GetComponent<Fill>().isFilled;
+                    Debug.Log($"检查物体 {targetObj.ObjectID} 的填充状态: {targetObj.GetComponent<Fill>().isFilled}");
+                    stateMatches = targetObj.GetComponent<Fill>().isFilled;
                     break;
                 case "isBroken":
                     stateMatches = targetObj.IsBreakable && targetObj.GetComponent<Break>().isBroken;
