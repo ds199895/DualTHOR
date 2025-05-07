@@ -103,6 +103,76 @@ def test_controller():
     
     logging.info("测试结束")
 
+def test_dual_arm():
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller.start()
+
+    controller.step("rotateright", magnitude=1)
+    controller.step("moveahead", magnitude=1.4)
+    # controller.step("rotateleft", magnitude=1)
+    controller.step("moveleft", magnitude=2)
+
+
+    # 示例1：顺序执行 - 左臂先拿杯子，然后右臂开冰箱
+    sequential_actions = [
+        {
+            "action": "pick",
+            "arm": "left",
+            "objectID": "Bowl_148b0fbf",
+            "successRate": 0.95
+        },
+        {
+            "action": "open",
+            "arm": "right",
+            "objectID": "Kitchen_Drawer_01",
+            "successRate": 0.95
+        }
+    ]
+
+    # 顺序执行动作（sequential=True）
+    # results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
+
+    # print(results)
+
+
+
+
+    # # 示例2：同时执行 - 两臂同时放下物体
+
+    parallel_actions = [
+        {
+            "action": "pick",
+            "arm": "left",
+            "objectID": "Bowl_148b0fbf",
+            "successRate": 0.95
+        },
+        {
+            "action": "open",
+            "arm": "right",
+            "objectID": "Kitchen_Drawer_01",
+            "successRate": 0.95
+        }
+    ]
+
+
+    # parallel_actions = [
+    #     {
+    #         "action": "place",
+    #         "arm": "left", 
+    #         "objectID": "Cup_1"
+    #     },
+    #     {
+    #         "action": "place",
+    #         "arm": "right",
+    #         "objectID": "Bottle_1"
+    #     }
+    # ]
+
+    # 并行执行动作（sequential=False）
+    results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
+    print(results)
+    controller.step("undo")
+
 def print_feedback_result(feedback, action_name):
     """打印动作执行结果，包含碰撞详情"""
     success = feedback.get('success', False)
@@ -125,7 +195,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     try:
-        test_controller()
+        # test_controller()
+        test_dual_arm()
     except KeyboardInterrupt:
         logging.info("用户中断测试")
         sys.exit(0)

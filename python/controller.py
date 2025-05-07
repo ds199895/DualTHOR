@@ -186,6 +186,16 @@ class Controller:
             # 处理碰撞信息
             self._process_collision_info(feedback_json)
             
+            # 检查是否为多动作反馈（包含results字段）
+            if 'results' in feedback_json:
+                # 记录每个动作的执行结果
+                for result in feedback_json['results']:
+                    action_name = result.get('action', '未知动作')
+                    arm = result.get('arm', '未知手臂')
+                    success = result.get('success', False)
+                    msg = result.get('msg', '无消息')
+                    logging.info(f"双臂动作结果: {arm}臂, {action_name}, 成功: {success}, 消息: {msg}")
+            
             return feedback_json
         except Exception as e:
             logging.error(f"Error executing action {actions_json}: {e}")
@@ -286,7 +296,120 @@ class Controller:
                 break
             time.sleep(1)  # 延迟以避免过多的CPU占用
 
+    def execute_dual_arm_actions(self, actions, sequential=False):
+        """
+        执行双臂动作，支持同步和顺序两种模式
+        
+        参数:
+        - actions: 包含左右臂动作的列表，每个动作为一个字典
+        - sequential: 是否按顺序执行（True=顺序执行，False=同时执行）
+        
+        返回:
+        - 包含两个臂执行结果的字典
+        """
+        # 确保actions是列表
+        if not isinstance(actions, list):
+            logging.error("Actions must be a list")
+            return {"success": False, "msg": "Actions must be a list", "results": []}
+            
+        # 确保每个动作都有arm字段
+        for i, action in enumerate(actions):
+            if 'arm' not in action:
+                logging.warning(f"动作 #{i} 没有指定arm字段，默认设为'left'")
+                action['arm'] = 'left'
+                
+      
+        execution_mode = "sequential" if sequential else "parallel"
+        logging.info(f"设置双臂执行模式为: {execution_mode}")
+        dual_arm_actions = {"actions":actions,"executionMode":execution_mode}
+
+        # 构建动作JSON数组
+        actions_json = json.dumps(dual_arm_actions)
+        logging.info(f"执行双臂动作: 模式={'sequential' if sequential else 'parallel'}, 动作数={len(actions)}")
+        
+        # 发送动作并获取反馈
+        feedback = self.step_async(actions_json)
+        
+        if not feedback:
+            return {"success": False, "msg": "执行双臂动作失败，未收到反馈", "results": []}
+            
+        # 提取各个臂的执行结果
+        results = feedback.get('results', [])
+        all_success = all(result.get('success', False) for result in results) if results else False
+        
+        return {
+            "success": all_success,
+            "msg": "双臂动作执行完成",
+            "results": results
+        }
+
 # 启动控制器
 if __name__ == '__main__':
     controller = Controller(config_path="config.json")  
     controller.start()
+
+    # 双臂动作示例
+    def dual_arm_example():
+        """
+        双臂动作使用示例
+        """
+        print("\n=== 双臂动作示例 ===")
+        
+        # 创建控制器实例
+        controller = Controller(config_path="config.json", start_unity_exe=False)
+        controller.start()
+        
+        # 等待连接
+        time.sleep(2)
+        
+        # 示例1：顺序执行 - 左臂先拿杯子，然后右臂开冰箱
+        print("\n1. 顺序执行示例（左臂拿杯子，然后右臂开冰箱）")
+        sequential_actions = [
+            {
+                "action": "pick",
+                "arm": "left",
+                "objectID": "Cup_1",
+                "successRate": 0.95
+            },
+            {
+                "action": "open",
+                "arm": "right",
+                "objectID": "Fridge_1",
+                "successRate": 0.95
+            }
+        ]
+        
+        results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
+        print(f"顺序执行结果: 成功={results['success']}")
+        for i, result in enumerate(results.get('results', [])):
+            print(f"  动作 {i+1} ({result.get('arm')}臂 {result.get('action')}): "
+                  f"{'成功' if result.get('success') else '失败'} - {result.get('msg')}")
+        
+        # 等待几秒
+        time.sleep(3)
+        
+        # 示例2：同时执行 - 两臂同时放下物体
+        print("\n2. 同时执行示例（两臂同时放下物体）")
+        parallel_actions = [
+            {
+                "action": "place",
+                "arm": "left", 
+                "objectID": "Cup_1",
+                "successRate": 0.95
+            },
+            {
+                "action": "place",
+                "arm": "right",
+                "objectID": "Bottle_1", 
+                "successRate": 0.95
+            }
+        ]
+        
+        results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
+        print(f"同时执行结果: 成功={results['success']}")
+        for i, result in enumerate(results.get('results', [])):
+            print(f"  动作 {i+1} ({result.get('arm')}臂 {result.get('action')}): "
+                  f"{'成功' if result.get('success') else '失败'} - {result.get('msg')}")
+            
+    # 取消注释下面的行来运行示例
+    # dual_arm_example()
