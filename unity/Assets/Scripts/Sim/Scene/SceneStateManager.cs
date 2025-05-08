@@ -739,8 +739,8 @@ public class SceneStateManager : MonoBehaviour
         ObjectState objectState = new()
         {
             name = obj.name,
-            position = obj.transform.position,
-            rotation = obj.transform.rotation,
+            position = obj.transform.localPosition,
+            rotation = obj.transform.localRotation,
             isActive = obj.activeSelf,
             isPickedUp = obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"), // 检查父物体是否为Hand
         };
@@ -1199,24 +1199,24 @@ public class SceneStateManager : MonoBehaviour
             }
             
             // 再次检查刚体状态，确保根据父级关系正确设置
-            Rigidbody rb = obj.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
-                {
-                    // 如果在手中，禁用物理
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    rb.detectCollisions = false;
-                }
-                else if (!objectState.isPickedUp)
-                {
-                    // 如果不在手中且保存状态也不是被拿起，启用物理
-                    rb.isKinematic = false;
-                    rb.useGravity = true;
-                    rb.detectCollisions = true;
-                }
-            }
+            // Rigidbody rb = obj.GetComponent<Rigidbody>();
+            // if (rb != null)
+            // {
+            //     if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
+            //     {
+            //         // 如果在手中，禁用物理
+            //         rb.isKinematic = true;
+            //         rb.useGravity = false;
+            //         rb.detectCollisions = false;
+            //     }
+            //     else if (!objectState.isPickedUp)
+            //     {
+            //         // 如果不在手中且保存状态也不是被拿起，启用物理
+            //         rb.isKinematic = false;
+            //         rb.useGravity = true;
+            //         rb.detectCollisions = true;
+            //     }
+            // }
         }
         else
         {
@@ -1236,13 +1236,21 @@ public class SceneStateManager : MonoBehaviour
         // 暂时禁用物理以确保位置设置正确
         if (hadRigidbody)
         {
+
             rb.isKinematic = true;
             rb.useGravity = false;
             rb.detectCollisions = false;
+            
+            // 清除所有现有速度和角速度
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
         
         // 设置位置和旋转
-        obj.transform.SetPositionAndRotation(objectState.position, objectState.rotation);
+        obj.transform.SetLocalPositionAndRotation(objectState.position, objectState.rotation);
+        
+        // 确保物理系统与新的transform同步
+        Physics.SyncTransforms();
         
         // 根据物体类型恢复物理属性
         SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
@@ -1257,22 +1265,63 @@ public class SceneStateManager : MonoBehaviour
             }
             else if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup)
             {
-                // 可拾取物体恢复为非运动学，有重力，有碰撞
-                rb.isKinematic = false;
-                rb.useGravity = true;
-                rb.detectCollisions = true;
+                // 对于可拾取物体，我们需要确保它们的位置稳定后再恢复物理
+                // 先进行位置固定，然后延迟恢复物理
+                StartCoroutine(SafelyRestorePhysics(rb, false, true, true));
             }
             else
             {
-                // 其他物体恢复原有状态
-                rb.isKinematic = wasKinematic;
-                rb.useGravity = usedGravity;
-                rb.detectCollisions = detectCollisions;
+                if(simObj.PrimaryProperty != SimObjPrimaryProperty.Static)
+                {
+
+                    // 其他物体恢复原有状态
+                    rb.isKinematic = wasKinematic;
+                    rb.useGravity = usedGravity;
+                    rb.detectCollisions = detectCollisions;
+                }
+
             }
+            
+            // 确保所有速度都被重置
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
         
         // 记录调试信息
         Debug.Log($"物体 {obj.name} 位置已恢复到: {objectState.position}, 旋转: {objectState.rotation.eulerAngles}");
+    }
+    
+    // 安全地恢复物理属性的协程
+    private IEnumerator SafelyRestorePhysics(Rigidbody rb, bool isKinematic, bool useGravity, bool detectCollisions)
+    {
+        if (rb == null) yield break;
+        
+        // 等待一帧，确保所有位置设置都已完成
+        yield return null;
+        
+        // 再次确保物理系统与transform同步
+        Physics.SyncTransforms();
+        
+        // 确保速度为零
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        
+        // 先恢复碰撞检测但保持kinematic状态
+        rb.detectCollisions = detectCollisions;
+        yield return new WaitForFixedUpdate();
+        
+        // 然后恢复重力但保持kinematic状态
+        rb.useGravity = useGravity;
+        yield return new WaitForFixedUpdate();
+        
+        // 最后恢复kinematic状态
+        rb.isKinematic = isKinematic;
+        
+        // 再次确保速度为零，防止位置突变
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        
+        Debug.Log($"物体 {rb.gameObject.name} 的物理属性已安全恢复");
     }
 
 

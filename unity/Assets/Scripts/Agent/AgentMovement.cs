@@ -408,8 +408,26 @@ public class AgentMovement : MonoBehaviour
     public void Update(){
         if (Input.GetKeyDown(KeyCode.A))
         {
-            DisableArticulationBodies();
+            Debug.Log("update drawer position");
+            var drawer2=GameObject.Find("Kitchen_Drawer_02");
+            Debug.Log("find drawer2 "+drawer2.name);
+            drawer2.transform.position=new Vector3(0.6376251f,0.5475f,-0.65f);
+            drawer2.transform.rotation=Quaternion.Euler(0f,-90f,0f);
+
+            var drawer1=GameObject.Find("Kitchen_Drawer_01");
+            Debug.Log("find drawer1 "+drawer1.name);
+            drawer1.transform.position=new Vector3(0.6376251f,0.7556f,-0.65f);
+            drawer1.transform.rotation=Quaternion.Euler(0f,-90f,0f);
+
+            var drawer3=GameObject.Find("Kitchen_Drawer_03");
+            Debug.Log("find drawer3 "+drawer3.name);
+            drawer3.transform.position=new Vector3(0.6376251f,0.26875f,-0.65f);
+            drawer3.transform.rotation=Quaternion.Euler(0f,-90f,0f);
+            
+            
         }
+
+
 
     }
 
