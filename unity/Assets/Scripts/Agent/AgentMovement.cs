@@ -245,6 +245,7 @@ public class AgentMovement : MonoBehaviour
             if(body.name=="root"){
                 Debug.Log("get root link");
                 sceneManager.root=body;
+                rootArt=body;
             }
             if (body.jointType == ArticulationJointType.RevoluteJoint) // 仅在 RevoluteJoint 类型时执行
             {
@@ -1152,6 +1153,46 @@ public class AgentMovement : MonoBehaviour
             
             yield return new WaitForSeconds(1f);
 
+            // 检测夹爪是否到达目标位置
+            Transform gripperTransform = null;
+            if (isLeftArm && gripperController.currentLeftLeftGripper != null) 
+            {
+                gripperTransform = gripperController.currentLeftLeftGripper.transform;
+            } 
+            else if (!isLeftArm && gripperController.currentRightLeftGripper != null) 
+            {
+                gripperTransform = gripperController.currentRightLeftGripper.transform;
+            }
+            
+            // 检查夹爪是否在目标位置附近(10厘米范围内)
+            bool reachedTargetPosition = false;
+            if (gripperTransform != null)
+            {
+                float distance = Vector3.Distance(gripperTransform.position, pickPosition.position);
+                reachedTargetPosition = distance < 0.1f;
+                Debug.Log($"夹爪到目标点距离: {distance}米");
+            }
+            
+            // 如果没有到达目标位置，结束协程并返回错误信息
+            if (!reachedTargetPosition)
+            {
+                Debug.LogError($"Pick操作失败：夹爪未到达目标位置");
+                lastMoveSuccessful = false;
+                
+                // 更新状态管理器中的动作结果
+                if (sceneManager != null)
+                {
+                    sceneManager.UpdateLastActionSuccess("pick");
+                    // 设置错误消息
+                    if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                    {
+                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                    }
+                }
+                
+                yield break;
+            }
+
             // 夹紧物体
             Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
             gripperController.SetGripper(isLeftArm, false);
@@ -1230,6 +1271,46 @@ public class AgentMovement : MonoBehaviour
             }
             
             yield return new WaitForSeconds(1f);
+            
+            // 检查夹爪是否到达目标位置
+            Transform h1GripperTransform = null;
+            if (isLeftArm && gripperController.h1_leftArmLeftGripper != null)
+            {
+                h1GripperTransform = gripperController.h1_leftArmLeftGripper.transform;
+            }
+            else if (!isLeftArm && gripperController.h1_rightArmLeftGripper != null)
+            {
+                h1GripperTransform = gripperController.h1_rightArmLeftGripper.transform;
+            }
+            
+            // 检查夹爪是否在目标位置附近(10厘米范围内)
+            bool h1ReachedTargetPosition = false;
+            if (h1GripperTransform != null)
+            {
+                float distance = Vector3.Distance(h1GripperTransform.position, pickPosition);
+                h1ReachedTargetPosition = distance < 0.1f;
+                Debug.Log($"H1夹爪到目标点距离: {distance}米");
+            }
+            
+            // 如果没有到达目标位置，结束协程并返回错误信息
+            if (!h1ReachedTargetPosition)
+            {
+                Debug.LogError($"H1 Pick操作失败：夹爪未到达目标位置");
+                lastMoveSuccessful = false;
+                
+                // 更新状态管理器中的动作结果
+                if (sceneManager != null)
+                {
+                    sceneManager.UpdateLastActionSuccess("pick");
+                    // 设置错误消息
+                    if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                    {
+                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                    }
+                }
+                
+                yield break;
+            }
             
             // 夹紧物体
             Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");

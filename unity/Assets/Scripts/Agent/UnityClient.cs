@@ -141,9 +141,11 @@ public class UnityClient : MonoBehaviour
                     }
                     else 
                     {
+                        Debug.Log("解析单个动作!");
                         // 单个动作处理
                         actionJson = PreprocessJson(actionJson);
                         ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
+                        // Debug.Log("解析单个动作: "+actionData.ToString());
                         await ProcessActionData(actionData);
                     }
                 }
@@ -161,9 +163,9 @@ public class UnityClient : MonoBehaviour
 
     private async Task ProcessActionData(ActionData actionData) {
         Debug.Log("Start recording .....");
-
+        
         sceneStateManager.camera_ctrl.imgeDir=Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
-
+        Debug.Log("设置图像保存路径: "+sceneStateManager.camera_ctrl.imgeDir);
         sceneStateManager.camera_ctrl.record=true;
 
         Debug.Log("Parsed Action Data: "+actionData.ToString());

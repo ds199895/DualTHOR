@@ -11,6 +11,7 @@ public class CameraController : MonoBehaviour
     public Camera rightSideCam;
     public Camera behindCam;
     public Camera freeCam;
+    public Camera minimapCam;
 
     public float moveSpeed = 10.0f;
     public float mouseSensitivity = 2.0f;
@@ -87,6 +88,7 @@ public class CameraController : MonoBehaviour
         rightSideCam.enabled = true;
         behindCam.enabled = true;
         freeCam.enabled = false; // 默认情况下不启用FreeCam
+        minimapCam.enabled = true;
     }
 
     void ActivateFreeMode()
@@ -160,6 +162,7 @@ public class CameraController : MonoBehaviour
         SaveCameraImage(leftSideCam.targetTexture, "LeftSideCam");
         SaveCameraImage(rightSideCam.targetTexture, "RightSideCam");
         SaveCameraImage(behindCam.targetTexture, "BehindCam");
+        SaveCameraImage(minimapCam.targetTexture, "Minimap");
     }
 
     private void SaveCameraImage(RenderTexture renderTexture, string cameraName)

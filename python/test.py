@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="bedroom")
     
     # 启动控制器
     controller.start()
@@ -108,9 +108,9 @@ def test_dual_arm():
     controller.start()
 
     controller.step("rotateright", magnitude=1)
-    controller.step("moveahead", magnitude=1.4)
-    # controller.step("rotateleft", magnitude=1)
-    controller.step("moveleft", magnitude=2)
+    # controller.step("moveahead", magnitude=1.4)
+    # # controller.step("rotateleft", magnitude=1)
+    # controller.step("moveleft", magnitude=2)
 
 
     # 示例1：顺序执行 - 左臂先拿杯子，然后右臂开冰箱
@@ -139,6 +139,21 @@ def test_dual_arm():
 
     # # 示例2：同时执行 - 两臂同时放下物体
 
+    # parallel_actions = [
+    #     {
+    #         "action": "pick",
+    #         "arm": "left",
+    #         "objectID": "Bowl_148b0fbf",
+    #         "successRate": 0.95
+    #     },
+    #     {
+    #         "action": "open",
+    #         "arm": "right",
+    #         "objectID": "Kitchen_Drawer_01",
+    #         "successRate": 0.95
+    #     }
+    # ]
+
     parallel_actions = [
         {
             "action": "pick",
@@ -147,12 +162,13 @@ def test_dual_arm():
             "successRate": 0.95
         },
         {
-            "action": "open",
+            "action": "pick",
             "arm": "right",
-            "objectID": "Kitchen_Drawer_01",
+            "objectID": "Kitchen_Potato_01",
             "successRate": 0.95
         }
     ]
+
 
 
     # parallel_actions = [
@@ -169,9 +185,9 @@ def test_dual_arm():
     # ]
 
     # 并行执行动作（sequential=False）
-    results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
-    print(results)
-    controller.step("undo")
+    # results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
+    # print(results)
+    # controller.step("undo")
 
 def print_feedback_result(feedback, action_name):
     """打印动作执行结果，包含碰撞详情"""
