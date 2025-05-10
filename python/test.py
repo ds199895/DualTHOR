@@ -113,6 +113,8 @@ def test_dual_arm():
     # controller.step("moveleft", magnitude=2)
 
 
+    controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
+
     # 示例1：顺序执行 - 左臂先拿杯子，然后右臂开冰箱
     sequential_actions = [
         {
