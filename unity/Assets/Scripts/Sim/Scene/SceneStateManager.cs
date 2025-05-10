@@ -286,7 +286,7 @@ public class SceneStateManager : MonoBehaviour
         foreach (var stateConfig in config.objectStateConfigs)
         {
 
-            Debug.Log(targetObj.objType);
+            // Debug.Log(targetObj.objType);
             Debug.Log($"检查物体类型: {targetObj.Type} 与配置的物体类型: {stateConfig.Value.objectType}");
             // 检查物体类型是否匹配
             if (!targetObj.Type.ToString().Equals(stateConfig.Value.objectType, StringComparison.OrdinalIgnoreCase))
@@ -1374,6 +1374,24 @@ public class SceneStateManager : MonoBehaviour
 
         Debug.LogWarning($"未找到ID为 {objectID} 的物品");
         return null;
+    }
+
+
+    public static Transform[] GetLiftPoints(string objectID)
+    {
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == objectID)
+            {
+                return obj.LiftPoints;
+            }
+        }
+
+        Debug.LogWarning($"未找到ID为 {objectID} 的物品");
+        return null;
+        
     }
 
     public void SetParent(Transform parent, string objectID)

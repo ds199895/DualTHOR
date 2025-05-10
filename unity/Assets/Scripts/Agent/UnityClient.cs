@@ -210,7 +210,24 @@ public class UnityClient : MonoBehaviour
             Debug.Log("reset state action!");
             // 不再直接执行LoadState，而是启动协程处理
             StartCoroutine(ResetStateWithScreenshots());
-        } 
+        } else if (actionData.action=="lift"){
+            Debug.Log("lift action!");
+            
+            // 创建图像保存路径
+            string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
+            sceneStateManager.camera_ctrl.imgeDir = imageDir;
+            sceneStateManager.camera_ctrl.record = true;
+            
+            // 记录原始位置，用于后续检测
+            GameObject targetObject = null;
+            Vector3 originalPosition = Vector3.zero;
+            if (sceneStateManager.SimObjectsDict.TryGetValue(actionData.objectID, out targetObject) && targetObject != null) {
+                originalPosition = targetObject.transform.position;
+            }
+            
+            // 启动协程执行Lift操作
+            StartCoroutine(LiftWithCallback(actionData.objectID, originalPosition));
+        }
         else {
             // 判断是否为交互类操作(pick、place、toggle、open)
             bool isInteractionAction = IsInteractionAction(actionData.action);
@@ -753,6 +770,67 @@ public class UnityClient : MonoBehaviour
         }
         
         Debug.Log("停止录制");
+        sceneStateManager.camera_ctrl.record = false;
+        sceneStateManager.camera_ctrl.ResetImageCount();
+    }
+
+    // 添加新的协程处理Lift操作
+    private IEnumerator LiftWithCallback(string objectID, Vector3 originalPosition)
+    {
+        bool success = false;
+        string message = "lift操作未完成";
+        
+        // 执行lift操作（放在try块外）
+        yield return StartCoroutine(agentMovement.Lift(objectID));
+        
+        try {
+            // 检查操作是否成功
+            GameObject targetObject = null;
+            if (sceneStateManager.SimObjectsDict.TryGetValue(objectID, out targetObject) && targetObject != null) {
+                // 检查高度变化
+                Vector3 currentPosition = targetObject.transform.position;
+                bool heightIncreased = currentPosition.y > originalPosition.y + 0.05f; // 高度增加至少5厘米
+                
+                // 检查是否被抓取
+                bool isHeld = targetObject.transform.parent != null && 
+                             (targetObject.transform.parent.CompareTag("Hand") || 
+                              targetObject.transform.parent.name.Contains("Gripper"));
+                
+                success = heightIncreased || isHeld;
+                if (success) {
+                    message = "lift操作成功完成";
+                    Debug.Log($"Lift成功: 物体{objectID}高度从{originalPosition.y}增加到{currentPosition.y}");
+                } else {
+                    message = "lift操作失败：物体未被正确抬起";
+                    Debug.LogWarning($"Lift失败: 物体{objectID}高度从{originalPosition.y}到{currentPosition.y}，抓取状态：{isHeld}");
+                }
+            } else {
+                success = false;
+                message = $"lift操作失败：找不到物体{objectID}";
+                Debug.LogError($"找不到物体{objectID}");
+            }
+        } catch (Exception ex) {
+            success = false;
+            message = $"lift操作异常: {ex.Message}";
+            Debug.LogError($"Lift操作发生异常: {ex.Message}");
+        }
+        
+        // 更新状态管理器中的动作结果
+        if (sceneStateManager != null) {
+            sceneStateManager.UpdateLastActionSuccess("lift");
+            if (!success && sceneStateManager.GetCurrentSceneStateA2T() != null && 
+                sceneStateManager.GetCurrentSceneStateA2T().agent != null) {
+                sceneStateManager.GetCurrentSceneStateA2T().agent.errorMessage = message;
+            }
+            
+            // 保存当前状态
+            sceneStateManager.SaveCurrentState();
+        }
+        
+        // 发送结果到Python
+        SendFeedbackToPython(success, message);
+        
+        // 确保停止录制
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
     }

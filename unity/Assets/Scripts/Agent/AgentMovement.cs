@@ -458,6 +458,7 @@ public class AgentMovement : MonoBehaviour
 
     public void ExecuteActionWithCallback(UnityClient.ActionData actionData, Action<JsonData> callback)
     {
+        
         Debug.Log($"Executing action: {actionData.action} with arm: {actionData.arm}, objectID: {actionData.objectID}, magnitude: {actionData.magnitude}");
         JsonData jsonData = new JsonData();
 
@@ -853,16 +854,11 @@ public class AgentMovement : MonoBehaviour
         collisionA = "";
         collisionB = "";
 
-        // 检查Toggle操作是否成功（独立于碰撞）
-        bool toggleSuccess = false;
-        
         // 获取夹爪控制器
         GripperController gripperController = GetComponent<GripperController>();
-        
-        // 检查夹爪是否到达了目标位置附近
-        bool reachedTargetPosition = false;
+
+        // 提前检查夹爪是否到达目标位置
         Transform gripperTransform = null;
-        
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
             gripperTransform = gripperController.currentLeftLeftGripper.transform;
@@ -872,17 +868,37 @@ public class AgentMovement : MonoBehaviour
             gripperTransform = gripperController.currentRightLeftGripper.transform;
         }
         
+        bool reachedTargetPosition = false;
         if (gripperTransform != null)
         {
-            // 检查夹爪是否在交互点附近(30cm以内)
+            // 检查夹爪是否在交互点附近(10厘米以内)
             float distance = Vector3.Distance(gripperTransform.position, interactablePoint.position);
-            reachedTargetPosition = distance < 0.3f;
-            
+            reachedTargetPosition = distance < 0.1f;
             Debug.Log($"Toggle操作: 夹爪到交互点距离为 {distance}米");
         }
         
-        // 判断Toggle是否成功：夹爪到达目标位置附近即视为成功
-        toggleSuccess = reachedTargetPosition;
+        // 如果夹爪没有到达目标位置，提前结束协程
+        if (!reachedTargetPosition)
+        {
+            Debug.LogError($"Toggle操作失败：夹爪未到达目标位置");
+            lastMoveSuccessful = false;
+            
+            // 更新状态管理器中的动作结果
+            if (sceneManager != null)
+            {
+                sceneManager.UpdateLastActionSuccess("toggle");
+                // 设置错误消息
+                if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                {
+                    sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                }
+            }
+            
+            yield break;
+        }
+
+        // 检查Toggle操作是否成功（独立于碰撞）
+        bool toggleSuccess = reachedTargetPosition;
         
         // 尝试查找物体并切换状态（无论是否成功都尝试切换，以避免卡住）
         SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
@@ -972,16 +988,11 @@ public class AgentMovement : MonoBehaviour
         collisionA = "";
         collisionB = "";
 
-        // 检查Open操作是否成功（独立于碰撞）
-        bool openSuccess = false;
-        
         // 获取夹爪控制器
         GripperController gripperController = GetComponent<GripperController>();
         
-        // 检查夹爪是否到达了目标位置附近
-        bool reachedTargetPosition = false;
+        // 提前检查夹爪是否到达目标位置
         Transform gripperTransform = null;
-        
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
             gripperTransform = gripperController.currentLeftLeftGripper.transform;
@@ -991,17 +1002,37 @@ public class AgentMovement : MonoBehaviour
             gripperTransform = gripperController.currentRightLeftGripper.transform;
         }
         
+        bool reachedTargetPosition = false;
         if (gripperTransform != null)
         {
-            // 检查夹爪是否在交互点附近(30cm以内)
+            // 检查夹爪是否在交互点附近(10厘米以内)
             float distance = Vector3.Distance(gripperTransform.position, interactablePoint.position);
-            reachedTargetPosition = distance < 0.3f;
-            
+            reachedTargetPosition = distance < 0.1f;
             Debug.Log($"Open操作: 夹爪到交互点距离为 {distance}米");
         }
         
-        // 判断Open是否成功：夹爪到达目标位置附近即视为成功
-        openSuccess = reachedTargetPosition;
+        // 如果夹爪没有到达目标位置，提前结束协程
+        if (!reachedTargetPosition)
+        {
+            Debug.LogError($"Open操作失败：夹爪未到达目标位置");
+            lastMoveSuccessful = false;
+            
+            // 更新状态管理器中的动作结果
+            if (sceneManager != null)
+            {
+                sceneManager.UpdateLastActionSuccess("open");
+                // 设置错误消息
+                if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                {
+                    sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                }
+            }
+            
+            yield break;
+        }
+
+        // 检查Open操作是否成功（独立于碰撞）
+        bool openSuccess = reachedTargetPosition;
         
         // 尝试查找物体并打开（无论是否成功都尝试打开，以避免卡住）
         SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
@@ -1054,6 +1085,137 @@ public class AgentMovement : MonoBehaviour
         }
     }
 
+
+
+    public IEnumerator Lift(string objectID){
+
+        // 查找物品的 TransferPoint
+        Transform[] liftPoints = SceneStateManager.GetLiftPoints(objectID);
+
+        if (liftPoints == null)
+        {
+            Debug.LogError($"Lift action failed: objectID '{objectID}' not found.");
+            yield break;
+        }
+
+        // 左臂移动到liftPoints[0]
+        yield return StartCoroutine(ArmMovetoPosition(liftPoints[0].position, true));
+
+        yield return new WaitForSeconds(1f);
+        // 右臂移动到liftPoints[1]
+        yield return StartCoroutine(ArmMovetoPosition(liftPoints[1].position, false));
+
+        yield return new WaitForSeconds(1f);
+               // 检测夹爪是否到达目标位置
+        Transform leftGripperTransform = null;
+        Transform rightGripperTransform = null;
+        if (gripperController.currentLeftLeftGripper != null) 
+        {
+            leftGripperTransform = gripperController.currentLeftLeftGripper.transform;
+        } 
+        if (gripperController.currentRightLeftGripper != null) 
+        {
+            rightGripperTransform = gripperController.currentRightLeftGripper.transform;
+        }
+            
+        // 检查夹爪是否在目标位置附近(10厘米范围内)
+        bool reachedTargetPosition = false;
+        float leftDistance = 0;
+        float rightDistance = 0;
+        if (leftGripperTransform != null)
+        {
+            leftDistance = Vector3.Distance(leftGripperTransform.position, liftPoints[0].position);
+            Debug.Log($"左夹爪到目标点距离: {leftDistance}米");
+        }
+        if (rightGripperTransform != null)
+        {
+            rightDistance = Vector3.Distance(rightGripperTransform.position, liftPoints[1].position);
+
+            Debug.Log($"右夹爪到目标点距离: {rightDistance}米");
+        }
+
+        if (leftDistance < 0.1f && rightDistance < 0.1f)
+        {
+            reachedTargetPosition = true;
+        }
+        
+        // 如果没有到达目标位置，结束协程并返回错误信息
+        if (!reachedTargetPosition)
+        {
+            Debug.LogError($"Lift操作失败：夹爪未到达操作位置");
+            lastMoveSuccessful = false;
+            
+            // 更新状态管理器中的动作结果
+            if (sceneManager != null)
+            {
+                sceneManager.UpdateLastActionSuccess("lift");
+                // 设置错误消息
+                if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                {
+                    sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                }
+            }
+
+            yield break;
+        }
+
+
+        sceneManager.SetParent(gripperController.currentLeftLeftGripper.transform, objectID);
+
+        yield return new WaitForSeconds(1f);
+
+
+        // 左臂移动到liftPoints[0]
+        yield return StartCoroutine(ArmMovetoPosition(liftPoints[0].position+new Vector3(0,0.2f,0), true));
+
+        // 右臂移动到liftPoints[1]
+        yield return StartCoroutine(ArmMovetoPosition(liftPoints[1].position+new Vector3(0,0.2f,0), false));
+
+
+
+         // 检查夹爪是否在目标位置附近(10厘米范围内)
+        bool lastLiftSuccess = false;
+
+        if (leftGripperTransform != null)
+        {
+            leftDistance = Vector3.Distance(leftGripperTransform.position, liftPoints[0].position);
+            Debug.Log($"左夹爪到目标点距离: {leftDistance}米");
+        }
+        if (rightGripperTransform != null)
+        {
+            rightDistance = Vector3.Distance(rightGripperTransform.position, liftPoints[1].position);
+
+            Debug.Log($"右夹爪到目标点距离: {rightDistance}米");
+        }
+
+        if (leftDistance < 0.1f && rightDistance < 0.1f)
+        {
+            lastLiftSuccess = true;
+        }
+        
+        // 如果没有到达目标位置，结束协程并返回错误信息
+        if (!lastLiftSuccess)
+        {
+            Debug.LogError($"Lift操作失败：夹爪未到达目标位置");
+            lastMoveSuccessful = false;
+            
+            // 更新状态管理器中的动作结果
+            if (sceneManager != null)
+            {
+                sceneManager.UpdateLastActionSuccess("lift");
+                // 设置错误消息
+                if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                {
+                    sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                }
+            }
+
+            yield break;
+        }
+
+        yield return new WaitForSeconds(1f);
+
+    }
     public JsonData TP(string objectID)
     {
         // 查找物品的 TransferPoint
@@ -1431,6 +1593,39 @@ public class AgentMovement : MonoBehaviour
 
         // 获取夹爪控制器
         GripperController gripperController = GetComponent<GripperController>();
+        
+        // 提前检查夹爪是否到达目标位置
+        bool reachedTargetPosition = false;
+        if (isLeftArm && gripperController.currentLeftLeftGripper != null)
+        {
+            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.1f;
+            Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position)}米");
+        }
+        else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
+        {
+            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.1f;
+            Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position)}米");
+        }
+        
+        // 如果夹爪没有到达目标位置，提前结束协程
+        if (!reachedTargetPosition)
+        {
+            Debug.LogError($"Place操作失败：夹爪未到达目标位置");
+            lastMoveSuccessful = false;
+            
+            // 更新状态管理器中的动作结果
+            if (sceneManager != null)
+            {
+                sceneManager.UpdateLastActionSuccess("place");
+                // 设置错误消息
+                if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                {
+                    sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                }
+            }
+            
+            yield break;
+        }
 
         // 打开夹爪
         if (gripperController != null)
@@ -1470,17 +1665,6 @@ public class AgentMovement : MonoBehaviour
                 placedObject = obj.gameObject;
                 break;
             }
-        }
-        
-        // 检查夹爪是否到达了目标位置
-        bool reachedTargetPosition = false;
-        if (isLeftArm && gripperController.currentLeftLeftGripper != null)
-        {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.3f;
-        }
-        else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
-        {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.3f;
         }
         
         // 检查物体是否已从夹爪释放
@@ -1575,6 +1759,9 @@ public class AgentMovement : MonoBehaviour
             
         }
     }
+
+
+
 
     private IEnumerator TransferToPose(Transform transfer)
     {

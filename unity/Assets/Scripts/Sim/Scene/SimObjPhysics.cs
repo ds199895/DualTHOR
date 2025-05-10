@@ -62,7 +62,7 @@ public class SimObjPhysics : MonoBehaviour
     [Header("Object Type")]
     [SerializeField]
     public SimObjType Type = SimObjType.Undefined;
-    public SimObjType objType=SimObjType.Mug;
+    // public SimObjType objType=SimObjType.Mug;
 
     [Header("Primary Property (Must Have only 1)")]
     [SerializeField]
@@ -88,6 +88,10 @@ public class SimObjPhysics : MonoBehaviour
     [SerializeField]
     private Transform[] interactablePoints; // 物体的可交互点
     [Header("Raycast to these points to determine Visible/Interactable")]
+
+
+    [SerializeField]
+    private Transform[] liftPoints; // 物体的举升点
     [SerializeField]
     public Transform[] VisibilityPoints = null;
 
@@ -181,6 +185,8 @@ public class SimObjPhysics : MonoBehaviour
     public Transform[] InteractablePoints => interactablePoints;
     public Transform[] VisiblePoints => VisibilityPoints;
 
+    public Transform[] LiftPoints => liftPoints;
+
     void Start()
     {
         objectID = gameObject.name;
@@ -236,6 +242,42 @@ public class SimObjPhysics : MonoBehaviour
             newInteractablePoint.transform.rotation=transform.rotation;
             // 将新的 Transform 赋值给 interactablePoints
             interactablePoints = new Transform[] { newInteractablePoint.transform };
+
+            
+            // 创建liftPoints - 左右两侧的点
+            GameObject leftLiftPoint = new GameObject("LeftLiftPoint");
+            GameObject rightLiftPoint = new GameObject("RightLiftPoint");
+            
+            // 设置父物体
+            leftLiftPoint.transform.SetParent(transform);
+            rightLiftPoint.transform.SetParent(transform);
+            if(PrimaryProperty==SimObjPrimaryProperty.Moveable){
+                // 计算左右两侧的位置 (使用边界框的确切尺寸)
+                // 左侧面中心点 = bounds中心点 - bounds宽度的一半向右的向量
+                Vector3 leftPosition = new Vector3(
+                    bounds.center.x - bounds.extents.x,  // X坐标是中心点减去宽度的一半
+                    bounds.center.y,                    // Y坐标保持与中心点相同
+                    bounds.center.z                     // Z坐标保持与中心点相同
+                );
+                
+                // 右侧面中心点 = bounds中心点 + bounds宽度的一半向右的向量
+                Vector3 rightPosition = new Vector3(
+                    bounds.center.x + bounds.extents.x,  // X坐标是中心点加上宽度的一半
+                    bounds.center.y,                    // Y坐标保持与中心点相同
+                    bounds.center.z                     // Z坐标保持与中心点相同
+                );
+                
+                // 设置位置
+                leftLiftPoint.transform.position = leftPosition;
+                rightLiftPoint.transform.position = rightPosition;
+                
+                // 设置旋转与父物体一致
+                leftLiftPoint.transform.rotation = transform.rotation;
+                rightLiftPoint.transform.rotation = transform.rotation;
+                
+                // 将两个liftPoint添加到数组中
+                liftPoints = new Transform[] { leftLiftPoint.transform, rightLiftPoint.transform };
+            }
         }
         else
         {
