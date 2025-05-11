@@ -19,6 +19,7 @@ class Actions:
             "tp": self.dynamic_action,
             "toggle": self.dynamic_action,
             "open": self.dynamic_action,
+            "lift": self.dynamic_action,
             "undo": self.dynamic_action,
             "redo": self.dynamic_action,
             "loadstate": self.dynamic_action,
