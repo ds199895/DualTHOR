@@ -113,7 +113,7 @@ def test_lift():
 
 
 def test_dual_arm():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     controller.start()
 
     # 测试 Lift
