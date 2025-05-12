@@ -592,7 +592,7 @@ public class SceneStateManager : MonoBehaviour
             }
         }
         
-        stateIndexText.text = "CurrentIndex: " + state.id;
+        // stateIndexText.text = "CurrentIndex: " + state.id;
 
         // 保存每个 simObject 的状态
         for (int i = 0; i < simObjects.Count; i++)
@@ -724,7 +724,7 @@ public class SceneStateManager : MonoBehaviour
         }
         stateHistory.Add(state);
         stateHistoryA2T.Add(stateA2T);
-        maxStateIndexText.text= "MaxIndex:" + (stateHistory.Count-1).ToString();
+        // maxStateIndexText.text= "MaxIndex:" + (stateHistory.Count-1).ToString();
         // 输出场景状态
         //print(JsonUtility.ToJson(state));
         print(JsonUtility.ToJson(stateA2T));
@@ -779,6 +779,7 @@ public class SceneStateManager : MonoBehaviour
             sliceable = sop.IsSliceable,
             openable = sop.IsOpenable,
             pickupable = sop.PrimaryProperty == SimObjPrimaryProperty.CanPickup,
+            isMoveable = sop.IsMoveable,
             isPickedUp = obj.transform.parent.CompareTag("Hand"),
             isToggled = sop.IsToggleable ? (obj.GetComponent<CanToggleOnOff>().isOn) : false,
             isBroken = sop.IsBreakable ? obj.GetComponent<Break>().isBroken : false,
@@ -1006,7 +1007,7 @@ public class SceneStateManager : MonoBehaviour
         // 更新场景状态和相关信息
         // agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
         root.TeleportRoot(state.agentPosition,state.agentRotation);
-        stateIndexText.text = "CurrentIndex: " + state.id;
+        // stateIndexText.text = "CurrentIndex: " + state.id;
 
         // 恢复关节角度
         AgentMovement agentMovement = agent.GetComponent<AgentMovement>();

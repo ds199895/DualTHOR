@@ -40,9 +40,9 @@ public class ObjectStateA2T
     public bool isOpen;//是否已打开
     public bool pickupable;//是否可捡起
     public bool isPickedUp;//是否已捡起
+    public bool isMoveable;//是否可移动
     public List<string> receptacleObjectIds;//容器内物体的id
     public List<string> parentReceptacles;//包含此物体的容器的id
-
 }
 
 [System.Serializable]
