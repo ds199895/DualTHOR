@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="bedroom")
     
     # 启动控制器
     controller.start()
@@ -86,10 +86,10 @@ def test_controller():
                 feedback = controller.step("rotateright", magnitude=0.5)
                 print_feedback_result(feedback, "旋转")
             elif choice == '9':
-                feedback = controller.step("pick", objectID="Kitchen_Cup_01", isLeftArm=True)
+                feedback = controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
                 print_feedback_result(feedback, "拿起杯子")
             elif choice == '10':
-                feedback = controller.step("place", objectID="Kitchen_Cup_01", isLeftArm=True)
+                feedback = controller.step("place", objectID="Kitchen_Cup_01", arm="left")
                 print_feedback_result(feedback, "放下杯子")
             elif choice == '11':
                 # feedback = controller.step("reset")
@@ -108,7 +108,9 @@ def test_lift():
     controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="FloorPlan1_physics")
     controller.start()
     controller.step("rotateright", magnitude=1)
-    # controller.step("moveahead", magnitude=1.6)
+    controller.step("moveahead", magnitude=1.6)
+    controller.step("moveright", magnitude=0.7)
+    controller.step("pick", objectID="AlarmClock_fee6a9a6", arm="right")
     # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 
@@ -186,8 +188,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     try:
-        test_controller()
-        # test_lift()
+        # test_controller()
+        test_lift()
         # test_dual_arm()
     except KeyboardInterrupt:
         logging.info("用户中断测试")
