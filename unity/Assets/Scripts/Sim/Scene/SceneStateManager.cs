@@ -638,7 +638,7 @@ public class SceneStateManager : MonoBehaviour
                     {
                         // 如果关节未初始化，添加默认值0
                         stateA2T.agent.jointAngles.Add(0f);
-                        Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
+                        // Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
                     }
                 }
             }

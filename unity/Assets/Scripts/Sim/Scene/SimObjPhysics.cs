@@ -251,7 +251,12 @@ public class SimObjPhysics : MonoBehaviour
             // 设置父物体
             leftLiftPoint.transform.SetParent(transform);
             rightLiftPoint.transform.SetParent(transform);
+
+
+            Debug.Log(gameObject.name+" PrimaryProperty: "+PrimaryProperty);
             if(PrimaryProperty==SimObjPrimaryProperty.Moveable){
+
+                Debug.Log(gameObject.name+" Moveable, set lift points!");
                 // 计算左右两侧的位置 (使用边界框的确切尺寸)
                 // 左侧面中心点 = bounds中心点 - bounds宽度的一半向右的向量
                 Vector3 leftPosition = new Vector3(
@@ -266,6 +271,9 @@ public class SimObjPhysics : MonoBehaviour
                     bounds.center.y,                    // Y坐标保持与中心点相同
                     bounds.center.z                     // Z坐标保持与中心点相同
                 );
+
+                Debug.Log("leftPosition: "+leftPosition);
+                Debug.Log("rightPosition: "+rightPosition);
                 
                 // 设置位置
                 leftLiftPoint.transform.position = leftPosition;
@@ -277,6 +285,7 @@ public class SimObjPhysics : MonoBehaviour
                 
                 // 将两个liftPoint添加到数组中
                 liftPoints = new Transform[] { leftLiftPoint.transform, rightLiftPoint.transform };
+                Debug.Log("liftPoints: "+liftPoints.Length);
             }
         }
         else

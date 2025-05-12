@@ -144,8 +144,9 @@ public class UnityClient : MonoBehaviour
                         Debug.Log("解析单个动作!");
                         // 单个动作处理
                         actionJson = PreprocessJson(actionJson);
+                        Debug.Log("解析单个动作: "+actionJson);
                         ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
-                        // Debug.Log("解析单个动作: "+actionData.ToString());
+                        Debug.Log("解析单个动作: "+actionData.ToString());
                         await ProcessActionData(actionData);
                     }
                 }

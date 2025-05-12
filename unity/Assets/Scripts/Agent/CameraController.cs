@@ -162,7 +162,7 @@ public class CameraController : MonoBehaviour
         SaveCameraImage(leftSideCam.targetTexture, "LeftSideCam");
         SaveCameraImage(rightSideCam.targetTexture, "RightSideCam");
         SaveCameraImage(behindCam.targetTexture, "BehindCam");
-        SaveCameraImage(minimapCam.targetTexture, "Minimap");
+        // SaveCameraImage(minimapCam.targetTexture, "Minimap");
     }
 
     private void SaveCameraImage(RenderTexture renderTexture, string cameraName)
