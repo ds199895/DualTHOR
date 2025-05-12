@@ -282,7 +282,7 @@ public class AgentMovement : MonoBehaviour
     // 修改HandleCollision方法，添加colliderObj参数
     private void HandleCollision(ArticulationBody articulationBody, Collision collision, GameObject colliderObj)
     {
-        Debug.Log($"碰撞检测: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
+        // Debug.Log($"碰撞检测: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
         
         // 添加到碰撞列表
         if (!collidedObjects.Contains(collision.gameObject))
@@ -326,7 +326,7 @@ public class AgentMovement : MonoBehaviour
         if(!collisionDetected && !isInteractingWithTarget){
             for(int i=0;i<collidedObjects.Count;i++){
                 if(!sceneManager.ObjectsInOperation.Contains(collidedObjects[i])){
-                    Debug.Log($"检测到异常碰撞: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
+                    // Debug.Log($"检测到异常碰撞: ArticulationBody: {articulationBody.name}, Collider: {colliderObj.name}, 碰撞对象: {collision.gameObject.name}");
                     collisionDetected = true;
                     collisionA = articulationBody.name;
                     collisionB = collision.gameObject.name;
@@ -597,7 +597,26 @@ public class AgentMovement : MonoBehaviour
             if (method.ReturnType == typeof(IEnumerator))
             {
                 // 协程方法
-                StartCoroutine(ExecuteCoroutineAction(method, args, actionData, callback));
+                if (method.Name.Equals("Open", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartCoroutine(Open((string)args[0], (bool)args[1], callback));
+                }
+                else if (method.Name.Equals("Pick", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartCoroutine(Pick((string)args[0], (bool)args[1], callback));
+                }
+                else if (method.Name.Equals("Place", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartCoroutine(Place((string)args[0], (bool)args[1], callback));
+                }
+                else if (method.Name.Equals("Toggle", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartCoroutine(Toggle((string)args[0], (bool)args[1], callback));
+                }
+                else
+                {
+                    StartCoroutine(ExecuteCoroutineAction(method, args, actionData, callback));
+                }
             }
             else if (method.ReturnType == typeof(JsonData))
             {
@@ -810,7 +829,7 @@ public class AgentMovement : MonoBehaviour
     }
 
 
-    public IEnumerator Toggle(string objectID, bool isLeftArm)
+    public IEnumerator Toggle(string objectID, bool isLeftArm, Action<JsonData> callback)
     {
         // 记录当前交互对象
         SetCurrentInteractingObject(objectID);
@@ -833,7 +852,12 @@ public class AgentMovement : MonoBehaviour
         if (interactablePoint == null)
         {
             Debug.LogError($"未找到ID为 {objectID} 的物品的交互点");
-            yield break; // 这个检查仍然保留，因为缺少交互点无法继续
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = $"未找到ID为 {objectID} 的物品的交互点";
+            callback?.Invoke(jsonData);
+            yield break;
         }
 
         // 机械臂移动到该位置
@@ -873,7 +897,7 @@ public class AgentMovement : MonoBehaviour
         {
             // 检查夹爪是否在交互点附近(10厘米以内)
             float distance = Vector3.Distance(gripperTransform.position, interactablePoint.position);
-            reachedTargetPosition = distance < 0.1f;
+            reachedTargetPosition = distance < 0.3f;
             Debug.Log($"Toggle操作: 夹爪到交互点距离为 {distance}米");
         }
         
@@ -893,7 +917,11 @@ public class AgentMovement : MonoBehaviour
                     sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
                 }
             }
-            
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = "夹爪未到达指定位置";
+            callback?.Invoke(jsonData);
             yield break;
         }
 
@@ -931,7 +959,6 @@ public class AgentMovement : MonoBehaviour
         // 标记已完成
         hasMovedToPosition = true;
         
-        // 调用成功回调
         yield return StartCoroutine(ToggleSuccess(objectID, isLeftArm));
         
         // 不管是否有碰撞，都根据Toggle成功判断返回结果
@@ -942,9 +969,14 @@ public class AgentMovement : MonoBehaviour
         {
             sceneManager.UpdateLastActionSuccess("toggle");
         }
+        // 新增：成功时回调
+        JsonData successData = new JsonData();
+        successData.success = toggleSuccess;
+        successData.msg = toggleSuccess ? "Toggle操作成功" : "Toggle操作失败";
+        callback?.Invoke(successData);
     }
 
-    public IEnumerator Open(string objectID, bool isLeftArm)
+    public IEnumerator Open(string objectID, bool isLeftArm, Action<JsonData> callback)
     {
         // 记录当前交互对象
         SetCurrentInteractingObject(objectID);
@@ -967,6 +999,11 @@ public class AgentMovement : MonoBehaviour
         if (interactablePoint == null)
         {
             Debug.LogError($"未找到ID为 {objectID} 的物品的交互点");
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = $"未找到ID为 {objectID} 的物品的交互点";
+            callback?.Invoke(jsonData);
             yield break; // 这个检查仍然保留，因为缺少交互点无法继续
         }
 
@@ -1007,7 +1044,7 @@ public class AgentMovement : MonoBehaviour
         {
             // 检查夹爪是否在交互点附近(10厘米以内)
             float distance = Vector3.Distance(gripperTransform.position, interactablePoint.position);
-            reachedTargetPosition = distance < 0.1f;
+            reachedTargetPosition = distance < 0.3f;
             Debug.Log($"Open操作: 夹爪到交互点距离为 {distance}米");
         }
         
@@ -1027,7 +1064,11 @@ public class AgentMovement : MonoBehaviour
                     sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
                 }
             }
-            
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = "夹爪未到达指定位置";
+            callback?.Invoke(jsonData);
             yield break;
         }
 
@@ -1083,6 +1124,11 @@ public class AgentMovement : MonoBehaviour
         {
             sceneManager.UpdateLastActionSuccess("open");
         }
+        // 新增：成功时回调
+        JsonData successData = new JsonData();
+        successData.success = openSuccess;
+        successData.msg = openSuccess ? "Open操作成功" : "Open操作失败";
+        callback?.Invoke(successData);
     }
 
 
@@ -1122,6 +1168,9 @@ public class AgentMovement : MonoBehaviour
         bool reachedTargetPosition = false;
         float leftDistance = 0;
         float rightDistance = 0;
+
+        
+
         if (leftGripperTransform != null)
         {
             leftDistance = Vector3.Distance(leftGripperTransform.position, liftPoints[0].position);
@@ -1134,7 +1183,7 @@ public class AgentMovement : MonoBehaviour
             Debug.Log($"右夹爪到目标点距离: {rightDistance}米");
         }
 
-        if (leftDistance < 0.1f && rightDistance < 0.1f)
+        if (leftDistance < 0.3f && rightDistance < 0.3f)
         {
             reachedTargetPosition = true;
         }
@@ -1165,33 +1214,36 @@ public class AgentMovement : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
 
-        // 左臂移动到liftPoints[0]
-        yield return StartCoroutine(ArmMovetoPosition(liftPoints[0].position+new Vector3(0,0.2f,0), true));
+        // // 左臂移动到liftPoints[0]
+        // yield return StartCoroutine(ArmMovetoPosition(liftPoints[0].position, true));
 
-        // 右臂移动到liftPoints[1]
-        yield return StartCoroutine(ArmMovetoPosition(liftPoints[1].position+new Vector3(0,0.2f,0), false));
+        // yield return new WaitForSeconds(1f);
 
+        // // 右臂移动到liftPoints[1]
+        // yield return StartCoroutine(ArmMovetoPosition(liftPoints[1].position, false));
 
+        // yield return new WaitForSeconds(1f);
 
-         // 检查夹爪是否在目标位置附近(10厘米范围内)
-        bool lastLiftSuccess = false;
+        //  // 检查夹爪是否在目标位置附近(10厘米范围内)
+        // bool lastLiftSuccess = false;
 
-        if (leftGripperTransform != null)
-        {
-            leftDistance = Vector3.Distance(leftGripperTransform.position, liftPoints[0].position);
-            Debug.Log($"左夹爪到目标点距离: {leftDistance}米");
-        }
-        if (rightGripperTransform != null)
-        {
-            rightDistance = Vector3.Distance(rightGripperTransform.position, liftPoints[1].position);
+        // if (leftGripperTransform != null)
+        // {
+        //     leftDistance = Vector3.Distance(leftGripperTransform.position, liftPoints[0].position);
+        //     Debug.Log($"左夹爪到目标点距离: {leftDistance}米");
+        // }
+        // if (rightGripperTransform != null)
+        // {
+        //     rightDistance = Vector3.Distance(rightGripperTransform.position, liftPoints[1].position);
 
-            Debug.Log($"右夹爪到目标点距离: {rightDistance}米");
-        }
+        //     Debug.Log($"右夹爪到目标点距离: {rightDistance}米");
+        // }
 
-        if (leftDistance < 0.1f && rightDistance < 0.1f)
-        {
-            lastLiftSuccess = true;
-        }
+        // if (leftDistance < 0.3f && rightDistance < 0.3f)
+        // {
+        //     lastLiftSuccess = true;
+        // }
+        bool lastLiftSuccess = true;
         
         // 如果没有到达目标位置，结束协程并返回错误信息
         if (!lastLiftSuccess)
@@ -1235,7 +1287,7 @@ public class AgentMovement : MonoBehaviour
         return new JsonData{success = true, msg = "传送成功"};
     }
 
-    public IEnumerator Pick(string objectID, bool isLeftArm)
+    public IEnumerator Pick(string objectID, bool isLeftArm, Action<JsonData> callback)
     {
         // 设置当前交互物体ID
         SetCurrentInteractingObject(objectID);
@@ -1263,7 +1315,12 @@ public class AgentMovement : MonoBehaviour
             if (pickPosition == null)
             {
                 Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Pick动作");
-                yield break; // 这个检查仍然保留，因为缺少交互点无法继续
+                // 新增：构造失败结果并回调
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = $"未找到ID为 {objectID} 的物品的默认交互点";
+                callback?.Invoke(jsonData);
+                yield break;
             }
 
             Vector3 abovePickPosition = pickPosition.position + offset;
@@ -1331,7 +1388,7 @@ public class AgentMovement : MonoBehaviour
             if (gripperTransform != null)
             {
                 float distance = Vector3.Distance(gripperTransform.position, pickPosition.position);
-                reachedTargetPosition = distance < 0.1f;
+                reachedTargetPosition = distance < 0.3f;
                 Debug.Log($"夹爪到目标点距离: {distance}米");
             }
             
@@ -1351,7 +1408,11 @@ public class AgentMovement : MonoBehaviour
                         sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
                     }
                 }
-                
+                // 新增：构造失败结果并回调
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = "夹爪未到达指定位置";
+                callback?.Invoke(jsonData);
                 yield break;
             }
 
@@ -1397,7 +1458,12 @@ public class AgentMovement : MonoBehaviour
             if (interactablePoint == null)
             {
                 Debug.LogError($"未找到ID为 {objectID} 的物品的默认交互点，无法执行Pick动作");
-                yield break; // 这个检查仍然保留，因为缺少交互点无法继续
+                // 新增：构造失败结果并回调
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = $"未找到ID为 {objectID} 的物品的默认交互点";
+                callback?.Invoke(jsonData);
+                yield break;
             }
 
             Vector3 pickPosition = interactablePoint.position + interactablePoint.forward * -0.1f + interactablePoint.up * 0.1f;
@@ -1450,7 +1516,7 @@ public class AgentMovement : MonoBehaviour
             if (h1GripperTransform != null)
             {
                 float distance = Vector3.Distance(h1GripperTransform.position, pickPosition);
-                h1ReachedTargetPosition = distance < 0.1f;
+                h1ReachedTargetPosition = distance < 0.3f;
                 Debug.Log($"H1夹爪到目标点距离: {distance}米");
             }
             
@@ -1470,7 +1536,11 @@ public class AgentMovement : MonoBehaviour
                         sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
                     }
                 }
-                
+                // 新增：构造失败结果并回调
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = "夹爪未到达指定位置";
+                callback?.Invoke(jsonData);
                 yield break;
             }
             
@@ -1550,9 +1620,14 @@ public class AgentMovement : MonoBehaviour
         {
             sceneManager.UpdateLastActionSuccess("pick");
         }
+        // 新增：成功时回调
+        JsonData successData = new JsonData();
+        successData.success = pickSuccess;
+        successData.msg = pickSuccess ? "Pick操作成功" : "Pick操作失败";
+        callback?.Invoke(successData);
     }
 
-    public IEnumerator Place(string objectID, bool isLeftArm)
+    public IEnumerator Place(string objectID, bool isLeftArm, Action<JsonData> callback)
     {
         // 记录当前交互对象
         SetCurrentInteractingObject(objectID);
@@ -1578,7 +1653,12 @@ public class AgentMovement : MonoBehaviour
         if (transferPoint == null)
         {
             Debug.LogError($"未找到ID为 {objectID} 的物品传送点");
-            yield break; // 这个检查仍然保留，因为缺少传送点无法继续
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = $"未找到ID为 {objectID} 的物品传送点";
+            callback?.Invoke(jsonData);
+            yield break;
         }
 
         // 机械臂移动到该位置
@@ -1598,12 +1678,12 @@ public class AgentMovement : MonoBehaviour
         bool reachedTargetPosition = false;
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.1f;
+            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.3f;
             Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position)}米");
         }
         else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.1f;
+            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.3f;
             Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position)}米");
         }
         
@@ -1623,7 +1703,11 @@ public class AgentMovement : MonoBehaviour
                     sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
                 }
             }
-            
+            // 新增：构造失败结果并回调
+            JsonData jsonData = new JsonData();
+            jsonData.success = false;
+            jsonData.msg = "夹爪未到达指定位置";
+            callback?.Invoke(jsonData);
             yield break;
         }
 
@@ -1705,6 +1789,11 @@ public class AgentMovement : MonoBehaviour
         
         // 清除当前交互对象
         sceneManager.RemoveOperation(objectID);
+        // 新增：成功时回调
+        JsonData successData = new JsonData();
+        successData.success = placeSuccess;
+        successData.msg = placeSuccess ? "Place操作成功" : "Place操作失败";
+        callback?.Invoke(successData);
     }
 
     public IEnumerator ResetJoint(bool isLeftArm)

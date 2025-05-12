@@ -105,10 +105,10 @@ def test_controller():
 
 
 def test_lift():
-    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
-    controller.step("moveahead", magnitude=1.4)
+    controller.step("moveahead", magnitude=1.6)
     controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 
@@ -139,9 +139,9 @@ def test_dual_arm():
     ]
 
     # 顺序执行动作（sequential=True）
-    # results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
+    results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
 
-    # print(results)
+    print(results)
 
 
     parallel_actions = [
@@ -187,8 +187,8 @@ if __name__ == "__main__":
     
     try:
         # test_controller()
-        test_lift()
-        # test_dual_arm()
+        # test_lift()
+        test_dual_arm()
     except KeyboardInterrupt:
         logging.info("用户中断测试")
         sys.exit(0)
