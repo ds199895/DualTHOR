@@ -105,7 +105,7 @@ def test_controller():
 
 
 def test_lift():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="FloorPlan1_physics")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="bedroom")
     controller.start()
     controller.step("rotateright", magnitude=1)
     controller.step("moveahead", magnitude=1.6)

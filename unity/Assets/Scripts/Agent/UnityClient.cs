@@ -242,6 +242,7 @@ public class UnityClient : MonoBehaviour
                 agentMovement.AddIgnoredCollisionObject(actionData.objectID);
             }
             
+            Debug.Log("执行动作: "+actionData);
             // 记录动作开始时间，用于性能分析
             float startTime = Time.realtimeSinceStartup;
             
