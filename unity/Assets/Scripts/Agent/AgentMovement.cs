@@ -1309,7 +1309,7 @@ public class AgentMovement : MonoBehaviour
         
         if (CurrentRobotType == RobotType.X1)
         {
-            Vector3 offset = new Vector3(0, 0.1f, 0);
+            Vector3 offset = new Vector3(0, 0.3f, 0);
             Transform pickPosition = SceneStateManager.GetInteractablePoint(objectID);
 
             if (pickPosition == null)
@@ -1356,12 +1356,14 @@ public class AgentMovement : MonoBehaviour
 
             // 打开夹爪准备夹取
             Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-            gripperController.SetGripper(isLeftArm, true);
+            gripperController.SetRobotGripper(RobotType.X1, isLeftArm, true);
             yield return new WaitForSeconds(1f);
 
+            var center = pickPosition.position + new Vector3(0,0.05f,0);
+
             // 下降到夹取位置
-            Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
-            yield return StartCoroutine(ArmMovetoPosition(pickPosition.position, isLeftArm));
+            Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {center}");
+            yield return StartCoroutine(ArmMovetoPosition(center, isLeftArm));
             
             // 检查下降过程中是否发生碰撞
             if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
@@ -1387,7 +1389,7 @@ public class AgentMovement : MonoBehaviour
             bool reachedTargetPosition = false;
             if (gripperTransform != null)
             {
-                float distance = Vector3.Distance(gripperTransform.position, pickPosition.position);
+                float distance = Vector3.Distance(gripperTransform.position, center);
                 reachedTargetPosition = distance < 0.3f;
                 Debug.Log($"夹爪到目标点距离: {distance}米");
             }
@@ -1418,9 +1420,17 @@ public class AgentMovement : MonoBehaviour
 
             // 夹紧物体
             Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-            gripperController.SetGripper(isLeftArm, false);
+            gripperController.SetRobotGripper(RobotType.X1, isLeftArm, false);
             yield return new WaitForSeconds(1f);
-        
+            if (isLeftArm)
+            {
+                sceneManager.SetParent(gripperController.leftArmLeftGripper.transform, objectID);
+            }
+            else
+            {
+                sceneManager.SetParent(gripperController.rightArmLeftGripper.transform, objectID);
+            }
+          
             // 提升物体
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
             yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
@@ -1432,15 +1442,10 @@ public class AgentMovement : MonoBehaviour
             }
             
             yield return new WaitForSeconds(1f);
-        
-            sceneManager.SetParent(gripperController.transform, objectID);
+            
 
-            // 调整物体的旋转以保持与世界坐标正交
+              // 调整物体的旋转以保持与世界坐标正交
             AdjustRotationToWorldAxes(objectID);
-
-            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
-            yield return new WaitForSeconds(1f);
         }
         else if (CurrentRobotType == RobotType.H1)
         {
@@ -1649,7 +1654,9 @@ public class AgentMovement : MonoBehaviour
         hasMovedToPosition = false;
 
         // 获取对象的传送点
-        Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
+        Transform get_trans = SceneStateManager.GetTransferPointByObjectID(objectID);
+        Vector3 transferPoint =new Vector3(get_trans.position.x,get_trans.position.y+0.05f,get_trans.position.z);
+
         if (transferPoint == null)
         {
             Debug.LogError($"未找到ID为 {objectID} 的物品传送点");
@@ -1662,7 +1669,7 @@ public class AgentMovement : MonoBehaviour
         }
 
         // 机械臂移动到该位置
-        yield return StartCoroutine(ArmMovetoPosition(transferPoint.position, isLeftArm));
+        yield return StartCoroutine(ArmMovetoPosition(transferPoint, isLeftArm));
 
         // 检查移动过程中是否发生碰撞
         if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
@@ -1678,13 +1685,13 @@ public class AgentMovement : MonoBehaviour
         bool reachedTargetPosition = false;
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.3f;
-            Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position)}米");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint) < 0.5f;
+            Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint)}米");
         }
         else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.3f;
-            Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position)}米");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint) < 0.5f;
+            Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint)}米");
         }
         
         // 如果夹爪没有到达目标位置，提前结束协程
@@ -1716,7 +1723,7 @@ public class AgentMovement : MonoBehaviour
         {
             if (CurrentRobotType == RobotType.X1)
             {
-                gripperController.SetGripper(isLeftArm, true); // true表示打开夹爪
+                gripperController.SetRobotGripper(RobotType.X1, isLeftArm, true); // true表示打开夹爪
             }
             else if (CurrentRobotType == RobotType.H1)
             {
