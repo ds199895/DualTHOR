@@ -194,6 +194,9 @@ if __name__ == "__main__":
 
         while True:
             time.sleep(1)
+
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         logging.info("用户中断测试")
         sys.exit(0)
