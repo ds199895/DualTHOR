@@ -8,6 +8,7 @@ public class DebugLogger : MonoBehaviour
     public GUIStyle textStyle;   // 可选：自定义字体样式
     private Vector2 scrollPosition; // 用于滚动视图的当前位置
 
+    public bool isDebugLoggerEnabled = false;
     void Awake()
     {
         // 注册 Unity 日志事件
@@ -20,6 +21,12 @@ public class DebugLogger : MonoBehaviour
             textStyle.wordWrap = true; // 启用自动换行
             textStyle.normal.textColor = Color.white; // 设置文字颜色为白色
             textStyle.fontSize = 14; // 可选：设置字体大小
+        }
+    }
+
+    void Update(){
+        if(Input.GetKeyDown(KeyCode.F1)){
+            isDebugLoggerEnabled = !isDebugLoggerEnabled;
         }
     }
 
@@ -44,19 +51,21 @@ public class DebugLogger : MonoBehaviour
 
     void OnGUI()
     {
-        // 设置 GUI 区域和背景样式
-        GUILayout.BeginVertical("box", GUILayout.ExpandHeight(true)); // 在框内显示日志
+        if(!isDebugLoggerEnabled){
+            // 设置 GUI 区域和背景样式
+            GUILayout.BeginVertical("box", GUILayout.ExpandHeight(true)); // 在框内显示日志
 
-        // 添加滚动视图以便查看大量日志
-        scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(200));
+            // 添加滚动视图以便查看大量日志
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(200));
 
-        foreach (string logMessage in logMessages)
-        {
-            // 使用启用自动换行的文本区域显示日志
-            GUILayout.TextArea(logMessage, textStyle);
+            foreach (string logMessage in logMessages)
+            {
+                // 使用启用自动换行的文本区域显示日志
+                GUILayout.TextArea(logMessage, textStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
-
-        GUILayout.EndScrollView();
-        GUILayout.EndVertical();
     }
 }

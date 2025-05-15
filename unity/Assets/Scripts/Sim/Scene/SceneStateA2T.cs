@@ -40,9 +40,9 @@ public class ObjectStateA2T
     public bool isOpen;//是否已打开
     public bool pickupable;//是否可捡起
     public bool isPickedUp;//是否已捡起
+    public bool isMoveable;//是否可移动
     public List<string> receptacleObjectIds;//容器内物体的id
     public List<string> parentReceptacles;//包含此物体的容器的id
-
 }
 
 [System.Serializable]
@@ -54,5 +54,7 @@ public class AgentStateA2T
     public string lastAction;//上一次执行的动作
     public bool lastActionSuccess;//上一次执行动作是否成功,不成功则状态不会发生改变
     public string errorMessage;//错误信息
+    public List<float> jointAngles; // 存储机器人关节角度
+    public List<float> gripperAngles; // 存储机器人爪子角度
 }
 

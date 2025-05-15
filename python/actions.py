@@ -19,13 +19,15 @@ class Actions:
             "tp": self.dynamic_action,
             "toggle": self.dynamic_action,
             "open": self.dynamic_action,
+            "lift": self.dynamic_action,
             "undo": self.dynamic_action,
             "redo": self.dynamic_action,
             "loadstate": self.dynamic_action,
             "loadrobot": self.dynamic_action,
             "resetscene":self.dynamic_action,
             "getcurstate":self.dynamic_action,
-            "resetpose":self.dynamic_action
+            "resetpose":self.dynamic_action,
+            "resetstate":self.dynamic_action
         }
 
     def execute_action(self, action_name, **kwargs):

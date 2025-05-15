@@ -24,10 +24,10 @@ public class ObjectHightLightController : MonoBehaviour
     private float MinHighlightDistance = 1f; // 最小高亮距离
     [SerializeField]
     private bool DisplayTargetText = true;//表示是否显示目标文本的布尔变量。
-    [SerializeField]
-    private TextMeshProUGUI TargetText;//目标文本对象，用于显示当前高亮对象的名称。
-    [SerializeField]
-    private TextMeshProUGUI CrosshairText;//十字准星文本对象。
+    // [SerializeField]
+    // private TextMeshProUGUI TargetText;//目标文本对象，用于显示当前高亮对象的名称。
+    // [SerializeField]
+    // private TextMeshProUGUI CrosshairText;//十字准星文本对象。
     [SerializeField]
     private HighlightConfig HighlightParams = new()
     {
@@ -52,7 +52,7 @@ public class ObjectHightLightController : MonoBehaviour
     {
         //m_Camera = Camera.main;
         //hand = GameObject.Find("Hand");
-        TargetText.text="";
+        // TargetText.text="";
 
     }
     void Update()
@@ -80,24 +80,24 @@ public class ObjectHightLightController : MonoBehaviour
             "SimObjVisible"
         );
 
-        // 检测与射线是否与碰撞体相交
-        if (Physics.Raycast(ray, out RaycastHit hit, MinHighlightDistance, layerMask))
-        {
-            HandleHitObject(hit);
-        }
-        // 如果检测到了物体但超出了最小高亮距离
-        else if (Physics.Raycast(ray, out RaycastHit outerHit, float.MaxValue, layerMask))
-        {
-            SetTargetText(outerHit.transform.CompareTag("Interactable") ? outerHit.transform.GetComponent<SimObjPhysics>().ObjectID : "", false);
+        // // 检测与射线是否与碰撞体相交
+        // if (Physics.Raycast(ray, out RaycastHit hit, MinHighlightDistance, layerMask))
+        // {
+        //     // HandleHitObject(hit);
+        // }
+        // // 如果检测到了物体但超出了最小高亮距离
+        // else if (Physics.Raycast(ray, out RaycastHit outerHit, float.MaxValue, layerMask))
+        // {
+        //     SetTargetText(outerHit.transform.CompareTag("Interactable") ? outerHit.transform.GetComponent<SimObjPhysics>().ObjectID : "", false);
            
-        }
-        // 当没有命中物体时，清空目标文本
-        else
-        {
-            //ClearTargetText();
-            ClearTargetText(ray);
+        // }
+        // // 当没有命中物体时，清空目标文本
+        // else
+        // {
+        //     //ClearTargetText();
+        //     ClearTargetText(ray);
          
-        }
+        // }
     }
 
     private void HandleHitObject(RaycastHit hit)
@@ -111,24 +111,24 @@ public class ObjectHightLightController : MonoBehaviour
                 bool withinReach = simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup ||
                                    simObj.SecondaryProperties.Any(prop => prop == SimObjSecondaryProperty.CanToggleOnOff || prop == SimObjSecondaryProperty.CanOpen);
 
-                SetTargetText(simObj.ObjectID, withinReach);
+                // SetTargetText(simObj.ObjectID, withinReach);
                 highlightedObject = withinReach ? simObj : null;
             }
         }
-        else
-        {
-            ClearTargetText();
-        }
+        // else
+        // {
+        //     ClearTargetText();
+        // }
     }
 
-    private void ClearTargetText(Ray ray)
-    {
-        SetTargetText("", false);
-        Debug.DrawLine(ray.origin, ray.origin + ray.direction * MinHighlightDistance, Color.blue);
-        highlightedObject = null;
-    }
+    // private void ClearTargetText(Ray ray)
+    // {
+    //     SetTargetText("", false);
+    //     Debug.DrawLine(ray.origin, ray.origin + ray.direction * MinHighlightDistance, Color.blue);
+    //     highlightedObject = null;
+    // }
 
-    private void ClearTargetText() => SetTargetText("", false);
+    // private void ClearTargetText() => SetTargetText("", false);
 
     public void HandleMouseControls()
     {
@@ -193,25 +193,25 @@ public class ObjectHightLightController : MonoBehaviour
     //text：目标文本的内容。
     //withinReach：表示对象是否在可交互范围内的布尔变量，默认为 false。
     
-    private void SetTargetText(string text, bool withinReach = false)
-    {
-        if (withinReach)
-        {
-            TargetText.color = HighlightParams.TextStrongColor;
-            CrosshairText.text = "( + )";
-        }
-        else
-        {
-            TargetText.color = (Math.Abs(TargetText.color.a - HighlightParams.TextStrongColor.a) < 1e-5) ? HighlightParams.TextFaintColor : TargetText.color;
-            CrosshairText.text = "+";
-        }
+    // private void SetTargetText(string text, bool withinReach = false)
+    // {
+    //     if (withinReach)
+    //     {
+    //         TargetText.color = HighlightParams.TextStrongColor;
+    //         CrosshairText.text = "( + )";
+    //     }
+    //     else
+    //     {
+    //         TargetText.color = (Math.Abs(TargetText.color.a - HighlightParams.TextStrongColor.a) < 1e-5) ? HighlightParams.TextFaintColor : TargetText.color;
+    //         CrosshairText.text = "+";
+    //     }
 
-        //以便只显示对象类型的名称，而不是完整的对象 ID
-        if (DisplayTargetText)
-        {
-            TargetText.text = text.Split('|')[0];
-        }
-    }
+    //     //以便只显示对象类型的名称，而不是完整的对象 ID
+    //     if (DisplayTargetText)
+    //     {
+    //         TargetText.text = text.Split('|')[0];
+    //     }
+    // }
 
 
 

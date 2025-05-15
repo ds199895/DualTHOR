@@ -1,50 +1,236 @@
 {
-    "Pick": {
-        "successRate": 0.94,
+    "pick": {
+        "successRate": 1,
         "errorMessages": {
-            "Unable to grasp": 0.05,
-            "Successfully grasped but slipped afterwards": 0.01
+            "抓取失败，物体掉落": {
+                "probability": 0,
+                "targetState": ""
+            },
+            "无法抓取到物体": {
+                "probability": 0,
+                "targetState": ""
+            }
+        },
+        "objectStateConfigs": {
+            "Cup_filled": {
+                "objectType": "Mug",
+                "stateCondition": "isFilled",
+                "successRate": 1,
+                "errorMessages": {
+                    "抓取失败，杯子碎裂": {
+                        "probability":0,
+                        "targetState": "broken"
+                    },
+                    "无法抓取到杯子": {
+                        "probability": 0,
+                        "targetState": ""
+                    },
+                    "抓取失败，杯子内容物泼洒": {
+                        "probability": 0,
+                        "targetState": "spilled"
+                    }
+                }
+            },
+            "Cup_empty": {
+                "objectType": "Mug",
+                "stateCondition": "notFilled",
+                "successRate": 0.93,
+                "errorMessages": {
+                    "抓取失败，杯子碎裂": {
+                        "probability": 0.05,
+                        "targetState": "broken"
+                    },
+                    "无法抓取到杯子": {
+                        "probability": 0.02,
+                        "targetState": ""
+                    }
+                }
+            },
+            "Plate_default": {
+                "objectType": "Plate",
+                "stateCondition": "default",
+                "successRate": 0.90,
+                "errorMessages": {
+                    "抓取失败，盘子摔碎": {
+                        "probability": 0.07,
+                        "targetState": "broken"
+                    },
+                    "无法抓取到盘子": {
+                        "probability": 0.03,
+                        "targetState": ""
+                    }
+                }
+            }
         }
     },
-    "Open": {
-        "successRate": 0.8,
-        "errorMessages": {
-            "Object cannot be opened": 0.1,
-            "Successfully grasped but slipped afterwards": 0.1
-        }
-    },
-    "Toggle": {
-        "successRate": 0.85,
-        "errorMessages": {
-            "Action not permitted": 0.1,
-            "Operation failed due to mechanical issue": 0.05
-        }
-    },
-    "CookObject": {
-        "successRate": 0.9,
-        "errorMessages": {
-            "Cooker malfunction": 0.05,
-            "Cooking process interrupted": 0.05
-        }
-    },
-    "Fill": {
-        "successRate": 0.9,
-        "errorMessages": {
-            "Reached maximum capacity": 0.05,
-            "Filling process failed due to blockage": 0.05
-        }
-    },
-    "SliceObject": {
-        "successRate": 0.9,
-        "errorMessages": {
-            "Slicing failed due to resistance": 0.05,
-            "Invalid slicing position": 0.05
-        }
-    },
-    "UsedUp": {
+    "place": {
         "successRate": 0.95,
         "errorMessages": {
-            "Object has been depleted": 0.05
+            "放置失败，物体掉落": {
+                "probability": 0.03,
+                "targetState": ""
+            },
+            "放置不稳，物体倾斜": {
+                "probability": 0.02,
+                "targetState": ""
+            }
+        },
+        "objectStateConfigs": {
+            "Cup_filled": {
+                "objectType": "Cup",
+                "stateCondition": "isFilled",
+                "successRate": 0.90,
+                "errorMessages": {
+                    "放置失败，杯子内容物泼洒": {
+                        "probability": 0.05,
+                        "targetState": "spilled"
+                    },
+                    "放置不稳，杯子倾斜": {
+                        "probability": 0.03,
+                        "targetState": ""
+                    },
+                    "放置失败，杯子碎裂": {
+                        "probability": 0.02,
+                        "targetState": "broken"
+                    }
+                }
+            }
+        }
+    },
+    "toggle": {
+        "successRate": 0.93,
+        "errorMessages": {
+            "开关卡住了": {
+                "probability": 0.04,
+                "targetState": ""
+            },
+            "无法触及开关": {
+                "probability": 0.03,
+                "targetState": ""
+            }
+        }
+    },
+    "open": {
+        "successRate": 0.92,
+        "errorMessages": {
+            "门/抽屉卡住了": {
+                "probability": 0.05,
+                "targetState": ""
+            },
+            "无法完全打开": {
+                "probability": 0.03,
+                "targetState": "open"
+            }
+        },
+        "objectStateConfigs": {
+            "Drawer_locked": {
+                "objectType": "Drawer",
+                "stateCondition": "isLocked",
+                "successRate": 0.30,
+                "errorMessages": {
+                    "抽屉被锁住，无法打开": {
+                        "probability": 0.65,
+                        "targetState": ""
+                    },
+                    "用力过猛，抽屉把手损坏": {
+                        "probability": 0.05,
+                        "targetState": "broken"
+                    }
+                }
+            }
+        }
+    },
+    "moveahead": {
+        "successRate": 0.98,
+        "errorMessages": {
+            "移动受阻": {
+                "probability": 0.02,
+                "targetState": ""
+            }
+        }
+    },
+    "moveright": {
+        "successRate": 0.98,
+        "errorMessages": {
+            "移动受阻": {
+                "probability": 0.02,
+                "targetState": ""
+            }
+        }
+    },
+    "moveleft": {
+        "successRate": 0.98,
+        "errorMessages": {
+            "移动受阻": {
+                "probability": 0.02,
+                "targetState": ""
+            }
+        }
+    },
+    "moveback": {
+        "successRate": 0.98,
+        "errorMessages": {
+            "移动受阻": {
+                "probability": 0.02,
+                "targetState": ""
+            }
+        }
+    },
+    "rotateleft": {
+        "successRate": 0.99,
+        "errorMessages": {
+            "旋转受阻": {
+                "probability": 0.01,
+                "targetState": ""
+            }
+        }
+    },
+    "rotateright": {
+        "successRate": 0.99,
+        "errorMessages": {
+            "旋转受阻": {
+                "probability": 0.01,
+                "targetState": ""
+            }
+        }
+    },
+    "break": {
+        "successRate": 0.90,
+        "errorMessages": {
+            "物体太坚固，无法破坏": {
+                "probability": 0.07,
+                "targetState": ""
+            },
+            "破坏不完全": {
+                "probability": 0.03,
+                "targetState": "partially_broken"
+            }
+        }
+    },
+    "slice": {
+        "successRate": 0.93,
+        "errorMessages": {
+            "刀具不够锋利": {
+                "probability": 0.04,
+                "targetState": ""
+            },
+            "切割角度不当": {
+                "probability": 0.03,
+                "targetState": ""
+            }
+        }
+    },
+    "fill": {
+        "successRate": 0.95,
+        "errorMessages": {
+            "液体溢出": {
+                "probability": 0.03,
+                "targetState": "spilled"
+            },
+            "容器已满": {
+                "probability": 0.02,
+                "targetState": ""
+            }
         }
     }
 }

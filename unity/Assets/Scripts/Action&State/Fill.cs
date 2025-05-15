@@ -56,13 +56,38 @@ public class Fill : MonoBehaviour, IUniqueStateManager
 
     public void LoadState(ObjectState objectState)
     {
+        if (objectState.fillState == null)
+        {
+            Debug.LogWarning("Fill state is null, skipping load");
+            return;
+        }
+
         isFilled = objectState.fillState.isFilled;
+
+        // 确保数组长度匹配
+        if (objectState.fillState.filledObj == null || objectState.fillState.fillObjHeight == null)
+        {
+            Debug.LogWarning("Fill state arrays are null, skipping load");
+            return;
+        }
+
+        if (objectState.fillState.filledObj.Length != liquids.Count || 
+            objectState.fillState.fillObjHeight.Length != liquids.Count)
+        {
+            Debug.LogWarning($"GameObject:{gameObject.name} Array length mismatch. filledObj: {objectState.fillState.filledObj?.Length}, " +
+                           $"fillObjHeight: {objectState.fillState.fillObjHeight?.Length}, " +
+                           $"liquids count: {liquids.Count}");
+            return;
+        }
 
         // 恢复填充物体的激活状态
         for (int i = 0; i < liquids.Count; i++)
         {
-            liquids.Values.ElementAt(i).SetActive(objectState.fillState.filledObj[i]);
-            liquids.Values.ElementAt(i).transform.localPosition = new Vector3(0, objectState.fillState.fillObjHeight[i], 0); // 恢复每个液体对象的高度
+            if (i < objectState.fillState.filledObj.Length && i < objectState.fillState.fillObjHeight.Length)
+            {
+                liquids.Values.ElementAt(i).SetActive(objectState.fillState.filledObj[i]);
+                liquids.Values.ElementAt(i).transform.localPosition = new Vector3(0, objectState.fillState.fillObjHeight[i], 0);
+            }
         }
     }
 
