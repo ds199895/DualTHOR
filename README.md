@@ -1,4 +1,4 @@
-# Project Introduction
+# DualTHOR
 We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) that runs on the web for training and evaluation of embodied agents and multimodal models. In addition to AI2-THOR, we have added the following features:
 - Dual-arm action execution: Now supports parallel, asynchronous task execution with both arms.
 - Task rollback: Supports rolling back to any time step during task execution, improving data synthesis efficiency.
@@ -9,7 +9,6 @@ We have built a lightweight simulation environment based on [AI2-THOR](https://a
 
 ## Installation
 ### 1. Clone the Project
-```git clone -b h1_build https://github.com/AgentX-Agibot/agent-playground.git```
 
 ### 2. Setup Configuration
 ---
