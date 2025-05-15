@@ -56759,7 +56759,7 @@ MonoBehaviour:
     axis: {x: 1, y: 0, z: 0}
   CurrentRobotType: 1
   robots:
-  - {fileID: 1845141133}
+  - {fileID: 2020528277}
   - {fileID: 1476436543}
   lastMoveSuccessful: 1
 --- !u!114 &936950131
@@ -56907,13 +56907,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb2513e469134245e96bc4eee11e5def, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joints: []
-  leftTargetPose: {fileID: 1029155481}
-  rightTargetPose: {fileID: 1449910185}
-  baseTransform: {fileID: 1799096366}
-  triggerKey: 32
-  initialAngles: []
-  inited: 0
+  agentMovement: {fileID: 936950130}
+  ur5BaseLeft: {fileID: 1535352092}
+  ur5BaseRight: {fileID: 1202892614}
 --- !u!114 &936950136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -71603,13 +71599,13 @@ Transform:
   m_GameObject: {fileID: 1202892613}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0.7071068, z: -0, w: 0}
-  m_LocalPosition: {x: 0.145, y: 0.42, z: 0}
-  m_LocalScale: {x: 0.66666, y: 0.66666, z: 0.66666}
+  m_LocalPosition: {x: 0.145, y: 0.27007, z: 0}
+  m_LocalScale: {x: 0.66666, y: 0.66666, z: 0.6666601}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1787723140}
   - {fileID: 1543934811}
-  m_Father: {fileID: 2020528278}
+  m_Father: {fileID: 1837781392}
   m_LocalEulerAnglesHint: {x: 180, y: 0, z: -90}
 --- !u!114 &1202892615
 MonoBehaviour:
@@ -93015,14 +93011,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1535352091}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00000008940696, y: -0, z: 0.7071069, w: 0.70710677}
-  m_LocalPosition: {x: -0.145, y: 0.42, z: 0}
-  m_LocalScale: {x: 0.6666667, y: 0.66666, z: 0.66666}
+  m_LocalRotation: {x: -0.00000008940694, y: -0, z: 0.7071068, w: 0.7071067}
+  m_LocalPosition: {x: -0.145, y: 0.27007, z: 0}
+  m_LocalScale: {x: 0.6666668, y: 0.6666602, z: 0.6666601}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 967700149}
   - {fileID: 1988801014}
-  m_Father: {fileID: 2020528278}
+  m_Father: {fileID: 1837781392}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &1535352093
 MonoBehaviour:
@@ -108225,6 +108221,8 @@ Transform:
   - {fileID: 1014001542}
   - {fileID: 146481687}
   - {fileID: 1929539054}
+  - {fileID: 1202892614}
+  - {fileID: 1535352092}
   - {fileID: 1868441624}
   - {fileID: 282214861}
   m_Father: {fileID: 27473128}
@@ -108666,13 +108664,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb2513e469134245e96bc4eee11e5def, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joints: []
-  leftTargetPose: {fileID: 0}
-  rightTargetPose: {fileID: 0}
-  baseTransform: {fileID: 0}
-  triggerKey: 32
-  initialAngles: []
-  inited: 0
+  agentMovement: {fileID: 0}
+  ur5BaseLeft: {fileID: 0}
+  ur5BaseRight: {fileID: 0}
 --- !u!114 &1845141135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117930,7 +117924,6 @@ GameObject:
   - component: {fileID: 2020528280}
   - component: {fileID: 2020528279}
   - component: {fileID: 2020528285}
-  - component: {fileID: 2020528288}
   - component: {fileID: 2020528287}
   - component: {fileID: 2020528286}
   m_Layer: 0
@@ -117954,8 +117947,6 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 436933722}
-  - {fileID: 1202892614}
-  - {fileID: 1535352092}
   - {fileID: 1843959139}
   - {fileID: 1833052409}
   - {fileID: 1555923217}
@@ -118189,7 +118180,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2020528277}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8efe76a35f3d489eb4b7b5d451c5327, type: 3}
   m_Name: 
@@ -118217,37 +118208,10 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.4713899, y: 1.2962155, z: 0.37065777}
   m_Center: {x: -0.018786546, y: -0.01596435, z: 0.04880066}
---- !u!54 &2020528288
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2020528277}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 256
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 0
 --- !u!1 &2021484481
 GameObject:
   m_ObjectHideFlags: 0

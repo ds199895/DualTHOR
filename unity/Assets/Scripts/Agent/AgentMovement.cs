@@ -33,15 +33,10 @@ public class AgentMovement : MonoBehaviour
     public float torque = 100f;       // 扭矩，单位：Nm
     public float acceleration = 10f;  // 加速度
 
-    public Transform leftTarget;
-    public Transform rightTarget;
-
-
+    public Transform target;
     private Vector3 lastTargetPosition;
     private float positionChangeThreshold = 0.0001f; // 位置变化阈值
     public IK_X1 ikX1; 
-
-    public IKClient ikClient;
     public IK_H1 ikH1;
 
 
@@ -1314,7 +1309,7 @@ public class AgentMovement : MonoBehaviour
         
         if (CurrentRobotType == RobotType.X1)
         {
-            Vector3 offset = new Vector3(0, 0.1f, 0);
+            Vector3 offset = new Vector3(0, 0.3f, 0);
             Transform pickPosition = SceneStateManager.GetInteractablePoint(objectID);
 
             if (pickPosition == null)
@@ -1332,125 +1327,125 @@ public class AgentMovement : MonoBehaviour
 
             // 移动到夹取位置上方
             Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            
-            leftTarget.position = abovePickPosition;
-
             yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
+            
+            // 检查移动过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                if (collisionDetected)
+                {
+                    Debug.LogWarning($"移动到物体上方时发生碰撞，碰撞关节: {collisionA}，碰撞物体: {collisionB}，但将继续执行");
+                }
+                else if (RobotCollisionManager.Instance != null)
+                {
+                    var collisions = RobotCollisionManager.Instance.GetAllNonInteractingCollisions();
+                    if (collisions.Count > 0)
+                    {
+                        string collisionInfo = string.Join("\n", collisions.Select(c => $"关节: {c.Key.name}, 碰撞物体: {c.Value.name}"));
+                        Debug.LogWarning($"移动到物体上方时发生碰撞 (由RobotCollisionManager报告):\n{collisionInfo}\n但将继续执行");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("移动到物体上方时发生碰撞 (由RobotCollisionManager报告)，但未找到具体碰撞详情，将继续执行");
+                    }
+                }
+                // 不再中断操作
+            }
+            
+            yield return new WaitForSeconds(1f);
 
+            // 打开夹爪准备夹取
+            Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
+            gripperController.SetRobotGripper(RobotType.X1, isLeftArm, true);
+            yield return new WaitForSeconds(1f);
 
-            
-            // // 检查移动过程中是否发生碰撞
-            // if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
-            // {
-            //     if (collisionDetected)
-            //     {
-            //         Debug.LogWarning($"移动到物体上方时发生碰撞，碰撞关节: {collisionA}，碰撞物体: {collisionB}，但将继续执行");
-            //     }
-            //     else if (RobotCollisionManager.Instance != null)
-            //     {
-            //         var collisions = RobotCollisionManager.Instance.GetAllNonInteractingCollisions();
-            //         if (collisions.Count > 0)
-            //         {
-            //             string collisionInfo = string.Join("\n", collisions.Select(c => $"关节: {c.Key.name}, 碰撞物体: {c.Value.name}"));
-            //             Debug.LogWarning($"移动到物体上方时发生碰撞 (由RobotCollisionManager报告):\n{collisionInfo}\n但将继续执行");
-            //         }
-            //         else
-            //         {
-            //             Debug.LogWarning("移动到物体上方时发生碰撞 (由RobotCollisionManager报告)，但未找到具体碰撞详情，将继续执行");
-            //         }
-            //     }
-            //     // 不再中断操作
-            // }
-            
-            // yield return new WaitForSeconds(1f);
+            var center = pickPosition.position + new Vector3(0,0.05f,0);
 
-            // // 打开夹爪准备夹取
-            // Debug.Log($"打开{(isLeftArm ? "左臂" : "右臂")}夹爪准备夹取");
-            // gripperController.SetGripper(isLeftArm, true);
-            // yield return new WaitForSeconds(1f);
+            // 下降到夹取位置
+            Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {center}");
+            yield return StartCoroutine(ArmMovetoPosition(center, isLeftArm));
+            
+            // 检查下降过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("下降到夹取位置时发生碰撞，但将继续执行");
+                // 不再中断操作
+            }
+            
+            yield return new WaitForSeconds(1f);
 
-            // // 下降到夹取位置
-            // Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {pickPosition.position}");
-            // yield return StartCoroutine(ArmMovetoPosition(pickPosition.position, isLeftArm));
+            // 检测夹爪是否到达目标位置
+            Transform gripperTransform = null;
+            if (isLeftArm && gripperController.currentLeftLeftGripper != null) 
+            {
+                gripperTransform = gripperController.currentLeftLeftGripper.transform;
+            } 
+            else if (!isLeftArm && gripperController.currentRightLeftGripper != null) 
+            {
+                gripperTransform = gripperController.currentRightLeftGripper.transform;
+            }
             
-            // // 检查下降过程中是否发生碰撞
-            // if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
-            // {
-            //     Debug.LogWarning("下降到夹取位置时发生碰撞，但将继续执行");
-            //     // 不再中断操作
-            // }
+            // 检查夹爪是否在目标位置附近(10厘米范围内)
+            bool reachedTargetPosition = false;
+            if (gripperTransform != null)
+            {
+                float distance = Vector3.Distance(gripperTransform.position, center);
+                reachedTargetPosition = distance < 0.3f;
+                Debug.Log($"夹爪到目标点距离: {distance}米");
+            }
             
-            // yield return new WaitForSeconds(1f);
-
-            // // 检测夹爪是否到达目标位置
-            // Transform gripperTransform = null;
-            // if (isLeftArm && gripperController.currentLeftLeftGripper != null) 
-            // {
-            //     gripperTransform = gripperController.currentLeftLeftGripper.transform;
-            // } 
-            // else if (!isLeftArm && gripperController.currentRightLeftGripper != null) 
-            // {
-            //     gripperTransform = gripperController.currentRightLeftGripper.transform;
-            // }
-            
-            // // 检查夹爪是否在目标位置附近(10厘米范围内)
-            // bool reachedTargetPosition = false;
-            // if (gripperTransform != null)
-            // {
-            //     float distance = Vector3.Distance(gripperTransform.position, pickPosition.position);
-            //     reachedTargetPosition = distance < 0.3f;
-            //     Debug.Log($"夹爪到目标点距离: {distance}米");
-            // }
-            
-            // // 如果没有到达目标位置，结束协程并返回错误信息
-            // if (!reachedTargetPosition)
-            // {
-            //     Debug.LogError($"Pick操作失败：夹爪未到达目标位置");
-            //     lastMoveSuccessful = false;
+            // 如果没有到达目标位置，结束协程并返回错误信息
+            if (!reachedTargetPosition)
+            {
+                Debug.LogError($"Pick操作失败：夹爪未到达目标位置");
+                lastMoveSuccessful = false;
                 
-            //     // 更新状态管理器中的动作结果
-            //     if (sceneManager != null)
-            //     {
-            //         sceneManager.UpdateLastActionSuccess("pick");
-            //         // 设置错误消息
-            //         if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
-            //         {
-            //             sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
-            //         }
-            //     }
-            //     // 新增：构造失败结果并回调
-            //     JsonData jsonData = new JsonData();
-            //     jsonData.success = false;
-            //     jsonData.msg = "夹爪未到达指定位置";
-            //     callback?.Invoke(jsonData);
-            //     yield break;
-            // }
+                // 更新状态管理器中的动作结果
+                if (sceneManager != null)
+                {
+                    sceneManager.UpdateLastActionSuccess("pick");
+                    // 设置错误消息
+                    if (sceneManager.GetCurrentSceneStateA2T() != null && sceneManager.GetCurrentSceneStateA2T().agent != null)
+                    {
+                        sceneManager.GetCurrentSceneStateA2T().agent.errorMessage = "夹爪未到达指定位置";
+                    }
+                }
+                // 新增：构造失败结果并回调
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = "夹爪未到达指定位置";
+                callback?.Invoke(jsonData);
+                yield break;
+            }
 
-            // // 夹紧物体
-            // Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
-            // gripperController.SetGripper(isLeftArm, false);
-            // yield return new WaitForSeconds(1f);
-        
-            // // 提升物体
-            // Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            // yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
+            // 夹紧物体
+            Debug.Log($"{(isLeftArm ? "左臂" : "右臂")}夹紧物体");
+            gripperController.SetRobotGripper(RobotType.X1, isLeftArm, false);
+            yield return new WaitForSeconds(1f);
+            if (isLeftArm)
+            {
+                sceneManager.SetParent(gripperController.leftArmLeftGripper.transform, objectID);
+            }
+            else
+            {
+                sceneManager.SetParent(gripperController.rightArmLeftGripper.transform, objectID);
+            }
+          
+            // 提升物体
+            Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
+            yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
             
-            // // 检查提升过程中是否发生碰撞
-            // if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
-            // {
-            //     Debug.LogWarning("提升物体时发生碰撞，但将继续执行");
-            // }
+            // 检查提升过程中是否发生碰撞
+            if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
+            {
+                Debug.LogWarning("提升物体时发生碰撞，但将继续执行");
+            }
             
-            // yield return new WaitForSeconds(1f);
-        
-            // sceneManager.SetParent(gripperController.transform, objectID);
+            yield return new WaitForSeconds(1f);
+            
 
-            // // 调整物体的旋转以保持与世界坐标正交
-            // AdjustRotationToWorldAxes(objectID);
-
-            // Debug.Log($"移动到{(isLeftArm ? "左臂" : "右臂")}夹取位置上方: {abovePickPosition}");
-            // yield return StartCoroutine(ArmMovetoPosition(abovePickPosition, isLeftArm));
-            // yield return new WaitForSeconds(1f);
+              // 调整物体的旋转以保持与世界坐标正交
+            AdjustRotationToWorldAxes(objectID);
         }
         else if (CurrentRobotType == RobotType.H1)
         {
@@ -1659,7 +1654,9 @@ public class AgentMovement : MonoBehaviour
         hasMovedToPosition = false;
 
         // 获取对象的传送点
-        Transform transferPoint = SceneStateManager.GetTransferPointByObjectID(objectID);
+        Transform get_trans = SceneStateManager.GetTransferPointByObjectID(objectID);
+        Vector3 transferPoint =new Vector3(get_trans.position.x,get_trans.position.y+0.05f,get_trans.position.z);
+
         if (transferPoint == null)
         {
             Debug.LogError($"未找到ID为 {objectID} 的物品传送点");
@@ -1672,7 +1669,7 @@ public class AgentMovement : MonoBehaviour
         }
 
         // 机械臂移动到该位置
-        yield return StartCoroutine(ArmMovetoPosition(transferPoint.position, isLeftArm));
+        yield return StartCoroutine(ArmMovetoPosition(transferPoint, isLeftArm));
 
         // 检查移动过程中是否发生碰撞
         if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
@@ -1688,13 +1685,13 @@ public class AgentMovement : MonoBehaviour
         bool reachedTargetPosition = false;
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position) < 0.3f;
-            Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint.position)}米");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint) < 0.3f;
+            Debug.Log($"Place操作: 左夹爪到放置点距离为 {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint)}米");
         }
         else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position) < 0.3f;
-            Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint.position)}米");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint) < 0.3f;
+            Debug.Log($"Place操作: 右夹爪到放置点距离为 {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint)}米");
         }
         
         // 如果夹爪没有到达目标位置，提前结束协程
@@ -1726,7 +1723,7 @@ public class AgentMovement : MonoBehaviour
         {
             if (CurrentRobotType == RobotType.X1)
             {
-                gripperController.SetGripper(isLeftArm, true); // true表示打开夹爪
+                gripperController.SetRobotGripper(RobotType.X1, isLeftArm, true); // true表示打开夹爪
             }
             else if (CurrentRobotType == RobotType.H1)
             {
@@ -1840,7 +1837,6 @@ public class AgentMovement : MonoBehaviour
         if (CurrentRobotType == RobotType.X1)
         {
             ikX1.ProcessTargetPosition(position, isLeftArm);
-            // ikClient.ProcessTargetPosition(position, isLeftArm);
             // 等待目标角度更新
             yield return new WaitUntil(() => isTargetAnglesUpdated);
 
@@ -2457,11 +2453,9 @@ public class AgentMovement : MonoBehaviour
                 CurrentRobotType = RobotType.X1;
                 InitializeAdjustments(true);
                 InitializeAdjustments(false);
-                Debug.Log("初始化关节调整信息");
                 ikX1.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
-                // ikClient.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
                 sceneManager.getObjectsInView.viewDistance=1.5f;
-                Debug.Log("检查碰撞检测管理器是否存在");
+                
                 // 确保碰撞检测管理器存在
                 EnsureCollisionDetectorManagerExists();
                 
@@ -2469,11 +2463,8 @@ public class AgentMovement : MonoBehaviour
                 StructureCollisionDetector detector = activeRobot.GetComponent<StructureCollisionDetector>();
                 if (detector != null)
                 {
-                    Debug.Log("X1机器人碰撞检测器已存在");
                     detector.robotBodyTransform = transform; // 确保引用正确的机器人主体
-                    Debug.Log("X1机器人碰撞检测器引用正确");
                     detector.ResetPosition(); // 重置位置和偏移量
-                    Debug.Log("X1机器人碰撞检测器重置位置和偏移量");
                     CollisionDetectorManager.Instance.RegisterDetector(detector);
                     Debug.Log("已配置X1机器人的碰撞检测器");
                 }
@@ -2588,7 +2579,6 @@ public class AgentMovement : MonoBehaviour
     {
         if (CollisionDetectorManager.Instance == null)
         {
-            Debug.Log("碰撞检测管理器不存在，创建新的管理器");
             GameObject managerObj = new GameObject("CollisionDetectorManager");
             CollisionDetectorManager manager = managerObj.AddComponent<CollisionDetectorManager>();
             manager.defaultRayDistance = 0.3f;  // 设置较小的默认检测距离

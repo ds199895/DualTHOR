@@ -111,6 +111,7 @@ def test_lift():
     # controller.step("moveahead", magnitude=1.2)
     # controller.step("moveright", magnitude=0.7)
     controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
+    controller.step("place", objectID="Kitchen_Cup_01", arm="left")
     # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 
