@@ -48028,7 +48028,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030220385}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb2513e469134245e96bc4eee11e5def, type: 3}
   m_Name: 
@@ -48088,7 +48088,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030220385}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 493285c09c1b7f245af3510705b0f748, type: 3}
   m_Name: 
@@ -48096,6 +48096,9 @@ MonoBehaviour:
   agentMovement: {fileID: 1030220392}
   ur5BaseLeft: {fileID: 1968552524}
   ur5BaseRight: {fileID: 677351565}
+  leftTargetPose: {fileID: 1266627857}
+  rightTargetPose: {fileID: 1900067825}
+  triggerKey: 32
 --- !u!114 &1030220392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48183,6 +48186,7 @@ MonoBehaviour:
   acceleration: 10
   target: {fileID: 0}
   ikX1: {fileID: 1030220388}
+  ikClient: {fileID: 1030220391}
   ikH1: {fileID: 1030220387}
   targetJointAngles:
   - 0
@@ -63744,6 +63748,7 @@ MonoBehaviour:
   acceleration: 10
   target: {fileID: 0}
   ikX1: {fileID: 0}
+  ikClient: {fileID: 0}
   ikH1: {fileID: 0}
   targetJointAngles:
   - 0
@@ -71367,6 +71372,9 @@ MonoBehaviour:
   agentMovement: {fileID: 1600121578}
   ur5BaseLeft: {fileID: 1968552524}
   ur5BaseRight: {fileID: 677351565}
+  leftTargetPose: {fileID: 0}
+  rightTargetPose: {fileID: 0}
+  triggerKey: 32
 --- !u!114 &1600121578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -71394,6 +71402,7 @@ MonoBehaviour:
   acceleration: 10
   target: {fileID: 0}
   ikX1: {fileID: 0}
+  ikClient: {fileID: 0}
   ikH1: {fileID: 0}
   targetJointAngles:
   - 0
