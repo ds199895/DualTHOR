@@ -31,7 +31,7 @@ def main(start_unity_exe=True,robot_type='X1', scene="livingroom2"):
 
     try:
         # 启动 Controller（代替 TCP 服务器），并传递 robot_type
-        controller = Controller(robot_type=robot_type,scene=scene)
+        controller = Controller(robot_type=robot_type,start_unity_exe=start_unity_exe,scene=scene)
         controller.start()
         
     except KeyboardInterrupt:
