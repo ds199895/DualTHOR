@@ -1359,7 +1359,7 @@ public class AgentMovement : MonoBehaviour
             gripperController.SetRobotGripper(RobotType.X1, isLeftArm, true);
             yield return new WaitForSeconds(1f);
 
-            var center = pickPosition.position + new Vector3(0,0.05f,0);
+            var center = pickPosition.position + new Vector3(0,0.1f,0);
 
             // 下降到夹取位置
             Debug.Log($"下降到{(isLeftArm ? "左臂" : "右臂")}夹取位置: {center}");

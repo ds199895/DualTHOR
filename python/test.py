@@ -105,13 +105,13 @@ def test_controller():
 
 
 def test_lift():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="kitchen")
     controller.start()
     # controller.step("rotateright", magnitude=1)
-    # controller.step("moveahead", magnitude=1.2)
-    # controller.step("moveright", magnitude=0.7)
-    controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
-    controller.step("place", objectID="Kitchen_Cup_01", arm="left")
+    # controller.step("moveahead", magnitude=1.6)
+    controller.step("moveleft", magnitude=0.5)
+    controller.step("pick", objectID="Kitchen_Cup_01", arm="right")
+    # controller.step("place", objectID="Kitchen_Cup_01", arm="right")
     # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 
