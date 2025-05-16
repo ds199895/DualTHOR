@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="bedroom")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="kitchen")
     
     # 启动控制器
     controller.start()
@@ -109,9 +109,9 @@ def test_lift():
     controller.start()
     # controller.step("rotateright", magnitude=1)
     # controller.step("moveahead", magnitude=1.6)
-    controller.step("moveleft", magnitude=0.5)
+    controller.step("moveleft", magnitude=0.3)
     controller.step("pick", objectID="Kitchen_Cup_01", arm="right")
-    # controller.step("place", objectID="Kitchen_Cup_01", arm="right")
+    controller.step("place", objectID="Kitchen_Cup_01", arm="right")
     # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 
