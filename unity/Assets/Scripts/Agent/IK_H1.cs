@@ -89,30 +89,30 @@ public class IK_H1 : IKBase
 
     void Update()
     {
-        // 检测键盘输入
-        if (Input.GetKeyDown(triggerKey))
-        {
-            Debug.Log("开始IK计算");
-            // 转换目标位置到基座坐标系
-            float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
-            float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
+        // // 检测键盘输入
+        // if (Input.GetKeyDown(triggerKey))
+        // {
+        //     Debug.Log("开始IK计算");
+        //     // 转换目标位置到基座坐标系
+        //     float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
+        //     float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
 
-            // 构建请求数据
-            var request = new IKRequest
-            {
-                left_pose = left_target_matrix,
-                right_pose = right_target_matrix,
-                motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
-                motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
-            };
-            StartCoroutine(SendIKRequest(request));
-        }
+        //     // 构建请求数据
+        //     var request = new IKRequest
+        //     {
+        //         left_pose = left_target_matrix,
+        //         right_pose = right_target_matrix,
+        //         motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
+        //         motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
+        //     };
+        //     StartCoroutine(SendIKRequest(request));
+        // }
 
-        // 执行插值
-        if (isInterpolating)
-        {
-            UpdateJointInterpolation();
-        }
+        // // 执行插值
+        // if (isInterpolating)
+        // {
+        //     UpdateJointInterpolation();
+        // }
     }
 
 

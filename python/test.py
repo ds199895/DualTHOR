@@ -108,11 +108,9 @@ def test_lift():
     controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     # controller.step("rotateright", magnitude=1)
-    # controller.step("moveahead", magnitude=1.6)
+    # controller.step("moveahead", magnitude=1.2)
     # controller.step("moveright", magnitude=0.7)
-    # controller.step("pick", objectID="AlarmClock_fee6a9a6", arm="right")
     controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
-
     controller.step("place", objectID="Kitchen_Cup_01", arm="left")
     # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
@@ -194,6 +192,12 @@ if __name__ == "__main__":
         # test_controller()
         test_lift()
         # test_dual_arm()
+
+        while True:
+            time.sleep(1)
+
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         logging.info("用户中断测试")
         sys.exit(0)

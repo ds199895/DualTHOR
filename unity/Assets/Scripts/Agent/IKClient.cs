@@ -8,7 +8,7 @@ using System;
 
 public class IKClient : MonoBehaviour
 {
-    private string url = "http://localhost:5000/ik";
+    private string url = "http://127.0.0.1:5000/ik";
     public AgentMovement agentMovement;
     private List<float> initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
     public Transform ur5BaseLeft; // 左臂的基座
@@ -17,6 +17,28 @@ public class IKClient : MonoBehaviour
     private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
 
     public event Action<List<float>> OnTargetJointAnglesUpdated;
+
+
+    // 左右手目标位姿
+    public Transform leftTargetPose;
+    public Transform rightTargetPose;
+
+    // 键盘控制
+    public KeyCode triggerKey = KeyCode.Space; // 触发IK的按键
+     
+    void Update()
+    {
+        // 检测键盘输入
+        if (Input.GetKeyDown(triggerKey))
+        {
+            Debug.Log("开始IK计算");
+            ProcessTargetPosition(leftTargetPose.position, true);
+            // ProcessTargetPosition(rightTargetPose.position, false);
+        }
+
+    }
+
+
 
     // 接收和处理目标位置
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
@@ -55,8 +77,8 @@ public class IKClient : MonoBehaviour
             { "initial_q", initial_q }
         };
 
-            // 发送反向运动学请求
-            StartCoroutine(SendIKRequest(data));
+        // 发送反向运动学请求
+        StartCoroutine(SendIKRequest(data));
     }
 
     // 发送反向运动学请求的协程
