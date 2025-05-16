@@ -118,7 +118,7 @@ A total of eight interaction states are set:
 8. **ToggleOnOff**: Items can be toggled. Such as faucet switches, coffee machine switches.
 9. **UsedUp**: Items can be used up. Such as toilet paper can be depleted.
 ### 3. Interaction Table
-This table lists all currently interactive item types, item ID naming (Room_ItemType_ID), location, interactive states, and notes.
+This table lists all currently interactive item types in kitchen, item ID naming (Room_ItemType_ID), location, interactive states, and notes.
 | Item Type   |Item ID Format| Room | Interactive States | Notes |
 |:-: |:-:|:-:|:-:|:-:|
 | Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
