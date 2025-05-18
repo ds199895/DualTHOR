@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='x1', scene="livingroom2")
     
     # 启动控制器
     controller.start()
