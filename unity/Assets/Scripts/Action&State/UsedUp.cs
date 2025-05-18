@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-// 管理游戏对象在特定状态下的行为变化，特别是当对象被“用尽”时，控制其可见性和物理交互状态
-// 这在游戏中可能用于实现消耗品、一次性使用物品或其他需要状态转换的对象。
+// manage the behavior changes of game objects in specific states, especially when objects are "used up", controlling their visibility and physical interaction state
+// this is used in the game to implement consumables, one-time use items, or other objects that need state transitions.
 public class UsedUp : MonoBehaviour {
     [SerializeField]
     protected MeshRenderer usedUpRenderer;

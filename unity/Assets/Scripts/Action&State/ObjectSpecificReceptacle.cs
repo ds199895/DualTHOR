@@ -1,23 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//1.该脚本管理特定类型的对象是否可以放置在容器中，并提供放置点的位置
-//2.通过 full 布尔变量来表示容器是否已满。
-//3.提供方法来检查对象是否属于允许放置的特定类型。
+//1.This script manages whether specific types of objects can be placed in a container and provides a placement point.
+//2.Represent whether the container is full by the full boolean variable.
+//3.Provide a method to check if the object belongs to the specific type that is allowed to be placed.
 public class ObjectSpecificReceptacle : MonoBehaviour
 {
     [Header("Only objects of these Types can be placed on this Receptacle")]
     [SerializeField]
-    private SimObjType[] SpecificTypes;//允许放置在容器中的对象类型数组。
+    private SimObjType[] SpecificTypes;//The array of object types that can be placed on this receptacle.
 
     [Header("Point where specified object(s) attach to this Receptacle")]
 
-    public Transform attachPoint;//对象放置在容器中的位置。
+    public Transform attachPoint;//The position where the object is placed in the container.
 
     [Header("Is this Receptacle already holding a valid object?")]
-    public bool full = false;//表示容器是否已满的布尔变量。
+    public bool full = false;//Boolean variable representing whether the container is full.
 
-    //检查传入的对象类型是否在允许放置的类型列表中。
+    //Check if the incoming object type is in the list of allowed placement types.
     public bool HasSpecificType(SimObjType check)
     {
         bool result = false;
@@ -34,7 +34,7 @@ public class ObjectSpecificReceptacle : MonoBehaviour
     }
 
     // Use this for initialization
-    //检查对象是否具有 ObjectSpecificReceptacle 属性。
+    //Check if the object has the ObjectSpecificReceptacle property.
     void Start()
     {
 #if UNITY_EDITOR

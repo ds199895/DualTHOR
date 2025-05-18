@@ -17,29 +17,29 @@ public class Fill : MonoBehaviour, IUniqueStateManager
     protected GameObject WineObject;
     
     [SerializeField]
-    protected float targetHeight; // 目标高度，可以根据需要调整
+    protected float targetHeight; // target height, can be adjusted as needed
     [SerializeField]
-    protected float animationDuration; // 动画持续时间，可以根据需要调整
+    protected float animationDuration; // animation duration, can be adjusted as needed
 
     [SerializeField]
-    public bool isFilling; //是否正在填充
+    public bool isFilling; // whether the object is being filled
     [SerializeField]
-    public bool isFilled; //是否已经填满
+    public bool isFilled; // whether the object is filled
 
     private string currentlyFilledWith;
 
-    private Collider currentLiquidSourceCollider;//表示液体提供者的碰撞器
+    private Collider currentLiquidSourceCollider;// Collider representing the liquid provider
 
-    // Liquids 字典存储这些液体的 GameObject 引用
+    // Liquids dictionary stores the GameObject references for these liquids
     private readonly Dictionary<string, GameObject> liquids = new();
     private Coroutine raiseLiquidCoroutine;
     private Coroutine lowerLiquidCoroutine;
-    //这些类型的物体，里面的液体可能会下降
+    // These types of objects, their liquids may sink
     private readonly List<SimObjType> canDownObj = new()
     {
         SimObjType.Sink
     };
-    private float originHeight;//可下降液体的初始高度
+    private float originHeight;//the initial height of the liquid that can be lowered
 
 
     public string FilledLiquid() => currentlyFilledWith;
@@ -49,8 +49,8 @@ public class Fill : MonoBehaviour, IUniqueStateManager
         objectState.fillState = new FillState
         {
             isFilled = isFilled,
-            filledObj = liquids.Values.Select(liquid => liquid.activeSelf).ToArray(), // 保存每个液体对象的激活状态
-            fillObjHeight=liquids.Values.Select(liquid => liquid.transform.localPosition.y).ToArray() // 保存每个液体对象的高度
+            filledObj = liquids.Values.Select(liquid => liquid.activeSelf).ToArray(), // save the activation state of each liquid object
+            fillObjHeight=liquids.Values.Select(liquid => liquid.transform.localPosition.y).ToArray() // save the height of each liquid object
         };
     }
 
@@ -64,7 +64,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
 
         isFilled = objectState.fillState.isFilled;
 
-        // 确保数组长度匹配
+        // ensure the array length matches
         if (objectState.fillState.filledObj == null || objectState.fillState.fillObjHeight == null)
         {
             Debug.LogWarning("Fill state arrays are null, skipping load");
@@ -80,7 +80,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
             return;
         }
 
-        // 恢复填充物体的激活状态
+        // restore the activation state of the filling object
         for (int i = 0; i < liquids.Count; i++)
         {
             if (i < objectState.fillState.filledObj.Length && i < objectState.fillState.fillObjHeight.Length)
@@ -103,7 +103,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
 
         if (canDownObj.Contains(GetComponent<SimObjPhysics>().Type))
         {
-            originHeight = WaterObject.transform.localPosition.y; // 假设水对象的初始高度
+            originHeight = WaterObject.transform.localPosition.y; // assume the initial height of the water object
         }
     }
 
@@ -116,7 +116,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
         ProcessLiquidFilling();
     }
 
-    //处理液体的填充
+    //process the filling of the liquid
     private void ProcessLiquidFilling()
     {
         if (currentLiquidSourceCollider != null)
@@ -126,7 +126,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
             {
                 if (!isFilling)
                 {
-                    //print("开始填充");
+                    //print("Start filling");
                     FillObject(currentLiquidSource.name);
                 }
             }
@@ -134,7 +134,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
             {
                 if (canDownObj.Contains(GetComponent<SimObjPhysics>().Type) && isFilling)
                 {
-                    //print("开始下降");
+                    //print("Start lowering");
                     DownObject(currentLiquidSourceCollider.transform.parent.gameObject.name);
                 }
                 else
@@ -147,11 +147,11 @@ public class Fill : MonoBehaviour, IUniqueStateManager
     }
     private bool IsObjectTilted()
     {
-        // 检查对象局部y轴的旋转角度跟世界y轴的角度差是否超过 90 度
+        // check if the angle difference between the local y-axis rotation of the object and the world y-axis is more than 90 degrees
         return Vector3.Angle(transform.up, Vector3.up) > 90 && isFilled;
     }
 
-    //液面上升
+    //raise the liquid level
     public void FillObject(string liquidType)
     {
         if (!liquids.TryGetValue(liquidType, out GameObject liquidObject))
@@ -168,7 +168,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
         raiseLiquidCoroutine = StartCoroutine(RaiseLiquidLevel(liquidObject, liquidType));
     }
     
-    //液面下降
+    //lower the liquid level
     public void DownObject(string liquidType)
     {
         if (!liquids.TryGetValue(liquidType, out GameObject liquidObject))
@@ -184,7 +184,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
         lowerLiquidCoroutine = StartCoroutine(LowerLiquidLevel(liquidObject));
     }
 
-    //上升动画
+    //raise the liquid level animation
     private IEnumerator RaiseLiquidLevel(GameObject liquidObject, string liquidType)
     {
         StopCoroutineIfNotNull(ref lowerLiquidCoroutine);
@@ -198,20 +198,20 @@ public class Fill : MonoBehaviour, IUniqueStateManager
     }
 
 
-    //下降动画
+    //lower the liquid level animation
     private IEnumerator LowerLiquidLevel(GameObject liquidObject)
     {
         StopCoroutineIfNotNull(ref raiseLiquidCoroutine);
         isFilling = false;
         Vector3 originalPosition = liquidObject.transform.localPosition;
-        Vector3 targetPosition = new(originalPosition.x, originHeight, originalPosition.z); // 假设水位下降到y=0
+        Vector3 targetPosition = new(originalPosition.x, originHeight, originalPosition.z); // assume the liquid level is lowered to y=0
         yield return AnimateLiquidPosition(liquidObject, originalPosition, targetPosition);
         isFilled = false;
         liquidObject.SetActive(false);
 
     }
 
-    //具体动画效果
+    //specific animation effect
     private IEnumerator AnimateLiquidPosition(GameObject liquidObject, Vector3 originalPosition, Vector3 targetPosition)
     {
         float elapsedTime = 0f;
@@ -222,16 +222,16 @@ public class Fill : MonoBehaviour, IUniqueStateManager
             liquidObject.transform.localPosition = Vector3.Lerp(originalPosition, targetPosition, t);
             yield return null;
         }
-        liquidObject.transform.localPosition = targetPosition; // 确保最终位置
+        liquidObject.transform.localPosition = targetPosition; // ensure the final position
     }
 
     public void StopRaisingLiquid()
     {
         if (raiseLiquidCoroutine != null)
         {
-            print("停止填充");
+            print("Stop filling");
             StopCoroutine(raiseLiquidCoroutine);
-            raiseLiquidCoroutine = null; // 清空协程引用
+                raiseLiquidCoroutine = null; // clear the coroutine reference
             isFilling = false;
         }
 
@@ -247,13 +247,13 @@ public class Fill : MonoBehaviour, IUniqueStateManager
         isFilled = false;
     }
 
-    //停止非空的协程
+    //stop non-empty coroutines
     private void StopCoroutineIfNotNull(ref Coroutine coroutine)
     {
         if (coroutine != null)
         {
             StopCoroutine(coroutine);
-            coroutine = null; // 清空协程引用
+            coroutine = null; // clear the coroutine reference
         }
     }
 
@@ -269,7 +269,7 @@ public class Fill : MonoBehaviour, IUniqueStateManager
     {
         if (other == currentLiquidSourceCollider)
         {
-            currentLiquidSourceCollider = null; // 清空热源的Collider记录
+            currentLiquidSourceCollider = null; // clear the collider record of the heat source
         }
     }
 }
