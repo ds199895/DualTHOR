@@ -10,13 +10,44 @@ public class IK_X1 : IKBase
 {
     private string url = "http://localhost:5000/ik";
     public AgentMovement agentMovement;
-    private List<float> initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
+    // 原始初始关节角度，仅作为备用
+    private List<float> default_initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
     public Transform ur5BaseLeft; // 左臂的基座
     private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // 左臂的偏移量（夹爪中心与末端关节）
     public Transform ur5BaseRight; // 右臂的基座
     private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
 
     public event Action<List<float>> OnTargetJointAnglesUpdated;
+
+    // 新增方法：获取当前关节角度（以弧度表示）
+    private List<float> GetCurrentJointAngles(bool isLeftArm)
+    {
+        List<float> currentAngles = new List<float>();
+        List<ArticulationBody> joints = isLeftArm ? agentMovement.leftArmJoints : agentMovement.rightArmJoints;
+        
+        // 确保我们有关节
+        if (joints != null && joints.Count > 0)
+        {
+            foreach (var joint in joints)
+            {
+                if (joint != null && joint.jointType == ArticulationJointType.RevoluteJoint)
+                {
+                    // 将度转换为弧度
+                    float angleInRadians = joint.xDrive.target * Mathf.Deg2Rad;
+                    currentAngles.Add(angleInRadians);
+                }
+            }
+        }
+        
+        // 如果没有足够的关节或出现问题，使用默认值
+        if (currentAngles.Count < 6)
+        {
+            Debug.LogWarning("未能获取足够的关节角度，使用默认值");
+            return default_initial_q;
+        }
+        
+        return currentAngles;
+    }
 
     // 接收和处理目标位置
     public override void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
@@ -35,6 +66,12 @@ public class IK_X1 : IKBase
             targetPositionRelative.y
         };
 
+        // 使用当前关节角度作为初始值
+        List<float> currentJointAngles = GetCurrentJointAngles(isLeftArm);
+        
+        // 调试输出
+        Debug.Log($"使用当前关节角度作为IK初始值: {string.Join(", ", currentJointAngles)}");
+
         // 构建 JSON 数据字典
         var data = new Dictionary<string, object>
         {
@@ -52,7 +89,7 @@ public class IK_X1 : IKBase
                 }
             },
             { "translation", translation },
-            { "initial_q", initial_q }
+            { "initial_q", currentJointAngles }
         };
 
         // 发送反向运动学请求

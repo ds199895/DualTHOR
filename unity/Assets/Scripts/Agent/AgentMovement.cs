@@ -1914,7 +1914,8 @@ public class AgentMovement : MonoBehaviour
 
     public IEnumerator SmoothUpdateJointAngles(List<float> targetJointAngles, float duration, bool isLeftArm)
     {
-        //Debug.Log("进入 SmoothUpdateJointAngles 时的目标角度: " + string.Join(", ", targetJointAngles));
+        // 输出调试信息
+        Debug.Log("进入 SmoothUpdateJointAngles 时的目标角度: " + string.Join(", ", targetJointAngles));
 
         List<float> startAngles = new List<float>();
         var joints = isLeftArm ? leftArmJoints : rightArmJoints;
@@ -1924,6 +1925,9 @@ public class AgentMovement : MonoBehaviour
         {
             startAngles.Add(NormalizeAngle(joint.xDrive.target));
         }
+
+        // 输出起始角度信息
+        Debug.Log("起始关节角度: " + string.Join(", ", startAngles));
 
         float elapsedTime = 0f;
 
@@ -1936,31 +1940,58 @@ public class AgentMovement : MonoBehaviour
             {
                 var joint = joints[i];
                 var drive = joint.xDrive;
-                //关节1和5是Y轴，且反向调整
+                
+                // 计算调整后的目标角度
                 float adjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
-
+                
+                // 计算最短路径角度差
+                float currentAngle = startAngles[i];
+                float angleDiff = adjustedAngle - currentAngle;
+                
+                // 检查是否有更短的路径
+                if (angleDiff > 180f)
+                {
+                    adjustedAngle -= 360f;
+                }
+                else if (angleDiff < -180f)
+                {
+                    adjustedAngle += 360f;
+                }
+                
                 float interpolatedAngle = Mathf.Lerp(startAngles[i], adjustedAngle, t);
 
                 drive.target = NormalizeAngle(interpolatedAngle);
                 joint.xDrive = drive;
-
-                //Debug.Log($"插值中: 关节 {i + 1}, 初始={startAngles[i]}, 调整后目标={adjustedAngle}, 插值={interpolatedAngle}, xDrive={drive.target}");
             }
 
             yield return null;
         }
 
+        // 设置最终角度
         for (int i = 0; i < joints.Count; i++)
         {
             var joint = joints[i];
             var drive = joint.xDrive;
-
+            
             float finalAdjustedAngle = NormalizeAngle(targetJointAngles[i] + ((i == 0 || i == 4) ? -adjustments[i].angle : adjustments[i].angle));
+            
+            // 确保使用最短路径
+            float currentAngle = startAngles[i];
+            float angleDiff = finalAdjustedAngle - currentAngle;
+            
+            if (angleDiff > 180f)
+            {
+                finalAdjustedAngle -= 360f;
+            }
+            else if (angleDiff < -180f)
+            {
+                finalAdjustedAngle += 360f;
+            }
 
-            drive.target = finalAdjustedAngle;
+            drive.target = NormalizeAngle(finalAdjustedAngle);
             joint.xDrive = drive;
 
-            //Debug.Log($"关节 {i + 1} 最终目标角度 (度): {finalAdjustedAngle}");
+            Debug.Log($"关节 {i + 1} 最终目标角度: {NormalizeAngle(finalAdjustedAngle)}");
         }
     }
 

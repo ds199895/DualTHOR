@@ -189,7 +189,7 @@ public class UnityClient : MonoBehaviour
 
             if (agentMovement == null) {
                 Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
-                await Task.Delay(2000);
+                await Task.Delay(5000);
                 Init();
             }
             var result = agentMovement.LoadRobot(actionData.robotType);
