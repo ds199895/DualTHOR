@@ -75,8 +75,8 @@ def upload_file_to_tos(local_file_path, tos_folder):
 
 if __name__ == '__main__':
     # 示例用法
-    # local_file = "/home/hsy/Agi/agent_playground/agent-playground/unity/Build/Linux/linux_unity.zip"
-    local_file = '/home/hsy/Agi/agent_playground/agent-playground/unity/Build/Linux/version.json'
+    # local_file = "/home/hsy/Agi/back/DualTHOR/unity/Build/Linux/linux_unity.zip"
+    local_file = '/home/hsy/Agi/back/DualTHOR/unity/Build/Linux/version.json'
     # local_file = "D:/Agi/Unity/agent-playground/unity/Build/Win/windows_unity.zip"
     # local_file = "D:/Agi/Unity/agent-playground/unity/Build/Win/version.json"
 
