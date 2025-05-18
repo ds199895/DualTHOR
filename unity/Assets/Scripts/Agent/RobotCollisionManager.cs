@@ -6,7 +6,7 @@ public class RobotCollisionManager : MonoBehaviour
     public static RobotCollisionManager Instance;
     private Dictionary<ArticulationBody, List<GameObject>> currentCollisions = new Dictionary<ArticulationBody, List<GameObject>>();
     
-    // 用于标记与交互物体相关的碰撞
+    // Mark the collision object
     private Dictionary<GameObject, string> collisionObjectIDs = new Dictionary<GameObject, string>();
     private string currentInteractingObjectID = string.Empty;
     private List<string> ignoredCollisionObjectIDs = new List<string>();
@@ -24,44 +24,44 @@ public class RobotCollisionManager : MonoBehaviour
         }
     }
 
-    // 设置当前交互物体ID
+    // Set the current interacting object ID
     public void SetCurrentInteractingObject(string objectID)
     {
         currentInteractingObjectID = objectID;
-        Debug.Log($"RobotCollisionManager设置当前交互物体: {objectID}");
+        Debug.Log($"RobotCollisionManager sets the current interacting object: {objectID}");
     }
     
-    // 添加忽略的碰撞物体ID
+    // Add the ignored collision object ID
     public void AddIgnoredCollisionObject(string objectID)
     {
         if (!string.IsNullOrEmpty(objectID) && !ignoredCollisionObjectIDs.Contains(objectID))
         {
             ignoredCollisionObjectIDs.Add(objectID);
-            Debug.Log($"RobotCollisionManager添加忽略碰撞物体: {objectID}");
+            Debug.Log($"RobotCollisionManager adds the ignored collision object: {objectID}");
         }
     }
     
-    // 清空忽略列表
+    // Clear the ignored list
     public void ClearIgnoredCollisionObjects()
     {
         ignoredCollisionObjectIDs.Clear();
         currentInteractingObjectID = string.Empty;
-        Debug.Log("RobotCollisionManager已清空忽略列表");
+        Debug.Log("RobotCollisionManager has cleared the ignored list");
     }
 
     public void ReportCollision(ArticulationBody joint, GameObject other)
     {
-        // 获取碰撞物体的SimObjPhysics组件
+        // Get the SimObjPhysics component of the collision object
         SimObjPhysics simObj = other.GetComponent<SimObjPhysics>();
         string objectID = simObj != null ? simObj.ObjectID : string.Empty;
         
-        // 记录碰撞物体的ID
+        // Record the ID of the collision object
         if (simObj != null && !string.IsNullOrEmpty(objectID))
         {
             collisionObjectIDs[other] = objectID;
         }
         
-        // 检查是否是与当前交互物体的碰撞
+        // Check if it is a collision with the current interacting object
         bool isInteractingObject = IsInteractingObject(other);
         
         if (!currentCollisions.ContainsKey(joint))
@@ -75,27 +75,27 @@ public class RobotCollisionManager : MonoBehaviour
             
             if (isInteractingObject)
             {
-                Debug.Log($"关节 {joint.name} 开始与交互物体碰撞 {other.name}，不视为错误");
+                Debug.Log($"Joint {joint.name} starts colliding with the interacting object {other.name}, not considered as an error");
             }
             else
             {
-                Debug.Log($"关节 {joint.name} 开始碰撞 {other.name}");
+                Debug.Log($"Joint {joint.name} starts colliding with {other.name}");
             }
         }
     }
 
     public void ReportOngoingCollision(ArticulationBody joint, GameObject other)
     {
-        // 检查是否是与当前交互物体的碰撞
+        // Check if it is a collision with the current interacting object
         bool isInteractingObject = IsInteractingObject(other);
         
         if (isInteractingObject)
         {
-            // 交互物体的碰撞，不记录日志以减少噪音
+            // The collision with the interacting object, do not record the log to reduce noise
             return;
         }
         
-        Debug.Log($"关节 {joint.name} 持续碰撞 {other.name}");
+        Debug.Log($"Joint {joint.name} is continuously colliding with {other.name}");
     }
 
     public void ReportCollisionExit(ArticulationBody joint, GameObject other)
@@ -104,41 +104,41 @@ public class RobotCollisionManager : MonoBehaviour
         {
             currentCollisions[joint].Remove(other);
             
-            // 检查是否是与当前交互物体的碰撞
+            // Check if it is a collision with the current interacting object
             bool isInteractingObject = IsInteractingObject(other);
             
             if (isInteractingObject)
             {
-                Debug.Log($"关节 {joint.name} 结束与交互物体碰撞 {other.name}");
+                Debug.Log($"Joint {joint.name} ends colliding with the interacting object {other.name}");
             }
             else
             {
-                Debug.Log($"关节 {joint.name} 结束碰撞 {other.name}");
+                Debug.Log($"Joint {joint.name} ends colliding with {other.name}");
             }
         }
     }
     
-    // 检查物体是否为当前交互物体
+    // Check if the object is the current interacting object
     public bool IsInteractingObject(GameObject obj)
     {
         if (string.IsNullOrEmpty(currentInteractingObjectID) && ignoredCollisionObjectIDs.Count == 0)
             return false;
         
-        // 先检查我们是否已经知道这个物体的ID
+        // First check if we already know the ID of this object
         if (collisionObjectIDs.TryGetValue(obj, out string objectID))
         {
             if (objectID == currentInteractingObjectID || ignoredCollisionObjectIDs.Contains(objectID))
                 return true;
         }
         
-        // 如果没有记录，尝试获取SimObjPhysics组件
+        // If we do not know the ID, try to get the SimObjPhysics component
         SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
         if (simObj != null)
         {
             string id = simObj.ObjectID;
             if (id == currentInteractingObjectID || ignoredCollisionObjectIDs.Contains(id))
             {
-                // 更新记录
+                // Update the record
                 collisionObjectIDs[obj] = id;
                 return true;
             }
@@ -151,11 +151,11 @@ public class RobotCollisionManager : MonoBehaviour
     {
         foreach (var joint in currentCollisions)
         {
-            Debug.Log($"关节 {joint.Key.name} 当前正在碰撞的物体: {string.Join(", ", joint.Value)}");
+            Debug.Log($"Joint {joint.Key.name} is currently colliding with: {string.Join(", ", joint.Value)}");
         }
     }
     
-    // 清理所有碰撞记录
+    // Clear all collision records
     public void ClearAllCollisions()
     {
         int collisionCount = 0;
@@ -164,25 +164,25 @@ public class RobotCollisionManager : MonoBehaviour
             collisionCount += joint.Value.Count;
         }
         
-        // 记录清理的碰撞数量
+        // Record the number of collisions cleaned
         if (collisionCount > 0)
         {
-            Debug.Log($"正在清理 {collisionCount} 个碰撞记录");
+            Debug.Log($"Cleaning {collisionCount} collision records");
         }
         
-        // 清空字典
+        // Clear the dictionary
         currentCollisions.Clear();
         collisionObjectIDs.Clear();
-        Debug.Log("所有碰撞记录已清理");
+        Debug.Log("All collision records have been cleaned");
     }
     
-    // 检查指定关节是否有碰撞，忽略交互物体
+    // Check if the specified joint has collisions, ignoring the interacting object
     public bool HasCollision(ArticulationBody joint)
     {
         if (!currentCollisions.ContainsKey(joint) || currentCollisions[joint].Count == 0)
             return false;
             
-        // 检查是否有非交互物体的碰撞
+        // Check if there is a collision with a non-interacting object
         foreach (GameObject obj in currentCollisions[joint])
         {
             if (!IsInteractingObject(obj))
@@ -192,17 +192,17 @@ public class RobotCollisionManager : MonoBehaviour
         return false;
     }
     
-    // 获取指定关节的所有碰撞对象
+    // Get all collisions of the specified joint
     public List<GameObject> GetCollisions(ArticulationBody joint)
     {
         if (currentCollisions.TryGetValue(joint, out List<GameObject> collisions))
         {
-            return new List<GameObject>(collisions); // 返回副本，防止外部修改
+            return new List<GameObject>(collisions); // Return a copy to prevent external modification
         }
         return new List<GameObject>();
     }
 
-    // 检查是否有任何碰撞，忽略交互物体
+    // Check if there is any collision, ignoring the interacting object
     public bool HasAnyCollision()
     {
         bool hasCollision = false;
@@ -214,7 +214,7 @@ public class RobotCollisionManager : MonoBehaviour
                 if (!IsInteractingObject(obj))
                 {
                     hasCollision = true;
-                    Debug.LogWarning($"检测到非交互物体碰撞: 关节 {pair.Key.name} 碰撞对象 {obj.name}");
+                    Debug.LogWarning($"Detected non-interacting object collision: joint {pair.Key.name} collided with {obj.name}");
                 }
             }
         }
@@ -222,7 +222,7 @@ public class RobotCollisionManager : MonoBehaviour
         return hasCollision;
     }
     
-    // 获取所有非交互物体的碰撞列表
+    // Get all collisions of non-interacting objects
     public List<KeyValuePair<ArticulationBody, GameObject>> GetAllNonInteractingCollisions()
     {
         List<KeyValuePair<ArticulationBody, GameObject>> result = new List<KeyValuePair<ArticulationBody, GameObject>>();

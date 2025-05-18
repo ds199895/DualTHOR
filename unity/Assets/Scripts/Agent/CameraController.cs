@@ -26,15 +26,15 @@ public class CameraController : MonoBehaviour
     public string imgeDir;
     private string baseDir=Path.Combine(Application.dataPath, "SavedImages");
     
-    // 添加计时器变量
+    // add a timer variable
     private float lastRecordTime = 0f;
-    private const float RECORD_INTERVAL = 0.2f; // 200毫秒间隔
+    private const float RECORD_INTERVAL = 0.2f; // 200 milliseconds interval
 
-    private int imageCounter = 0; // 用于图像编号
+    private int imageCounter = 0; // for image numbering
 
     void Start()
     {
-        // 确保所有相机启用
+        // ensure all cameras are enabled
         EnableAllCameras();
     }
 
@@ -42,23 +42,23 @@ public class CameraController : MonoBehaviour
     {
         HandleEscAndMouseInput();
 
-        // 检查是否启用FreeCam模式
+        // check if FreeCam mode is enabled
         if (Input.GetKeyDown(KeyCode.Alpha0)) ActivateFreeMode();
 
         if (isFreeMode && isCameraControlEnabled) FreeCamControl();
 
-        // 按下 'P' 键时保存所有相机图像
+        // press 'P' key to save all camera images
         if (Input.GetKeyDown(KeyCode.P)) SaveAllCameraImages();
         
-        // 添加自动记录功能
+        // add an automatic recording function
         if (record)
         {
             // Debug.Log("Image path: "+baseDir);
             // imgeDir=baseDir+"/test";
-            // 检查是否到达记录间隔
+            // check if the recording interval is reached
             if (Time.time - lastRecordTime >= RECORD_INTERVAL)
             {
-                // 确保保存目录存在
+                // ensure the save directory exists
                 if (!string.IsNullOrEmpty(imgeDir))
                 {
                     if (!Directory.Exists(imgeDir))
@@ -69,11 +69,11 @@ public class CameraController : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("记录目录路径为空！请设置 imgeDir");
+                    Debug.LogWarning("the recording directory path is empty! please set the imgeDir");
                     record = false;
                 }
                 
-                // 更新上次记录时间
+                // update the last recording time
                 lastRecordTime = Time.time;
             }
         }
@@ -81,19 +81,19 @@ public class CameraController : MonoBehaviour
 
     private void EnableAllCameras()
     {
-        // 启用所有相机，确保同时渲染
+        // enable all cameras, ensure simultaneous rendering
         egocentricCam.enabled = true;
         frontCam.enabled = true;
         leftSideCam.enabled = true;
         rightSideCam.enabled = true;
         behindCam.enabled = true;
-        freeCam.enabled = false; // 默认情况下不启用FreeCam
+        freeCam.enabled = false; // default is not enabled FreeCam
         minimapCam.enabled = true;
     }
 
     void ActivateFreeMode()
     {
-        // 仅启用自由相机模式
+        // only enable the FreeCam mode
         EnableAllCameras();
         freeCam.enabled = true;
         isFreeMode = true;
@@ -111,20 +111,20 @@ public class CameraController : MonoBehaviour
 
         if (Cursor.lockState == CursorLockMode.None) return;
 
-        // 基本移动（前后左右）
+        // basic movement (front, back, left, right)
         Vector3 move = freeCam.transform.right * Input.GetAxis("Horizontal") +
                        freeCam.transform.forward * Input.GetAxis("Vertical");
 
-        // 添加垂直移动控制
+        // add vertical movement control
         float verticalMove = 0f;
         if (Input.GetKey(KeyCode.Space)) verticalMove += 1f;
         if (Input.GetKey(KeyCode.LeftControl)) verticalMove -= 1f;
         move += Vector3.up * verticalMove;
 
-        // 应用移动
+        // apply movement
         freeCam.transform.position += moveSpeed * Time.deltaTime * move * (Input.GetKey(KeyCode.LeftShift) ? 2f : 1f);
 
-        // 相机旋转
+        // camera rotation
         rotationX += Input.GetAxis("Mouse X") * mouseSensitivity;
         rotationY = Mathf.Clamp(rotationY - Input.GetAxis("Mouse Y") * mouseSensitivity, -verticalRotationLimit, verticalRotationLimit);
         freeCam.transform.localEulerAngles = new Vector3(rotationY, rotationX, 0);
@@ -154,7 +154,7 @@ public class CameraController : MonoBehaviour
         Cursor.visible = visible;
     }
 
-    // 修改保存所有相机图像到指定目录
+    // modify the method to save all camera images to the specified directory
     public void SaveAllCameraImages()
     {
         SaveCameraImage(egocentricCam.targetTexture, "EgocentricCam");
@@ -169,21 +169,21 @@ public class CameraController : MonoBehaviour
     {
         if (renderTexture == null)
         {
-            Debug.LogWarning($"{cameraName} 没有目标渲染纹理！");
+            Debug.LogWarning($"{cameraName} has no target render texture!");
             return;
         }
         
-        // 使用编号构建文件名
+        // use the number to build the file name
         string fileName = $"{cameraName}_{imageCounter++}.png";
         
-        // 使用自定义路径或默认路径
+        // use the custom path or the default path
         string dirPath = !string.IsNullOrEmpty(imgeDir) ? imgeDir : Path.Combine(Application.dataPath, "SavedImages");
         string filePath = Path.Combine(dirPath, fileName);
 
-        // 确保保存目录存在
+        // ensure the save directory exists
         Directory.CreateDirectory(dirPath);
 
-        // 将RenderTexture内容保存到PNG文件
+        // save the RenderTexture content to the PNG file
         Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
         RenderTexture currentRT = RenderTexture.active;
         RenderTexture.active = renderTexture;
@@ -195,6 +195,6 @@ public class CameraController : MonoBehaviour
         File.WriteAllBytes(filePath, pngData);
 
         Destroy(texture);
-        // Debug.Log($"已保存 {cameraName} 图像到 {filePath}");
+
     }
 }

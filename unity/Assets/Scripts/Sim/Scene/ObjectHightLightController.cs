@@ -17,42 +17,36 @@ public class HighlightConfig
 public class ObjectHightLightController : MonoBehaviour
 {
     [SerializeField]
-    private Transform player; // 角色 Transform
+    private Transform player; // Character Transform
     [SerializeField]
-    private Vector3 offset; // 摄像机与角色之间的偏移量
+    private Vector3 offset; // Camera offset from the character
     [SerializeField]
-    private float MinHighlightDistance = 1f; // 最小高亮距离
+    private float MinHighlightDistance = 1f; // Minimum highlight distance
     [SerializeField]
-    private bool DisplayTargetText = true;//表示是否显示目标文本的布尔变量。
-    // [SerializeField]
-    // private TextMeshProUGUI TargetText;//目标文本对象，用于显示当前高亮对象的名称。
-    // [SerializeField]
-    // private TextMeshProUGUI CrosshairText;//十字准星文本对象。
+    private bool DisplayTargetText = true;//Whether to display the target text
+
     [SerializeField]
     private HighlightConfig HighlightParams = new()
     {
         TextStrongColor = new Color(1.0f, 1.0f, 1.0f, 1.0f),
         TextFaintColor = new Color(197.0f / 255, 197.0f / 255, 197.0f / 255, 228.0f / 255),//较淡的灰色，同时设置了透明度，因此显示效果是半透明的淡灰色。
-        //淡灰色，且有较低的透明度，适合于创建柔和的轮廓效果
+        //light gray, with lower transparency, suitable for creating a soft outline effect
         SoftOutlineColor = new Color(0.66f, 0.66f, 0.66f, 0.1f),
-        //参数定义了柔和轮廓的厚度。以确保在视觉上不显得过于突兀，而是柔和地包裹在文本周围
+        //The parameter defines the thickness of the soft outline. To ensure that it does not appear too obtrusive, but rather soft and wrapped around the text.
         SoftOutlineThickness = 0.001f,
         //
         WithinReachOutlineColor = new Color(1, 1, 1, 0.3f),
         //
         WithinReachOutlineThickness = 0.005f,
-    };//高亮参数配置，包括颜色和厚度。
+    };//Highlight parameter configuration, including color and thickness.
     [SerializeField]
-    private Camera m_Camera; // 摄像机组件
+    private Camera m_Camera; // Camera component
     [SerializeField]
-    private GameObject hand; // 手持物体对象
+    private GameObject hand; // Hand object
     //[SerializeField]
-    private SimObjPhysics highlightedObject; // 高亮对象
+    private SimObjPhysics highlightedObject; // Highlighted object
     private void Start()
     {
-        //m_Camera = Camera.main;
-        //hand = GameObject.Find("Hand");
-        // TargetText.text="";
 
     }
     void Update()
@@ -65,45 +59,27 @@ public class ObjectHightLightController : MonoBehaviour
 
     void LateUpdate()
     {
-        // 设置摄像机位置
+        // Set camera position
         transform.position = player.position + offset;
     }
 
 
     private void UpdateHighlightedObject()
     {
-        // 获取相机的中央点发出的射线
+        // Get the ray from the center of the camera
         Ray ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
 
-        // layerMask：用于射线检测的层级掩码。
+        // layerMask：level mask for ray detection.
         int layerMask = LayerMask.GetMask(
             "SimObjVisible"
         );
 
-        // // 检测与射线是否与碰撞体相交
-        // if (Physics.Raycast(ray, out RaycastHit hit, MinHighlightDistance, layerMask))
-        // {
-        //     // HandleHitObject(hit);
-        // }
-        // // 如果检测到了物体但超出了最小高亮距离
-        // else if (Physics.Raycast(ray, out RaycastHit outerHit, float.MaxValue, layerMask))
-        // {
-        //     SetTargetText(outerHit.transform.CompareTag("Interactable") ? outerHit.transform.GetComponent<SimObjPhysics>().ObjectID : "", false);
-           
-        // }
-        // // 当没有命中物体时，清空目标文本
-        // else
-        // {
-        //     //ClearTargetText();
-        //     ClearTargetText(ray);
-         
-        // }
     }
 
     private void HandleHitObject(RaycastHit hit)
     {
         Debug.DrawLine(hit.point, m_Camera.transform.position, Color.red);
-        //print(hit.transform.name);//输出物体祖先的名称
+        //print(hit.transform.name);//output the name of the object's ancestor
         if (hit.transform.CompareTag("Interactable"))
         {
             if (hit.transform.TryGetComponent<SimObjPhysics>(out SimObjPhysics simObj))
@@ -145,9 +121,9 @@ public class ObjectHightLightController : MonoBehaviour
         }
     }
 
-    private bool isHoldingObject = false; // 用于跟踪是否抓着物体
-    private SimObjPhysics heldObject = null; // 用于保存当前抓住的物体
-    private Rigidbody heldObjectRigidbody = null; // 用于保存抓住物体的刚体
+    private bool isHoldingObject = false; // Used to track whether an object is being held
+    private SimObjPhysics heldObject = null; // Used to save the current object being held
+    private Rigidbody heldObjectRigidbody = null; // Used to save the rigidbody of the held object
     private void TryPickOrInteractObject()
     {
         if (highlightedObject == null) return;
@@ -187,31 +163,6 @@ public class ObjectHightLightController : MonoBehaviour
         heldObjectRigidbody = null;
         isHoldingObject = false;
     }
-
-
-    //设置目标文本，根据对象是否在可交互范围内切换文本颜色。
-    //text：目标文本的内容。
-    //withinReach：表示对象是否在可交互范围内的布尔变量，默认为 false。
-    
-    // private void SetTargetText(string text, bool withinReach = false)
-    // {
-    //     if (withinReach)
-    //     {
-    //         TargetText.color = HighlightParams.TextStrongColor;
-    //         CrosshairText.text = "( + )";
-    //     }
-    //     else
-    //     {
-    //         TargetText.color = (Math.Abs(TargetText.color.a - HighlightParams.TextStrongColor.a) < 1e-5) ? HighlightParams.TextFaintColor : TargetText.color;
-    //         CrosshairText.text = "+";
-    //     }
-
-    //     //以便只显示对象类型的名称，而不是完整的对象 ID
-    //     if (DisplayTargetText)
-    //     {
-    //         TargetText.text = text.Split('|')[0];
-    //     }
-    // }
 
 
 

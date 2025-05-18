@@ -10,65 +10,65 @@ public class IKController : MonoBehaviour
     [System.Serializable]
     public class IKRequest
     {
-        public float[][] left_pose;    // 4x4 矩阵
-        public float[][] right_pose;   // 4x4 矩阵
-        public float[] motorstate;     // 当前关节角度
-        public float[] motorV;         // 当前关节角速度
+        public float[][] left_pose;    // 4x4 matrix
+        public float[][] right_pose;   // 4x4 matrix
+        public float[] motorstate;     // current joint angles
+        public float[] motorV;         // current joint velocities
     }
 
     [System.Serializable]
     public class IKResponse
     {
         public bool success;
-        public float[] q;      // 计算得到的关节角度
-        public float[] tau;    // 计算得到的关节力矩
+        public float[] q;      // calculated joint angles
+        public float[] tau;    // calculated joint torques
     }
 
-    public ArticulationBody[] joints; // 机器人的关节
+    public ArticulationBody[] joints; // robot joints
     private string serverUrl = "http://localhost:5000/ik";
 
-    // 左右手目标位姿
+    // left and right target poses
     public Transform leftTargetPose;
     public Transform rightTargetPose;
 
     public Transform baseTransform;
 
-    // 插值相关参数
+    // interpolation related parameters
     private float[] currentJointAngles;
     private float[] targetJointAngles;
-    private float interpolationTime = 0.5f; // 插值时间（秒）
+    private float interpolationTime = 0.5f; // interpolation time (seconds)
     private float currentInterpolationTime = 0f;
     private bool isInterpolating = false;
 
-    // 键盘控制
-    public KeyCode triggerKey = KeyCode.Space; // 触发IK的按键
+    // keyboard control
+    public KeyCode triggerKey = KeyCode.Space; // trigger IK key
 
     void Start()
     {
-        // 确保所有关节都已赋值
+        // ensure all joints are assigned
         if (joints == null || joints.Length == 0)
         {
-            Debug.LogError("请设置机器人关节！");
+            Debug.LogError("Please set the robot joints!");
             enabled = false;
             return;
         }
 
-        // 初始化当前关节角度
+        // initialize current joint angles
         currentJointAngles = joints.Select(j => j.jointPosition[0] * Mathf.Rad2Deg).ToArray();
         targetJointAngles = currentJointAngles.ToArray();
     }
 
     void Update()
     {
-        // 检测键盘输入
+        // detect keyboard input
         if (Input.GetKeyDown(triggerKey))
         {
             Debug.Log("开始IK计算");
-            // 转换目标位置到基座坐标系
+            // convert target position to base coordinate system
             float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
             float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
 
-            // 构建请求数据
+            // build request data
             var request = new IKRequest
             {
                 left_pose = left_target_matrix,
@@ -79,7 +79,7 @@ public class IKController : MonoBehaviour
             StartCoroutine(SendIKRequest(request));
         }
 
-        // 执行插值
+        // execute interpolation
         if (isInterpolating)
         {
             UpdateJointInterpolation();
@@ -87,12 +87,12 @@ public class IKController : MonoBehaviour
     }
 
 
-    // 将目标位置转换为基座坐标系
+    // convert target position to base coordinate system
     Vector3 ConvertToBaseCoordinates(Vector3 targetPosition, Transform baseTransform)
     {
         Vector3 relativePosition = targetPosition - baseTransform.position;
         Vector3 result = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
-        //Debug.Log("相对于基座的目标位置: " + result);
+        //Debug.Log("relative position to the base: " + result);
         return result;
     }
     
@@ -106,9 +106,9 @@ public class IKController : MonoBehaviour
 
         currentInterpolationTime += Time.deltaTime;
         float t = currentInterpolationTime / interpolationTime;
-        t = Mathf.SmoothStep(0, 1, t); // 使用平滑插值
+        t = Mathf.SmoothStep(0, 1, t); // use smooth interpolation
 
-        // 更新每个关节的角度
+        // update each joint angle
         for (int i = 0; i < joints.Length; i++)
         {
             float interpolatedAngle = Mathf.LerpAngle(currentJointAngles[i], targetJointAngles[i], t);
@@ -137,26 +137,26 @@ public class IKController : MonoBehaviour
                 
                 if (response.success)
                 {
-                    // 保存当前关节角度作为插值起点
+                    // save current joint angles as interpolation start point
                     currentJointAngles = joints.Select(j => j.jointPosition[0] * Mathf.Rad2Deg).ToArray();
                     
-                    // 设置目标关节角度
+                    // set target joint angles
                     targetJointAngles = response.q.Select(angle => angle * Mathf.Rad2Deg).ToArray();
                     
-                    // 重置插值参数
+                    // reset interpolation parameters
                     currentInterpolationTime = 0f;
                     isInterpolating = true;
 
-                    Debug.Log("开始插值到新的目标位置");
+                    Debug.Log("start interpolation to the new target position");
                 }
                 else
                 {
-                    Debug.LogWarning("IK求解失败");
+                    Debug.LogWarning("IK solution failed");
                 }
             }
             else
             {
-                Debug.LogError($"请求失败: {www.error}. URL: {serverUrl}");
+                Debug.LogError($"request failed: {www.error}. URL: {serverUrl}");
             }
         }
     }
@@ -175,11 +175,11 @@ public class IKController : MonoBehaviour
 
     private float[][] ConvertTargetToBaseMatrix(Transform targetPose, Transform baseTransform)
     {
-        // 将目标位置转换为基座坐标系
+        // convert target position to base coordinate system
         Vector3 relativePosition = targetPose.position - baseTransform.position;
         Vector3 basePosition = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
 
-        // 使用IKClient中的方式构建translation
+        // use the way in IKClient to build translation
         List<float> translation = new List<float>
         {
             basePosition.z,
@@ -187,13 +187,13 @@ public class IKController : MonoBehaviour
             basePosition.y
         };
 
-        // 将目标旋转转换为基座坐标系
+        // convert target rotation to base coordinate system
         Quaternion baseRotation = Quaternion.Inverse(baseTransform.rotation) * targetPose.rotation;
 
-        // 将Quaternion转换为Matrix4x4
+        // convert Quaternion to Matrix4x4
         Matrix4x4 rotationMatrix = Matrix4x4.Rotate(baseRotation);
 
-        // 生成4x4变换矩阵
+        // generate 4x4 transformation matrix
         return new float[][]
         {
             new float[] { rotationMatrix.m00, rotationMatrix.m01, rotationMatrix.m02, translation[0] },
@@ -203,7 +203,7 @@ public class IKController : MonoBehaviour
         };
     }
 
-    // 辅助方法：标准化角度到 [-180, 180] 范围
+    // auxiliary method: normalize angle to [-180, 180] range
     private float NormalizeAngle(float angle)
     {
         while (angle > 180f) angle -= 360f;
@@ -213,17 +213,17 @@ public class IKController : MonoBehaviour
 
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
-        // 选择目标位姿和基座变换
+        // select target pose and base transform
         Transform targetPose = isLeftArm ? leftTargetPose : rightTargetPose;
         Transform baseTransform = this.baseTransform;
 
-        // 转换目标位置到基座坐标系
+        // convert target position to base coordinate system
         Vector3 targetPositionRelative = ConvertToBaseCoordinates(newTargetPosition, baseTransform);
 
-        // 构建目标位姿矩阵
+        // build target pose matrix
         float[][] targetMatrix = TransformToMatrix(targetPositionRelative, targetPose.rotation);
 
-        // 构建请求数据
+        // build request data
         var request = new IKRequest
         {
             left_pose = isLeftArm ? targetMatrix : null,
@@ -232,7 +232,7 @@ public class IKController : MonoBehaviour
             motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
         };
 
-        // 发送反向运动学请求
+        // send IK request
         StartCoroutine(SendIKRequest(request));
     }
 } 

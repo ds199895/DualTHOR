@@ -5,28 +5,28 @@ namespace Agent
 {
     public class KeyboardMovementController : MonoBehaviour
     {
-        [Header("移动设置")]
-        public float moveSpeed = 5.0f;        // 平移速度
-        public float rotateSpeed = 90.0f;     // 旋转速度（度/秒）
-        public float moveDuration = 0.5f;     // 平滑移动的持续时间
+        [Header("Movement settings")]
+        public float moveSpeed = 5.0f;        // translation speed
+        public float rotateSpeed = 90.0f;     // rotation speed (degrees/second)
+        public float moveDuration = 0.5f;     // smooth move duration
 
-        [Header("控制键")]
-        [Tooltip("按住此键可以加速移动")]
+        [Header("Control keys")]
+        [Tooltip("Press this key to accelerate movement")]
         public KeyCode sprintKey = KeyCode.LeftShift;
-        [Tooltip("加速倍率")]
+        [Tooltip("Acceleration multiplier")]
         public float sprintMultiplier = 2.0f;
 
-        // 关节控制
-        public ArticulationBody rootArt;      // 机器人根部关节体
+        // joint control
+        public ArticulationBody rootArt;      // robot root joint body
 
-        // 私有变量
-        private Transform cameraTransform;    // 相机变换组件引用
-        private bool isMoving = false;        // 是否正在移动
-        private Coroutine currentMoveCoroutine; // 当前移动协程
+        // private variables
+        private Transform cameraTransform;    // camera transform component reference
+        private bool isMoving = false;        // whether moving
+        private Coroutine currentMoveCoroutine; // current move coroutine
 
         private void Start()
         {
-            // 如果没有指定rootArt，尝试在当前对象或子对象上查找
+            // if rootArt is not specified, try to find it on the current object or its children
             if (rootArt == null)
             {
                 rootArt = GetComponent<ArticulationBody>();
@@ -36,47 +36,47 @@ namespace Agent
                 }
             }
             
-            // 获取当前主相机的变换组件
+            // get the main camera transform component
             cameraTransform = Camera.main.transform;
         }
 
         private void Update()
         {
-            // 处理旋转控制（WASD键）
+            // handle rotation control (WASD keys)
             HandleRotation();
             
-            // 处理平移控制（方向键）
+            // handle translation control (direction keys)
             HandleTranslation();
         }
 
         private void HandleRotation()
         {
-            // 获取WASD输入
+            // get WASD input
             float rotateH = 0f;
             float rotateV = 0f;
 
-            // 检查A和D键，控制Y轴旋转（左右）
+            // check A and D keys, control Y axis rotation (left and right)
             if (Input.GetKey(KeyCode.A))
                 rotateH = -1f;
             else if (Input.GetKey(KeyCode.D))
                 rotateH = 1f;
 
-            // 检查W和S键，控制X轴旋转（上下）
+            // check W and S keys, control X axis rotation (up and down)
             if (Input.GetKey(KeyCode.W))
                 rotateV = 1f;
             else if (Input.GetKey(KeyCode.S))
                 rotateV = -1f;
 
-            // 如果有旋转输入
+            // if there is rotation input
             if (rotateH != 0f || rotateV != 0f)
             {
-                // 根据时间调整旋转速度
+                // adjust rotation speed according to time
                 float rotationAmount = rotateSpeed * Time.deltaTime;
                 
-                // 保存当前旋转
+                // save current rotation
                 Quaternion currentRotation = transform.rotation;
                 
-                // 应用旋转
+                // apply rotation
                 if (rotateH != 0f)
                 {
                     transform.Rotate(Vector3.up, rotateH * rotationAmount);
@@ -87,7 +87,7 @@ namespace Agent
                     transform.Rotate(Vector3.right, rotateV * rotationAmount);
                 }
                 
-                // 如果有根关节体，同步旋转
+                // if there is root joint body, synchronize rotation
                 if (rootArt != null)
                 {
                     rootArt.TeleportRoot(transform.position, transform.rotation);
@@ -97,15 +97,15 @@ namespace Agent
 
         private void HandleTranslation()
         {
-            // 如果正在移动，不接受新的移动输入
+            // if moving, do not accept new movement input
             if (isMoving)
                 return;
                 
-            // 获取方向键输入
+            // get direction key input
             float moveH = 0f;
             float moveV = 0f;
 
-            // 检查方向键输入
+            // check direction key input
             if (Input.GetKey(KeyCode.RightArrow))
                 moveH = 1f;
             else if (Input.GetKey(KeyCode.LeftArrow))
@@ -116,19 +116,19 @@ namespace Agent
             else if (Input.GetKey(KeyCode.DownArrow))
                 moveV = -1f;
 
-            // 如果有平移输入
+            // if there is translation input
             if (moveH != 0f || moveV != 0f)
             {
-                // 计算当前速度
+                // calculate current speed
                 float currentSpeed = moveSpeed;
                 
-                // 如果按下加速键，应用加速倍率
+                // if sprint key is pressed, apply sprint multiplier
                 if (Input.GetKey(sprintKey))
                 {
                     currentSpeed *= sprintMultiplier;
                 }
                 
-                // 确定移动方向（局部坐标系）
+                // determine the moving direction (local coordinate system)
                 Vector3 localDirection = Vector3.zero;
                 
                 if (moveH != 0f)
@@ -137,14 +137,14 @@ namespace Agent
                 if (moveV != 0f)
                     localDirection += Vector3.forward * moveV;
                 
-                // 归一化方向向量
+                // normalize the direction vector
                 if (localDirection.magnitude > 0)
                     localDirection.Normalize();
                 
-                // 计算移动幅度
-                float magnitude = currentSpeed * Time.deltaTime * 10f; // 乘以10使得移动更明显
+                // calculate the moving magnitude
+                float magnitude = currentSpeed * Time.deltaTime * 10f; // multiply by 10 to make the movement more obvious
                 
-                // 启动平滑移动协程
+                // start smooth move coroutine
                 if (currentMoveCoroutine != null)
                     StopCoroutine(currentMoveCoroutine);
                     
@@ -176,7 +176,7 @@ namespace Agent
                 yield return null;
             }
 
-            // 确保到达目标位置
+            // ensure reaching the target position
             if (rootArt != null)
             {
                 rootArt.TeleportRoot(targetPosition, originRot);

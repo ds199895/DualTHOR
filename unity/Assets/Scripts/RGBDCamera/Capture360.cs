@@ -7,10 +7,10 @@ public class Capture360 : MonoBehaviour
 
     void Start()
     {
-        // 确保相机存在并准备好进行捕获
+        // Ensure the camera exists and is ready to capture
         if (cameraToCapture != null)
         {
-            // 创建一个新的立体渲染立方图，传入相机
+            // Create a new stereo rendering cubemap, passing in the camera
             cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
             cameraToCapture.RenderToCubemap(cubemap);
         }

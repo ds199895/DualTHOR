@@ -9,37 +9,37 @@ import os
 app = Flask(__name__)
 
 
-# 获取当前脚本目录
+# get current script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 urdf_filename = os.path.join(script_dir, "../unity/Assets/UR5/ur_description/urdf/ur5_robot.urdf")
-urdf_filename = os.path.normpath(urdf_filename)  # 标准化路径
+urdf_filename = os.path.normpath(urdf_filename)  # normalize path
 
 print(f"URDF file path: {urdf_filename}")
 
-# 加载URDF模型
+# load URDF model
 model = pinocchio.buildModelFromUrdf(urdf_filename)
 print("model name: " + model.name)
 
-# 设置并输出 UR5 的初始偏移量 q0
-q0 = pinocchio.neutral(model)  # 获取模型的中性姿态（通常为零配置）
-print("UR5 initial offset q0:", q0.T)  # 转置以方便显示
-data = model.createData()  # 创建用于计算的数据结构
+# set and output UR5 initial offset q0
+q0 = pinocchio.neutral(model)  # get model neutral pose (usually zero configuration)
+print("UR5 initial offset q0:", q0.T)  # transpose for display
+data = model.createData()  # create data structure for calculation
 
-# 每个关节的相对坐标（相对于父关节的初始位姿）
+# initial relative position and orientation of each joint
 print("Initial relative position and orientation of each joint:")
 
-for joint_id in range(1, model.njoints):  # 从1开始，因为0号是固定基座
+for joint_id in range(1, model.njoints):  # start from 1, because 0 is fixed base
     joint_name = model.names[joint_id]
-    joint_relative_pose = model.jointPlacements[joint_id]  # 每个关节相对父关节的初始位姿
+    joint_relative_pose = model.jointPlacements[joint_id]  # initial pose of each joint relative to its parent
     relative_translation = joint_relative_pose.translation
     relative_rotation = joint_relative_pose.rotation
 
     print(f"{joint_name} relative position (translation): {relative_translation.T}")
     print(f"{joint_name} relative orientation (rotation):\n{relative_rotation}\n")
 
-# 计算并输出末端的位姿
+# calculate and output end-effector pose
 pinocchio.forwardKinematics(model, data, q0)
-end_effector_id = model.getJointId("wrist_3_joint")  # 假设末端关节为“wrist_3_joint”，请根据实际情况调整
+end_effector_id = model.getJointId("wrist_3_joint")  # assume end-effector joint is "wrist_3_joint", please adjust according to actual situation
 end_effector_pose = data.oMi[end_effector_id]
 end_effector_translation = end_effector_pose.translation
 end_effector_rotation = end_effector_pose.rotation
@@ -47,7 +47,7 @@ end_effector_rotation = end_effector_pose.rotation
 print("End-effector initial position (translation):", end_effector_translation.T)
 print("End-effector initial orientation (rotation):\n", end_effector_rotation)
 
-# 创建算法所需的数据
+# create data for algorithm
 data = model.createData()
 
 def get_ik(model, data, JOINT_ID, oMdes, initial_q, eps=1e-4, IT_MAX=5000, DT=1e-1, damp=1e-12):
@@ -56,14 +56,14 @@ def get_ik(model, data, JOINT_ID, oMdes, initial_q, eps=1e-4, IT_MAX=5000, DT=1e
     while True:
         pinocchio.forwardKinematics(model, data, q)
         iMd = data.oMi[JOINT_ID].actInv(oMdes)
-        err = pinocchio.log(iMd).vector  # 在关节框架中
+        err = pinocchio.log(iMd).vector  # in joint frame
         if norm(err) < eps:
             success = True
             break
         if i >= IT_MAX:
             success = False
             break
-        J = pinocchio.computeJointJacobian(model, data, q, JOINT_ID)  # 在关节框架中
+        J = pinocchio.computeJointJacobian(model, data, q, JOINT_ID)  # in joint frame
         J = -np.dot(pinocchio.Jlog6(iMd.inverse()), J)
         v = -J.T.dot(solve(J.dot(J.T) + damp * np.eye(6), err))
         q = pinocchio.integrate(model, q, v * DT)
@@ -71,17 +71,17 @@ def get_ik(model, data, JOINT_ID, oMdes, initial_q, eps=1e-4, IT_MAX=5000, DT=1e
         #     print("%d: error = %s" % (i, err.T))
         i += 1
 
-    # FK 验证
+    # FK verification
     if success:
         fk_data = model.createData()
         pinocchio.forwardKinematics(model, fk_data, q)
         final_oMi = fk_data.oMi[JOINT_ID]
         
-        # 获取 FK 的位姿结果（平移和旋转部分）
+        # get FK pose result (translation and rotation parts)
         fk_translation = final_oMi.translation
         fk_rotation = final_oMi.rotation
         
-        # 计算 FK 结果与目标 oMdes 的误差
+        # calculate FK result error with target oMdes
         fk_err = pinocchio.log(final_oMi.actInv(oMdes)).vector
         print("FK verification result:")
         print("FK translation:", fk_translation.T)
@@ -93,7 +93,7 @@ def get_ik(model, data, JOINT_ID, oMdes, initial_q, eps=1e-4, IT_MAX=5000, DT=1e
         else:
             print("FK verification failed: Solution is not accurate enough.")
     else:
-        fk_err = None  # IK 失败时，没有 FK 误差
+        fk_err = None  # when IK fails, there is no FK error
 
     return success, q, err
 
@@ -113,14 +113,14 @@ def ik_service():
         'err': err.tolist()
     }
     
-    # 打印最终发送给客户端的数据
+    # print final data sent to client
     print("Sending response to client:")
     print(response)
     
     return jsonify(response)
 
 def start_server_ik():
-    """启动 IK 服务"""
+    """start IK server"""
     print("Starting IK server...")
     app.run(host='0.0.0.0', port=5000)
 

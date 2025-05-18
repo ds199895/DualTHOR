@@ -12,14 +12,14 @@ namespace Agent
         public ArticulationBody[] rightHandJoints;
         
         public ArticulationBody[] hands;
-        // 假设这是记录好的目标角度
-        private float[] leftTargetAngles = { 60f, 60f, 60f, 60f, 60f, 60f, 60f, 60f,90f,60f,30f,0f }; // 示例数据
-        private float[] rightTargetAngles = { 60f, 60f, 60f, 60f, 60f, 60f, 60f, 60f,90f,60f,30f,0f}; // 示例数据
+        // assume this is the recorded target angles
+        private float[] leftTargetAngles = { 60f, 60f, 60f, 60f, 60f, 60f, 60f, 60f,90f,60f,30f,0f }; // example data
+        private float[] rightTargetAngles = { 60f, 60f, 60f, 60f, 60f, 60f, 60f, 60f,90f,60f,30f,0f}; // example data   
 
         private float hand_initial_angle = 23.3f;
         private float hand_target_angle = 31.1f;
 
-        // 插值速度
+        // interpolation speed
         public float interpolationSpeed = 2.0f;
 
         private void Start()
@@ -127,7 +127,7 @@ namespace Agent
                         allJointsReachedTarget = false;
                     }
                 }
-                yield return null; // 等待下一帧
+                yield return null; // wait for the next frame
             }
         }
 
@@ -150,7 +150,7 @@ namespace Agent
                         allJointsReachedTarget = false;
                     }
                 }
-                yield return null; // 等待下一帧
+                yield return null; // wait for the next frame
             }
         }
 

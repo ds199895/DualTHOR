@@ -13,21 +13,21 @@ import unity_launcher
 class Controller:
     def __init__(self, host='localhost', port=5678, config_path="config.json", start_unity_exe=True, robot_type='X1',scene="livingroom2"):
         """
-        初始化控制器，包括动作执行器、TCP 服务器和配置加载。
+        initialize controller, including action executor, TCP server and config loading.
         """
         self.executor = Actions()
         self.tcp_server = TCPServer(host, port)
         self.config = self.load_config(config_path)
-        self.thread_pool = ThreadPoolExecutor(max_workers=10)  # 最大并发线程数
+        self.thread_pool = ThreadPoolExecutor(max_workers=10)  # max number of concurrent threads
         self.stop_event = threading.Event()
-        self.robot_type = robot_type  # 保存 robot_type
-        self.tcp_server.on_connect = self.on_client_connect  # 设置连接事件回调
+        self.robot_type = robot_type  # save robot_type
+        self.tcp_server.on_connect = self.on_client_connect  # set connection event callback
         self.scene=scene
-        self.feedback_queue = queue.Queue()  # 用于存储反馈的队列
-        self.last_collision_info = None  # 存储最后一次碰撞信息
+        self.feedback_queue = queue.Queue()  # for storing feedback
+        self.last_collision_info = None  # store last collision info
 
 
-        # 如果需要启动 Unity 可执行文件
+        # if need to start Unity executable file
         unity_process = None
         if start_unity_exe:
             unity_process = unity_launcher.start_unity()
@@ -44,7 +44,7 @@ class Controller:
         elif robot_type=="h1":
             server_ik=server_ik_h1
         print(server_ik)
-        # 启动 IK 服务
+        # start IK server
         ik_thread = threading.Thread(target=server_ik.start_server_ik, daemon=True)
         ik_thread.start()
         print("IK server started.")
@@ -53,9 +53,9 @@ class Controller:
 
     def load_config(self, config_path):
         """
-        加载配置文件。
-        :param config_path: 配置文件路径
-        :return: 配置数据
+        load config file.
+        :param config_path: config file path
+        :return: config data
         """
         try:
             with open(config_path, 'r') as file:
@@ -68,18 +68,18 @@ class Controller:
 
     def get_default_success_rate(self, action_name):
         """
-        从配置文件获取动作的默认成功率。
+        get default success rate from config file.
         """
         success_rates = self.config.get("success_rate", {})
         return success_rates.get(action_name.lower(), 1.0)
 
     def start(self):
-        """启动控制器"""
+        """start controller"""
         try:
             self.tcp_server.start()
-            # 启动反馈接收线程
+            # start feedback receiving thread
             # threading.Thread(target=self.handle_feedback, daemon=True).start()
-            # 启动用户输入处理
+            # start user input processing
             # self.handle_user_input()
         except Exception as e:
             logging.error(f"Error in Controller: {e}")
@@ -90,7 +90,7 @@ class Controller:
 
     def step(self, action_name, **kwargs):
         """
-        执行动作，并通过 TCP 服务器发送命令，等待并返回反馈。
+        execute action, send command through TCP server, wait and return feedback.
         """
         def execute_action():
             try:
@@ -115,9 +115,9 @@ class Controller:
                 logging.error(f"Error executing action {action_name}: {e}")
                 return None
         # self.thread_pool.submit(execute_action)
-        # # 将动作提交到线程池，独立执行，并等待结果
+        # # submit action to thread pool, execute independently, and wait for result
         # future = self.thread_pool.submit(execute_action)
-        # return future.result()  # 等待 execute_action 完成并返回结果
+        # return future.result()  # wait for execute_action to complete and return result
         # execute_action()
       
         if "successRate" not in kwargs:
@@ -132,14 +132,14 @@ class Controller:
             # print("feedback string: ",feed_back)
             feedback_json=json.loads(feed_back)
             
-            # 处理碰撞信息
+            # process collision info
             self._process_collision_info(feedback_json)
             
-            # 在日志中输出详细信息
+            # output detailed information in log
             if not feedback_json.get('success', False):
-                logging.warning(f"动作 '{action_name}' 执行失败: {feedback_json.get('msg', '未知错误')}")
+                logging.warning(f"action '{action_name}' failed: {feedback_json.get('msg', 'unknown error')}")
                 if self.last_collision_info:
-                    logging.warning(f"碰撞信息: {self.last_collision_info}")
+                    logging.warning(f"collision info: {self.last_collision_info}")
             
             return feedback_json
         except Exception as e:
@@ -148,12 +148,12 @@ class Controller:
         
     def _process_collision_info(self, feedback_json):
         """
-        从反馈中提取并处理碰撞信息
+        extract and process collision info from feedback
         """
-        # 清除上一次的碰撞信息
+        # clear last collision info
         self.last_collision_info = None
         
-        # 检查是否有碰撞信息
+        # check if there is collision info
         if 'collision_info' in feedback_json:
             collision_info = feedback_json['collision_info']
             self.last_collision_info = collision_info
@@ -161,12 +161,12 @@ class Controller:
             source = collision_info.get('source', 'unknown')
             target = collision_info.get('target', 'unknown')
             
-            # 记录详细的碰撞信息
-            logging.info(f"检测到碰撞: {source} 与 {target}")
+            # record detailed collision info
+            logging.info(f"detected collision: {source} and {target}")
             
     def get_last_collision_info(self):
         """
-        获取最后一次碰撞信息
+        get last collision info
         """
         return self.last_collision_info
         
@@ -183,18 +183,18 @@ class Controller:
             # print("feedback string: ",feed_back)
             feedback_json=json.loads(feed_back)
             
-            # 处理碰撞信息
+            # process collision info
             self._process_collision_info(feedback_json)
             
-            # 检查是否为多动作反馈（包含results字段）
+            # check if it is multi-action feedback (contains results field)
             if 'results' in feedback_json:
-                # 记录每个动作的执行结果
+                # record execution result of each action
                 for result in feedback_json['results']:
-                    action_name = result.get('action', '未知动作')
-                    arm = result.get('arm', '未知手臂')
+                    action_name = result.get('action', 'unknown action')
+                    arm = result.get('arm', 'unknown arm')
                     success = result.get('success', False)
-                    msg = result.get('msg', '无消息')
-                    logging.info(f"双臂动作结果: {arm}臂, {action_name}, 成功: {success}, 消息: {msg}")
+                    msg = result.get('msg', 'no message')
+                    logging.info(f"dual arm action result: {arm} arm, {action_name}, success: {success}, msg: {msg}")
             
             return feedback_json
         except Exception as e:
@@ -203,19 +203,19 @@ class Controller:
 
     def handle_feedback(self):
         """
-        后台线程：统一处理来自 Unity 的反馈。
+        background thread: handle feedback from Unity
         """
         while not self.stop_event.is_set():
             try:
                 feedback = self.tcp_server.receive()
                 logging.info(f"Feedback from Unity: {feedback}")
-                self.feedback_queue.put(feedback)  # 将反馈放入队列
+                self.feedback_queue.put(feedback)  # put feedback into queue
             except Exception as e:
                 logging.error(f"Error receiving feedback: {e}")
 
     def handle_user_input(self):
         """
-        动态解析用户输入，构造参数并调用动作执行器。
+        dynamic parsing user input, construct parameters and call action executor.
         """
         while True:
             try:
@@ -224,12 +224,12 @@ class Controller:
                     logging.warning("Empty input. Please enter a valid action.")
                     continue
 
-                # 动态解析输入
+                # dynamic parsing input
                 parts = user_input.split()
                 action_name = parts[0].lower()
                 parameters = self.executor.parse_parameters(parts[1:])
 
-                # 立即执行动作
+                # execute action immediately
                 self.step(action_name, **parameters)
             except KeyboardInterrupt:
                 logging.info("User stopped the program.")
@@ -239,28 +239,28 @@ class Controller:
 
     def reset_environment(self):
         """
-        重置环境。
+        reset environment.
         """
         logging.info("Resetting environment...")
         self.step("resetstate")
 
     def undo_last_action(self):
         """
-        撤销上一个动作。
+        undo last action.
         """
         logging.info("Undoing last action...")
         self.step("undo")
 
     def redo_last_action(self):
         """
-        重做上一个动作。
+        redo last action.
         """
         logging.info("Redoing last action...")
         self.step("redo")
 
     def load_robot(self, robottype):
         """
-        加载指定类型的机器人。
+        load specified type of robot.
         """
         logging.info(f"Loading robot of type: {robottype}")
         self.step("loadrobot", robottype=robottype)
@@ -272,7 +272,7 @@ class Controller:
 
     def on_client_connect(self):
         """
-        客户端连接时触发的事件。
+        event triggered when client connects.
         """
         logging.info(f"Client connected, sending loadrobot command for robot type: {self.robot_type}.")
         # res=self.reset_scene(scene=self.scene,robottype=self.robot_type)
@@ -286,7 +286,7 @@ class Controller:
 
     def wait_for_signal(self, signal_name):
         """
-        等待特定信号的到来。
+        wait for specific signal.
         """
         logging.info(f"Waiting for signal: {signal_name}")
         while True:
@@ -294,76 +294,76 @@ class Controller:
             if signal_name in feedback:
                 logging.info(f"Received signal: {signal_name}")
                 break
-            time.sleep(1)  # 延迟以避免过多的CPU占用
+            time.sleep(1)  # delay to avoid excessive CPU usage
 
     def execute_dual_arm_actions(self, actions, sequential=False):
         """
-        执行双臂动作，支持同步和顺序两种模式
+        execute dual arm actions, support synchronous and sequential modes
         
-        参数:
-        - actions: 包含左右臂动作的列表，每个动作为一个字典
-        - sequential: 是否按顺序执行（True=顺序执行，False=同时执行）
+        parameters:
+        - actions: list of actions, each action is a dictionary
+        - sequential: whether to execute sequentially (True=sequential, False=parallel)
         
-        返回:
-        - 包含两个臂执行结果的字典
+        return:
+        - dictionary containing execution results of two arms
         """
-        # 确保actions是列表
+        # ensure actions is a list
         if not isinstance(actions, list):
             logging.error("Actions must be a list")
             return {"success": False, "msg": "Actions must be a list", "results": []}
             
-        # 确保每个动作都有arm字段
+        # ensure each action has arm field
         for i, action in enumerate(actions):
             if 'arm' not in action:
-                logging.warning(f"动作 #{i} 没有指定arm字段，默认设为'left'")
+                logging.warning(f"action #{i} does not specify arm field, default to 'left'")
                 action['arm'] = 'left'
                 
       
         execution_mode = "sequential" if sequential else "parallel"
-        logging.info(f"设置双臂执行模式为: {execution_mode}")
+        logging.info(f"set dual arm execution mode to: {execution_mode}")
         dual_arm_actions = {"actions":actions,"executionMode":execution_mode}
 
-        # 构建动作JSON数组
+        # build action JSON array
         actions_json = json.dumps(dual_arm_actions)
-        logging.info(f"执行双臂动作: 模式={'sequential' if sequential else 'parallel'}, 动作数={len(actions)}")
+        logging.info(f"execute dual arm actions: mode={'sequential' if sequential else 'parallel'}, action number={len(actions)}")
         
-        # 发送动作并获取反馈
+        # send action and get feedback
         feedback = self.step_async(actions_json)
         
         if not feedback:
-            return {"success": False, "msg": "执行双臂动作失败，未收到反馈", "results": []}
+            return {"success": False, "msg": "failed to execute dual arm actions, no feedback", "results": []}
             
-        # 提取各个臂的执行结果
+        # extract execution results of each arm
         results = feedback.get('results', [])
         all_success = all(result.get('success', False) for result in results) if results else False
         
         return {
             "success": all_success,
-            "msg": "双臂动作执行完成",
+            "msg": "dual arm actions completed",
             "results": results
         }
 
-# 启动控制器
+# start controller
 if __name__ == '__main__':
     controller = Controller(config_path="config.json")  
     controller.start()
 
-    # 双臂动作示例
+    # dual arm actions example
     def dual_arm_example():
         """
-        双臂动作使用示例
+        dual arm actions example
         """
-        print("\n=== 双臂动作示例 ===")
+        print("\n=== dual arm actions example ===")
         
-        # 创建控制器实例
+        # create controller instance
         controller = Controller(config_path="config.json", start_unity_exe=False)
         controller.start()
         
-        # 等待连接
+        # wait for connection
         time.sleep(2)
         
-        # 示例1：顺序执行 - 左臂先拿杯子，然后右臂开冰箱
-        print("\n1. 顺序执行示例（左臂拿杯子，然后右臂开冰箱）")
+        # example 1: sequential execution - left arm pick cup, then right arm open fridge
+        print("\n1. sequential execution example (left arm pick cup, then right arm open fridge)")
         sequential_actions = [
             {
                 "action": "pick",
@@ -380,16 +380,16 @@ if __name__ == '__main__':
         ]
         
         results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
-        print(f"顺序执行结果: 成功={results['success']}")
+        print(f"sequential execution result: success={results['success']}")
         for i, result in enumerate(results.get('results', [])):
-            print(f"  动作 {i+1} ({result.get('arm')}臂 {result.get('action')}): "
-                  f"{'成功' if result.get('success') else '失败'} - {result.get('msg')}")
+            print(f"   action {i+1} ({result.get('arm')} arm {result.get('action')}): "
+                  f"{'success' if result.get('success') else 'failed'} - {result.get('msg')}")
         
-        # 等待几秒
+        # wait for a few seconds
         time.sleep(3)
         
-        # 示例2：同时执行 - 两臂同时放下物体
-        print("\n2. 同时执行示例（两臂同时放下物体）")
+        # example 2: parallel execution - two arms place object
+        print("\n2. parallel execution example (two arms place object)")
         parallel_actions = [
             {
                 "action": "place",
@@ -406,10 +406,10 @@ if __name__ == '__main__':
         ]
         
         results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
-        print(f"同时执行结果: 成功={results['success']}")
+        print(f"parallel execution result: success={results['success']}")
         for i, result in enumerate(results.get('results', [])):
-            print(f"  动作 {i+1} ({result.get('arm')}臂 {result.get('action')}): "
-                  f"{'成功' if result.get('success') else '失败'} - {result.get('msg')}")
+            print(f"   action {i+1} ({result.get('arm')} arm {result.get('action')}): "
+                  f"{'success' if result.get('success') else 'failed'} - {result.get('msg')}")
             
-    # 取消注释下面的行来运行示例
+    # uncomment the following line to run the example
     # dual_arm_example()

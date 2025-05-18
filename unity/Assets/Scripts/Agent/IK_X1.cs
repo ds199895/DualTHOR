@@ -131,24 +131,24 @@ public class IK_X1 : IKBase
         {
             List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
             OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
-            Debug.Log("IK角度: " + string.Join(", ", jointAnglesDegrees));
+            Debug.Log("IK angles: " + string.Join(", ", jointAnglesDegrees));
         }
         else
         {
-            Debug.Log("IK计算失败");
+            Debug.Log("IK calculation failed");
         }
     }
 
-    // 将目标位置转换为基座坐标系
+    // convert the target position to the base coordinate system
     Vector3 ConvertToBaseCoordinates(Vector3 targetPosition, Transform baseTransform)
     {
         Vector3 relativePosition = targetPosition - baseTransform.position;
         Vector3 result = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
-        //Debug.Log("相对于基座的目标位置: " + result);
+        //Debug.Log("Relative position: " + result);
         return result;
     }
 
-    // 将弧度转换为归一化的角度
+    // convert the radians to the normalized angle
     private List<float> ConvertToDegrees(List<float> jointAnglesRadians)
     {
         List<float> jointAnglesDegrees = new List<float>();
@@ -158,7 +158,7 @@ public class IK_X1 : IKBase
             degree = agentMovement.NormalizeAngle(degree);
             jointAnglesDegrees.Add(degree);
         }
-        //Debug.Log("关节角度（弧度转换为度）: " + string.Join(", ", jointAnglesDegrees));
+        //Debug.Log("Joint angles: " + string.Join(", ", jointAnglesDegrees));
         return jointAnglesDegrees;
     }
 }

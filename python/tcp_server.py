@@ -2,7 +2,7 @@ import socket
 import logging
 import json
 import time
-# 设置日志记录
+# set logging
 logging.basicConfig(level=logging.INFO)
 
 class TCPServer:
@@ -12,11 +12,11 @@ class TCPServer:
         self.server_socket = None
         self.conn = None
         self.addr = None
-        self.on_connect = None  # 添加连接事件回调
+        self.on_connect = None  # add connection event callback
 
     def start(self):
         """
-        启动 TCP 服务器，等待客户端连接。
+        start TCP server, waiting for client connection.
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -36,7 +36,7 @@ class TCPServer:
 
     def send(self, data):
         """
-        向客户端发送数据。
+        send data to client.
         """
         if not self.conn:
             raise Exception("No active connection to send data.")
@@ -45,19 +45,19 @@ class TCPServer:
 
     def send_robot_type(self, robot_type):
         """
-        发送 robot_type 参数给客户端，格式为 JSON。
+        send robot_type parameter to client, format as JSON.
         """
         if not self.conn:
             raise Exception("No active connection to send data.")
         
-        # 将 robot_type 转换为 JSON 格式
+        # convert robot_type to JSON format
         data = json.dumps({"robot_type": robot_type})
         self.conn.sendall(data.encode() + b'\n')
         logging.info(f"Sent robot type as JSON: {data}")
 
     def receive(self):
         """
-        从客户端接收数据。
+        receive data from client.
         """
         if not self.conn:
             raise Exception("No active connection to receive data.")
@@ -76,7 +76,7 @@ class TCPServer:
 
     def stop(self):
         """
-        关闭 TCP 服务器。
+        close TCP server.
         """
         if self.conn:
             self.conn.close()

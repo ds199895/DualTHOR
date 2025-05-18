@@ -40,24 +40,12 @@ pip install meshcat
 pip install casadi
 ```
 
----
-Unitree DDS (unitree_dds_wrapper)
-
-```bash
-# Install the Python version of the unitree_dds_wrapper.
-git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
-cd unitree_dds_wrapper/python
-pip install -e .
-```
-
-
 
 #### 3. Start Agent Server
 
 ```bash
-python main.py
+python test.py
 ```
-![alt text](image/img_v3_launcher.gif)
 
 ## Operation Methods
 
@@ -117,29 +105,56 @@ A total of eight interaction states are set:
 7. **Slice**: Items can be sliced. Such as slicing a potato into many pieces. Sliced items with the Cook property can also be cooked.
 8. **ToggleOnOff**: Items can be toggled. Such as faucet switches, coffee machine switches.
 9. **UsedUp**: Items can be used up. Such as toilet paper can be depleted.
-### 3. Interaction Table
-This table lists all currently interactive item types in kitchen, item ID naming (Room_ItemType_ID), location, interactive states, and notes.
-| Item Type   |Item ID Format| Room | Interactive States | Notes |
-|:-: |:-:|:-:|:-:|:-:|
-| Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
-| CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
-| Drawer   |Kitchen_Drawer_ID| Kitchen   | Contains,Open   |    |
-| Faucet   |Kitchen_Faucet_ID| Kitchen   | ToggleOnOff   |    |
-| Fridge   |Kitchen_Fridge_ID| Kitchen   | Contains,Open  |    |
-| Mug   |Kitchen_Mug_ID| Kitchen   | Break,Can pickup,Fill   |    |
-| Pan   |Kitchen_Pan_ID| Kitchen   | Can pickup,Contains   |   |
-| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kitchen   | Can pickup,UsedUp   |   |
-| Potato   |Kitchen_Potato_ID| Kitchen   | Can pickup,Cook,Slice   | Potatoes can be cooked, or sliced and then cooked  |
-| StoveKnob   |Kitchen_StoveKnob_ID| Kitchen   | ToggleOnOff   |  Gas stove switch  |
-| Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
-| CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
-| Drawer   |Kitchen_Drawer_ID| Kitchen   | Contains,Open   |    |
-| Faucet   |Kitchen_Faucet_ID| Kitchen   | ToggleOnOff   |    |
-| Fridge   |Kitchen_Fridge_ID| Kitchen   | Contains,Open  |    |
-| Mug   |Kitchen_Mug_ID| Kitchen   | Break,Can pickup,Fill   |    |
-| Pan   |Kitchen_Pan_ID| Kitchen   | Can pickup,Contains   |   |
-| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kitchen   | Can pickup,UsedUp   |   |
-| Potato   |Kitchen_Potato_ID| Kitchen   | Can pickup,Cook,Slice   | Potatoes can be cooked, or sliced and then cooked  |
-| StoveKnob   |Kitchen_StoveKnob_ID| Kitchen   | ToggleOnOff   |  Gas stove switch  |
+10.**Spill**: Items can be spilled. Such as cup filled with liquid.
+### 3. Success Rate System
+
+The Success Rate System in DualTHOR provides a realistic action execution model with configurable probabilities of success and failure. The system includes:
+
+1. **Configurable Success Rates**: Each action type (pick, place, toggle, etc.) has a base success rate that can be customized in ErrorConfig.json.
+
+2. **Object-Specific Success Rates**: Success rates can be further customized based on object type and state (e.g., filled cups have different success rates than empty cups).
+
+3. **Contextual Error Messages**: When actions fail, the system selects appropriate error messages from a weighted probability pool, providing realistic feedback.
+
+4. **Automatic State Transitions**: Failed actions can trigger automatic state changes in objects (e.g., a dropped cup might break or spill its contents).
+
+5. **Implementation**: 
+   - Action success is determined by comparing a random value against the configured success rate
+   - Error messages are selected based on their configured probability weights
+   - The system can automatically apply state changes to affected objects
+
+This system creates more realistic interactions where actions can occasionally fail, requiring agents to adapt and recover, similar to real-world robotic task execution.
+
+### pick success rate
+<div style="display:flex; gap:2%">
+  <img src="image/broken.jpg" width="49%" />
+  <img src="image/broken1.jpg" width="49%" />
+</div>
+<p align="center"><strong>broken</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/spill.jpg" width="49%" />
+  <img src="image/spill1.jpg" width="49%" />
+</div>
+<p align="center"><strong>spill</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/nothing.jpg" width="49%" />
+  <img src="image/nothing1.jpg" width="49%" />
+</div>
+<p align="center"><strong>nothing happens</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/success.jpg" width="49%" />
+  <img src="image/success1.jpg" width="49%" />
+</div>
+<p align="center"><strong>success</strong></p>
 
 
+## Extended Develop
+If you want to add some features or make modifications yourself, please install Unity Editor 2022.3.x or Unity 6. Then open the unity directory in the Unity Editor. After making your changes, rebuild the project to the unity/Build directory.
+
+And if you want to debug with Unity Editor，please change the controller parameter "start_unity_exe" to False

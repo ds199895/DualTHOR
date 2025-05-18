@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//场景版本管理的场景状态信息
+// Scene state information for version management
 [System.Serializable]
 public class SceneState
 {
@@ -11,40 +11,40 @@ public class SceneState
     public Quaternion agentRotation;
     public ObjectState[] objects; 
 
-    //每个手臂七个关节角+2个爪子角度
-    public List<float> jointAngles; // 存储所有关节的角度
-    public List<float> gripperAngles; // 存储爪子的角度
+    // Each arm has seven joint angles + 2 gripper angles
+    public List<float> jointAngles; // Store all joint angles
+    public List<float> gripperAngles; // Store gripper angles
 }
 
-[System.Serializable] //加了这个才能被JsonUtility.ToJson正确序列化
-//物体的状态
+[System.Serializable] // Add this to be serialized by JsonUtility.ToJson
+// Object state
 public class ObjectState
 {
-    public string name;//物体名称
-    public Vector3 position;//物体位置
-    public Quaternion rotation;//物体朝向
+    public string name;// Object name
+    public Vector3 position;// Object position
+    public Quaternion rotation;// Object orientation
     public bool isActive;
-    public bool isPickedUp; // 是否被拿起，即父物体是否为Hand
-    //break物体具有的状态
+    public bool isPickedUp; // Whether it is picked up, that is, the parent object is Hand
+    // Break object state
     public BreakState breakState;
-    //cook物体具有的状态
+    // Cook object state
     public CookState cookState;
-    //toggle物体状态
+    // Toggle object state
     public ToggleState toggleState;
-    //open物体状态
+    // Open object state
     public OpenState openState;
-    //fill物体状态
+    // Fill object state
     public FillState fillState;
-    //usedup物体状态
+    // Used up object state
     public UsedUpState usedUpState;
-    //slice物体状态
+    // Sliced object state
     public SlicedState slicedState;
-    //spill物体状态
+    // Spill object state
     public SpillState spillState;
 }
 
 [System.Serializable]
-//break物体具有的状态
+// Break object state
 public class BreakState
 {
 
@@ -55,7 +55,7 @@ public class BreakState
 }
 
 [System.Serializable]
-//cook物体具有的状态
+// Cook object state
 public class CookState
 {
     public bool isCooked;
@@ -63,7 +63,7 @@ public class CookState
     public List<Material> materials;
 }
 
-//toggle的状态
+// Toggle object state
 [System.Serializable]
 public class ToggleState
 {
@@ -75,7 +75,7 @@ public class ToggleState
 
 }
 
-//openable的状态
+// Open object state
 [System.Serializable]
 public class OpenState
 {
@@ -84,7 +84,7 @@ public class OpenState
 
 }
 
-//fillable的状态
+// Fill object state
 [System.Serializable]
 public class FillState
 {
@@ -93,14 +93,14 @@ public class FillState
     public float[] fillObjHeight;
 }
 
-//slice的状态
+// Sliced object state
 [System.Serializable]
 public class SliceState
 {
     public bool isSliced = false;
 }
 
-//usedup的状态
+// Used up object state
 [System.Serializable]
 
 public class UsedUpState
@@ -123,26 +123,26 @@ public class SpillState
 
 public class jointsStates
 {
-    // 左手臂的关节角度
-    public float arm_left_link01; // 左手臂第1个关节角度
-    public float arm_left_link02; // 左手臂第2个关节角度
-    public float arm_left_link03; // 左手臂第3个关节角度
-    public float arm_left_link04; // 左手臂第4个关节角度
-    public float arm_left_link05; // 左手臂第5个关节角度
-    public float arm_left_link06; // 左手臂第6个关节角度
-    public float arm_left_link07; // 左手臂第7个关节角度
-    public float hand_left_link02;   // 左手臂左夹爪角度
-    public float hand_left_link01;   // 左手臂右夹爪角度
+    // Left arm joint angle
+    public float arm_left_link01; // Left arm joint angle 1
+    public float arm_left_link02; // Left arm joint angle 2
+    public float arm_left_link03; // Left arm joint angle 3
+    public float arm_left_link04; // Left arm joint angle 4
+    public float arm_left_link05; // Left arm joint angle 5
+    public float arm_left_link06; // Left arm joint angle 6
+    public float arm_left_link07; // Left arm joint angle 7
+    public float hand_left_link02;   // Left arm left gripper angle
+    public float hand_left_link01;   // Left arm right gripper angle
 
-    // 右手臂的关节角度
-    public float arm_right_link01; // 右手臂第1个关节角度
-    public float arm_right_link02; // 右手臂第2个关节角度
-    public float arm_right_link03; // 右手臂第3个关节角度
-    public float arm_right_link04; // 右手臂第4个关节角度
-    public float arm_right_link05; // 右手臂第5个关节角度
-    public float arm_right_link06; // 右手臂第6个关节角度
-    public float arm_right_link07; // 右手臂第7个关节角度
-    public float hand_right_link02;   // 右手臂左夹爪角度
-    public float hand_right_link01;   // 右手臂右夹爪角度
+    // Right arm joint angle
+    public float arm_right_link01; // Right arm joint angle 1
+    public float arm_right_link02; // Right arm joint angle 2
+    public float arm_right_link03; // Right arm joint angle 3
+    public float arm_right_link04; // Right arm joint angle 4
+    public float arm_right_link05; // Right arm joint angle 5
+    public float arm_right_link06; // Right arm joint angle 6
+    public float arm_right_link07; // Right arm joint angle 7
+    public float hand_right_link02;   // Right arm left gripper angle
+    public float hand_right_link01;   // Right arm right gripper angle
 
 }

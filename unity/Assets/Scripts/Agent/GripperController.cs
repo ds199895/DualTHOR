@@ -69,8 +69,8 @@ public class GripperController : MonoBehaviour
 
         if (open)
         {
-            leftDrive.target = isLeftArm ? 11f : 11f; //左夹爪
-            rightDrive.target = isLeftArm ? -11f : -11f; // 右夹爪
+            leftDrive.target = isLeftArm ? 11f : 11f; //Left gripper 
+            rightDrive.target = isLeftArm ? -11f : -11f; //Right gripper
         }
         else
         {

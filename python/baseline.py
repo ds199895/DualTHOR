@@ -28,87 +28,64 @@ def find_max_numbered_file(imagepath):
     max_file = None
     
     try:
-        # 遍历目录中的文件，使用生成器表达式过滤符合条件的文件
+        # iterate over files in directory, filter files that match the pattern
         for file in os.listdir(imagepath):
             match = pattern.match(file)
             if match:
-                # 提取数字并转换为整数
+                # extract number and convert to integer
                 number = int(match.group(1))
-                # 更新最大值和对应的文件名
+                # update max value and corresponding file name
                 if number > max_number:
                     max_number = number
                     max_file = file
     except FileNotFoundError:
-        print(f"路径 {imagepath} 不存在")
+        print(f"path {imagepath} does not exist")
         return None
     
     if max_file:
         return os.path.join(imagepath, max_file)
     else:
-        print("未找到符合条件的文件")
+        print("no file found")
         return None
     
-# def stringtrasnfer(output):
-#     # 尝试解析为 JSON
-#     try:
-#         # 去掉多余的空白字符
-#         output = output.strip()
-#         # 尝试解析为 JSON
-#         data = json.loads(output)
-#         # 提取 action 字段
-#         action = data.get("action")
-#         if action is not None:
-#             return action
-#     except json.JSONDecodeError:
-#         # 如果不是 JSON 格式，继续尝试用正则表达式提取
-#         pass
-
-#     # 使用正则表达式提取 action 的值
-#     pattern = re.compile(r'"action"\s*:\s*"([^"]+)"')
-#     match = pattern.search(output)
-#     if match:
-#         return match.group(1)  # 提取双引号中的值
-
-#     # 如果仍然无法提取，返回 None
-#     return None
 
 def stringtrasnfer(output):
-    # 初始化结果
+    # initialize results
     action, obj = None, None
 
-    # 尝试解析为 JSON
+    # try to parse as JSON
     try:
-        # 去掉多余的空白字符
+        # remove extra whitespace characters
         output = output.strip()
-        # 尝试解析为 JSON
+        # try to parse as JSON
         data = json.loads(output)
-        # 提取 action 和 object 字段
+        # extract action and object fields
         action = data.get("action")
         obj = data.get("object")
         return action, obj
     except json.JSONDecodeError:
-        # 如果不是 JSON 格式，继续尝试用正则表达式提取
+        # if not JSON format, continue to try to extract using regex
         pass
 
-    # 使用正则表达式提取 action 和 object 的值
+    # use regex to extract action and object values
     action_pattern = re.compile(r'"action"\s*:\s*"([^"]+)"')
     object_pattern = re.compile(r'"object"\s*:\s*(null|"[^"]*")')
 
-    # 提取 action
+    # extract action
     action_match = action_pattern.search(output)
     if action_match:
-        action = action_match.group(1)  # 提取双引号中的值
+        action = action_match.group(1)  # extract value in double quotes
 
-    # 提取 object
+    # extract object
     object_match = object_pattern.search(output)
     if object_match:
-        obj = object_match.group(1)  # 提取值（可能是 null 或字符串）
-        if obj == "null":  # 处理 null 值
+        obj = object_match.group(1)  # extract value (null or string)
+        if obj == "null":  # handle null value
             obj = None
-        elif obj.startswith('"') and obj.endswith('"'):  # 去掉字符串的双引号
+        elif obj.startswith('"') and obj.endswith('"'):  # remove double quotes from string
             obj = obj[1:-1]
 
-    # 返回结果
+    # return results
     return action, obj
 
 

@@ -12,7 +12,7 @@ app = Flask(__name__)
 class H1_IK_Solver:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
-        # 加载机器人模型
+        # load robot model
         # self.robot = pin.RobotWrapper.BuildFromURDF(urdf_filename, os.path.dirname(urdf_filename))
         self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_description/urdf/h1_with_hand.urdf', '../assets/h1_description/') # for test
 
@@ -61,13 +61,13 @@ class H1_IK_Solver:
                                         "right_hand_joint"    
                                       ]
    
-        # 构建简化机器人模型
+        # build simplified robot model
         self.reduced_robot = self.robot.buildReducedRobot(
             list_of_joints_to_lock=self.mixed_jointsToLockIDs,
             reference_configuration=np.array([0.0] * self.robot.model.nq),
         )
 
-        # 添加末端执行器帧
+        # add end-effector frame
         self.reduced_robot.model.addFrame(
             pin.Frame('L_ee',
                      self.reduced_robot.model.getJointId('left_elbow_joint'),
@@ -84,17 +84,17 @@ class H1_IK_Solver:
 
         self.init_data = np.zeros(self.reduced_robot.model.nq)
 
-        # 创建 Casadi 模型
+        # create Casadi model
         self.cmodel = cpin.Model(self.reduced_robot.model)
         self.cdata = self.cmodel.createData()
 
-        # 创建符号变量
+        # create symbolic variables
         self.cq = casadi.SX.sym("q", self.reduced_robot.model.nq, 1)
         self.cTf_l = casadi.SX.sym("tf_l", 4, 4)
         self.cTf_r = casadi.SX.sym("tf_r", 4, 4)
         cpin.framesForwardKinematics(self.cmodel, self.cdata, self.cq)
 
-        # 获取手部关节ID并定义误差函数
+        # get hand joint ID and define error function
         self.L_hand_id = self.reduced_robot.model.getFrameId("L_ee")
         self.R_hand_id = self.reduced_robot.model.getFrameId("R_ee")
         self.error = casadi.Function(
@@ -112,7 +112,7 @@ class H1_IK_Solver:
             ],
         )
 
-        # 定义优化问题
+        # define optimization problem
         self.opti = casadi.Opti()
         self.var_q = self.opti.variable(self.reduced_robot.model.nq)
         self.param_tf_l = self.opti.parameter(4, 4)
@@ -120,7 +120,7 @@ class H1_IK_Solver:
         self.totalcost = casadi.sumsqr(self.error(self.var_q, self.param_tf_l, self.param_tf_r))
         self.regularization = casadi.sumsqr(self.var_q)
 
-        # 设置优化约束和目标
+        # set optimization constraints and objective
         self.opti.subject_to(self.opti.bounded(
             self.reduced_robot.model.lowerPositionLimit,
             self.var_q,
@@ -128,7 +128,7 @@ class H1_IK_Solver:
         )
         self.opti.minimize(10 * self.totalcost + 0.001 * self.regularization)
 
-        # 配置求解器选项
+        # configure solver options
         opts = {
             'ipopt':{
                 'print_level':0,
@@ -140,7 +140,7 @@ class H1_IK_Solver:
         self.opti.solver("ipopt", opts)
 
     def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.55, robot_arm_length=0.75):
-        """调整人类姿势到机器人尺度"""
+        """adjust human pose to robot scale"""
         scale_factor = robot_arm_length / human_arm_length
         robot_left_pose = human_left_pose.copy()
         robot_right_pose = human_right_pose.copy()
@@ -149,7 +149,7 @@ class H1_IK_Solver:
         return robot_left_pose, robot_right_pose
 
     def solve_ik(self, left_pose, right_pose, motorstate=None, motorV=None):
-        """求解IK问题"""
+        """solve IK problem"""
         if motorstate is not None:
             self.init_data = motorstate
         self.opti.set_initial(self.var_q, self.init_data)
@@ -177,12 +177,12 @@ class H1_IK_Solver:
             print(f"IK求解失败: {e}")
             return False, None, None
 
-# 创建IK求解器实例
+# create IK solver instance
 ik_solver = H1_IK_Solver()
 # ik_solver=Arm_IK()
 @app.route('/ik', methods=['POST'])
 def ik_service():
-    """IK服务的HTTP端点"""
+    """IK service HTTP endpoint"""
     try:
         data = request.json
         left_pose = np.array(data['left_pose'])
@@ -201,7 +201,7 @@ def ik_service():
             'tau': tau.tolist() if tau is not None else None
         }
 
-        print("发送响应到客户端:")
+        print("send response to client:")
         print(response)
 
         return jsonify(response)
@@ -213,8 +213,8 @@ def ik_service():
         }), 400
 
 def start_server_ik():
-    """启动IK服务器"""
-    print("启动IK服务器...")
+    """start IK server"""
+    print("starting IK server...")
     app.run(host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
