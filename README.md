@@ -1,10 +1,11 @@
 # DualTHOR
 We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) that runs on the web for training and evaluation of embodied agents and multimodal models. In addition to AI2-THOR, we have added the following features:
-- Dual-arm action execution: Now supports parallel, asynchronous task execution with both arms.
-- Task rollback: Supports rolling back to any time step during task execution, improving data synthesis efficiency.
-- Action probability system: This version adds a probability system that can customize success rates for individual actions according to config.json.
+- Dual-arm task setup: support more diverse dual-arm tasks including dual-arm essential tasks, dual-arm optional tasks and single-arm tasks.
+- Dual-arm action execution: Now support parallel task execution with both arms.
+- Task replay mechanism: Support rolling back to any time step during task execution, improving data synthesis efficiency.
+- Contingency system: This version adds a probability system that can customize success rates for individual actions according to config.json.
 - More realistic action execution: Added IK library to implement actions, replacing direct attachment transfer, allowing for more detailed simulation of action execution time.
-- More realistic state changes: Added more detailed tuning for states such as water filling and cooking.
+- More realistic state transitions: Added more detailed tuning for states such as water filling and cooking.
 
 
 ## Installation
@@ -51,7 +52,7 @@ python test.py
 
 ### 1. Python Side:
 Python is mainly used to control the Agent in the virtual environment to perform navigation, interaction, control and other tasks, and to obtain perception data from the environment. The main scripts are:
-   1. main.py: Main program entry, including launcher, tcp_server, server_ik; simply start this file directly.
+   1. test.py: Main program entry, including launcher, tcp_server, server_ik; simply test the performance of humanoid robot low-level control.
    2. controller.py: Controller program, responsible for interacting with the Unity environment, starting the server, calling action methods, sending and providing feedback.
    3. config.json: Configuration file, currently only contains success rate; more parameters can be added as needed.
    4. actions: Action scripts containing all action methods.
@@ -106,9 +107,9 @@ A total of eight interaction states are set:
 8. **ToggleOnOff**: Items can be toggled. Such as faucet switches, coffee machine switches.
 9. **UsedUp**: Items can be used up. Such as toilet paper can be depleted.
 10.**Spill**: Items can be spilled. Such as cup filled with liquid.
-### 3. Success Rate System
+### 3. Contingency Mechanism
 
-The Success Rate System in DualTHOR provides a realistic action execution model with configurable probabilities of success and failure. The system includes:
+The Contingency Mechanism in DualTHOR provides a realistic action execution model with configurable probabilities of success and failure. The mechanism includes:
 
 1. **Configurable Success Rates**: Each action type (pick, place, toggle, etc.) has a base success rate that can be customized in ErrorConfig.json.
 
