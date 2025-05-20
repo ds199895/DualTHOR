@@ -183,22 +183,11 @@ public class CameraController : MonoBehaviour
         // ensure the save directory exists
         Directory.CreateDirectory(dirPath);
 
-        // Create a temporary render texture with correct color space handling
-        RenderTexture tempRT = RenderTexture.GetTemporary(
-            renderTexture.width, 
-            renderTexture.height, 
-            0, 
-            RenderTextureFormat.ARGB32, 
-            RenderTextureReadWrite.sRGB);  // Use sRGB to ensure proper gamma correction
-            
-        // Blit with gamma correction
-        Graphics.Blit(renderTexture, tempRT);
-        
         // save the RenderTexture content to the PNG file
-        Texture2D texture = new Texture2D(tempRT.width, tempRT.height, TextureFormat.RGB24, false);
+        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
         RenderTexture currentRT = RenderTexture.active;
-        RenderTexture.active = tempRT;
-        texture.ReadPixels(new Rect(0, 0, tempRT.width, tempRT.height), 0, 0);
+        RenderTexture.active = renderTexture;
+        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
         texture.Apply();
         RenderTexture.active = currentRT;
 
@@ -206,6 +195,6 @@ public class CameraController : MonoBehaviour
         File.WriteAllBytes(filePath, pngData);
 
         Destroy(texture);
-        RenderTexture.ReleaseTemporary(tempRT);
+
     }
 }

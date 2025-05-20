@@ -34821,6 +34821,7 @@ GameObject:
   - component: {fileID: 807720019}
   - component: {fileID: 807720018}
   - component: {fileID: 807720017}
+  - component: {fileID: 807720020}
   m_Layer: 0
   m_Name: EgocentricCam
   m_TagString: Untagged
@@ -34946,6 +34947,25 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &807720020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 807720015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9020c4de514caa4a8ff1c91e8808616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  depthCam: {fileID: 807720019}
+  depthRT: {fileID: 8400000, guid: 8a3acbd394f479f12a65119f7b9f6457, type: 2}
+  depthShader: {fileID: 4800000, guid: 2c2c53af5657ca64cb735b693c8252b3, type: 3}
+  depthSavePath: 
+  saveDepth: 1
+  depthImageCount: 0
+  depthScale: 1
 --- !u!1 &812180476
 GameObject:
   m_ObjectHideFlags: 0
@@ -36952,6 +36972,7 @@ GameObject:
   m_Component:
   - component: {fileID: 844725029}
   - component: {fileID: 844725028}
+  - component: {fileID: 844725030}
   m_Layer: 0
   m_Name: CameraController
   m_TagString: Untagged
@@ -37011,6 +37032,20 @@ Transform:
   - {fileID: 362908836}
   m_Father: {fileID: 326728934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &844725030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844725027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98fc1d96a8c751181bed3a60265da307, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  depthShader: {fileID: 4800000, guid: 2c2c53af5657ca64cb735b693c8252b3, type: 3}
+  depthMaterial: {fileID: 2100000, guid: 2688861550def7f4fb0b03538eb06b4b, type: 2}
 --- !u!1 &847562032
 GameObject:
   m_ObjectHideFlags: 0

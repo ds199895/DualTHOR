@@ -165,9 +165,34 @@ public class UnityClient : MonoBehaviour
     private async Task ProcessActionData(ActionData actionData) {
         Debug.Log("Start recording .....");
         
-        sceneStateManager.camera_ctrl.imgeDir=Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+        string imagePath = Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imagePath;
         Debug.Log("Set image save path: "+sceneStateManager.camera_ctrl.imgeDir);
-        sceneStateManager.camera_ctrl.record=true;
+        sceneStateManager.camera_ctrl.record = true;
+        
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imagePath, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        else
+        {
+            Debug.LogWarning("Depth camera not found, cannot save depth images");
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imagePath, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
 
         Debug.Log("Parsed Action Data: "+actionData.ToString());
         if (string.IsNullOrEmpty(actionData.action)) {
@@ -328,6 +353,22 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Stop recording");
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
+        
+        // 停止深度相机保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            depthCam.StopSavingDepth();
+            depthCam.ResetImageCount();
+        }
+        
+        // 确保Capture360已完成捕获
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            capture360.saveCubemap = false;
+            Debug.Log("Ensured cubemap capture is stopped");
+        }
     }
 
     public void SendFeedbackToPython(bool success)
@@ -382,6 +423,22 @@ public class UnityClient : MonoBehaviour
         {
             sceneStateManager.camera_ctrl.record = false;
             sceneStateManager.camera_ctrl.ResetImageCount();
+            
+            // 停止深度相机保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                depthCam.StopSavingDepth();
+                depthCam.ResetImageCount();
+            }
+            
+            // 确保Capture360已完成捕获
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                capture360.saveCubemap = false;
+                Debug.Log("Ensured cubemap capture is stopped");
+            }
         }
     }
 
@@ -415,10 +472,31 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Start resetting state process - capture initial screenshot");
         
         // Set image save path, using resetstate prefix and unique ID
-        sceneStateManager.camera_ctrl.imgeDir = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imagePath;
         
         // Ensure camera controller starts recording
         sceneStateManager.camera_ctrl.record = true;
+        
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imagePath, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imagePath, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
         
         // Wait for a few frames to ensure the screenshot is complete
         yield return new WaitForSeconds(0.5f);
@@ -448,8 +526,29 @@ public class UnityClient : MonoBehaviour
         try
         {
             // Set recording path - ensure unique ID for each dual arm operation
-            sceneStateManager.camera_ctrl.imgeDir = Path.Combine(Application.dataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
+            string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
+            sceneStateManager.camera_ctrl.imgeDir = imagePath;
             sceneStateManager.camera_ctrl.record = true;
+            
+            // 设置深度相机开始保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                // 在相同路径下创建depth子文件夹
+                string depthPath = Path.Combine(imagePath, "depth");
+                depthCam.StartSavingDepth(depthPath);
+                Debug.Log("Depth camera started recording to: " + depthPath);
+            }
+            
+            // 尝试使用Capture360捕获全景图
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                // 在相同路径下创建cubemap子文件夹
+                string cubemapPath = Path.Combine(imagePath, "cubemap");
+                capture360.StartSavingCubemap(cubemapPath);
+                Debug.Log("Cubemap capture started to: " + cubemapPath);
+            }
             
             Debug.Log("Start dual arm action recording...");
             
@@ -539,6 +638,22 @@ public class UnityClient : MonoBehaviour
             // Ensure recording stops
             sceneStateManager.camera_ctrl.record = false;
             sceneStateManager.camera_ctrl.ResetImageCount();
+            
+            // 停止深度相机保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                depthCam.StopSavingDepth();
+                depthCam.ResetImageCount();
+            }
+            
+            // 确保Capture360已完成捕获
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                capture360.saveCubemap = false;
+                Debug.Log("Ensured cubemap capture is stopped");
+            }
         }
     }
     
@@ -775,6 +890,31 @@ public class UnityClient : MonoBehaviour
         bool success = false;
         string message = "lift operation not completed";
         
+        // Create image save path
+        string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imageDir;
+        sceneStateManager.camera_ctrl.record = true;
+        
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imageDir, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imageDir, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
+        
         // Execute lift operation (put it outside the try block)
         yield return StartCoroutine(agentMovement.Lift(objectID));
         
@@ -828,5 +968,19 @@ public class UnityClient : MonoBehaviour
         // Ensure recording stops
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
+        
+        // 停止深度相机保存
+        if (depthCam != null)
+        {
+            depthCam.StopSavingDepth();
+            depthCam.ResetImageCount();
+        }
+        
+        // 确保Capture360已完成捕获
+        if (capture360 != null)
+        {
+            capture360.saveCubemap = false;
+            Debug.Log("Ensured cubemap capture is stopped");
+        }
     }
 }
