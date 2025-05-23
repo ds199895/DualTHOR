@@ -126,7 +126,7 @@ The Contingency Mechanism in DualTHOR provides a realistic action execution mode
 
 This system creates more realistic interactions where actions can occasionally fail, requiring agents to adapt and recover, similar to real-world robotic task execution.
 
-### pick success rate
+### Example of picking action
 <div style="display:flex; gap:2%">
   <img src="image/broken.jpg" width="49%" />
   <img src="image/broken1.jpg" width="49%" />
