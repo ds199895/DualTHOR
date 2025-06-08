@@ -30,6 +30,7 @@ public class UnityClient : MonoBehaviour
         public string stateID;
         public string robotType;
         public string scene;
+        public string container;
     }
     
     [Serializable]

@@ -582,7 +582,7 @@ public class AgentMovement : MonoBehaviour
                 }
                 else if (method.Name.Equals("Place", StringComparison.OrdinalIgnoreCase))
                 {
-                    StartCoroutine(Place((string)args[0], (bool)args[1], callback));
+                    StartCoroutine(Place((string)args[0], (bool)args[1], callback, (string)args[2]));
                 }
                 else if (method.Name.Equals("Toggle", StringComparison.OrdinalIgnoreCase))
                 {
@@ -791,6 +791,17 @@ public class AgentMovement : MonoBehaviour
                     else
                     {
                         Debug.LogError("Magnitude is not Set");
+                    }
+                    break;
+                case "container":
+                    if (!string.IsNullOrEmpty(actionData.container))
+                    {
+                        Debug.Log("container: " + actionData.container);
+                        args.Add(actionData.container);
+                    }
+                    else
+                    {
+                        args.Add(null); // Default to null for optional container parameter
                     }
                     break;
                 default:
@@ -1577,7 +1588,7 @@ public class AgentMovement : MonoBehaviour
         callback?.Invoke(successData);
     }
 
-    public IEnumerator Place(string objectID, bool isLeftArm, Action<JsonData> callback)
+    public IEnumerator Place(string objectID, bool isLeftArm, Action<JsonData> callback, string container = null)
     {
         // set the current interacting object
         SetCurrentInteractingObject(objectID);
@@ -1598,23 +1609,46 @@ public class AgentMovement : MonoBehaviour
         // reset the state flag
         hasMovedToPosition = false;
 
-        // get the transfer point of the object
-        Transform get_trans = SceneStateManager.GetTransferPointByObjectID(objectID);
-        Vector3 transferPoint =new Vector3(get_trans.position.x,get_trans.position.y+0.05f,get_trans.position.z);
+        Vector3 targetPosition;
 
-        if (transferPoint == null)
+        // If container is specified, move to container's interactive point first
+        if (!string.IsNullOrEmpty(container))
         {
-            Debug.LogError($"未找到ID为 {objectID} 的物品传送点");
-            // add: construct the failure result and callback
-            JsonData jsonData = new JsonData();
-            jsonData.success = false;
-            jsonData.msg = $"未找到ID为 {objectID} 的物品传送点";
-            callback?.Invoke(jsonData);
-            yield break;
+            Transform containerInteractivePoint = SceneStateManager.GetInteractablePoint(container);
+            if (containerInteractivePoint != null)
+            {
+                // Apply vertical offset to the container's interactive point
+                targetPosition = containerInteractivePoint.position + Vector3.up * 0.1f; // 10cm vertical offset
+                Debug.Log($"Moving to container {container} interactive point: {targetPosition}");
+            }
+            else
+            {
+                Debug.LogError($"Cannot find interactive point for container: {container}");
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = $"Cannot find interactive point for container: {container}";
+                callback?.Invoke(jsonData);
+                yield break;
+            }
+        }
+        else
+        {
+            // Original logic: get the transfer point of the object
+            Transform get_trans = SceneStateManager.GetTransferPointByObjectID(objectID);
+            if (get_trans == null)
+            {
+                Debug.LogError($"未找到ID为 {objectID} 的物品传送点");
+                JsonData jsonData = new JsonData();
+                jsonData.success = false;
+                jsonData.msg = $"未找到ID为 {objectID} 的物品传送点";
+                callback?.Invoke(jsonData);
+                yield break;
+            }
+            targetPosition = new Vector3(get_trans.position.x, get_trans.position.y + 0.05f, get_trans.position.z);
         }
 
         // move the robot arm to this position
-        yield return StartCoroutine(ArmMovetoPosition(transferPoint, isLeftArm));
+        yield return StartCoroutine(ArmMovetoPosition(targetPosition, isLeftArm));
 
         // check if there is a collision during the movement
         if (collisionDetected || (RobotCollisionManager.Instance != null && RobotCollisionManager.Instance.HasAnyCollision()))
@@ -1630,13 +1664,13 @@ public class AgentMovement : MonoBehaviour
         bool reachedTargetPosition = false;
         if (isLeftArm && gripperController.currentLeftLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint) < 0.5f;
-            Debug.Log($"Place operation: left gripper to placement point distance is {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, transferPoint)} meters");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, targetPosition) < 0.5f;
+            Debug.Log($"Place operation: left gripper to placement point distance is {Vector3.Distance(gripperController.currentLeftLeftGripper.transform.position, targetPosition)} meters");
         }
         else if (!isLeftArm && gripperController.currentRightLeftGripper != null)
         {
-            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint) < 0.5f;
-            Debug.Log($"Place operation: right gripper to placement point distance is {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, transferPoint)} meters");
+            reachedTargetPosition = Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, targetPosition) < 0.5f;
+            Debug.Log($"Place operation: right gripper to placement point distance is {Vector3.Distance(gripperController.currentRightLeftGripper.transform.position, targetPosition)} meters");
         }
         
         // if the gripper has not reached the target position, end the coroutine
@@ -1716,6 +1750,22 @@ public class AgentMovement : MonoBehaviour
         
         // check if the placement is successful: the gripper has reached the target position and the object has been released
         placeSuccess = reachedTargetPosition && isReleased;
+        
+        // If container is specified, also check if the object is properly placed in the container
+        if (!string.IsNullOrEmpty(container) && placeSuccess)
+        {
+            // Wait a bit for physics to settle
+            yield return new WaitForSeconds(0.5f);
+            
+            bool containerPlaceSuccess = CheckIfReceptacle(objectID, container);
+            placeSuccess = placeSuccess && containerPlaceSuccess;
+            
+            if (!containerPlaceSuccess)
+            {
+                Debug.LogWarning($"Container placement failed: object {objectID} is not properly placed in container {container}");
+            }
+        }
+        
         if (placeSuccess)
         {
             Debug.Log($"Place operation successful: the gripper has reached the target position and the object {objectID} has been released");
@@ -1728,7 +1778,7 @@ public class AgentMovement : MonoBehaviour
         // mark the operation as completed
         hasMovedToPosition = true;
         
-        yield return StartCoroutine(PlaceSuccess(objectID, isLeftArm));
+        yield return StartCoroutine(PlaceSuccess(objectID, isLeftArm, container));
         
         // regardless of whether there is a collision, return the result based on the success of the place
         lastMoveSuccessful = placeSuccess;
@@ -2699,7 +2749,7 @@ public class AgentMovement : MonoBehaviour
     }
     
     // add a success mark at the end of the Place method
-    private IEnumerator PlaceSuccess(string objectID, bool isLeftArm)
+    private IEnumerator PlaceSuccess(string objectID, bool isLeftArm, string container = null)
     {
         Debug.Log($"Place operation completed: object ID {objectID}, using {(isLeftArm ? "left arm" : "right arm")}");
         
@@ -2712,7 +2762,27 @@ public class AgentMovement : MonoBehaviour
         // clear all collision states
         ClearCollisions();
         
+        // Check if the object was successfully placed in the container
+        bool containerPlaceSuccess = true; // Default to true for non-container placements
+        if (!string.IsNullOrEmpty(container))
+        {
+            // Wait a bit more for physics to settle when placing in container
+            yield return new WaitForSeconds(0.5f);
+            
+            containerPlaceSuccess = CheckIfReceptacle(objectID, container);
+            Debug.Log($"Object {objectID} was {(containerPlaceSuccess ? "" : "not ")}successfully placed in container {container}");
+            
+            // Update the overall place success based on container placement
+            if (!containerPlaceSuccess)
+            {
+                Debug.LogWarning($"Container placement failed: object {objectID} is not properly placed in container {container}");
+            }
+        }
+        
         Debug.Log("Place operation completed");
+        
+        // Return the container placement result for use in the main Place method
+        // Note: This is handled through the existing placeSuccess logic in the Place method
     }
     
     // add a success mark at the end of the Toggle method
@@ -2806,6 +2876,59 @@ public class AgentMovement : MonoBehaviour
         if (ignoredCollisionObjects.Contains(objectID))
             return true;
             
+        return false;
+    }
+
+    // Check if an object is successfully placed in a receptacle container
+    private bool CheckIfReceptacle(string objectID, string containerID)
+    {
+        if (string.IsNullOrEmpty(objectID) || string.IsNullOrEmpty(containerID))
+            return false;
+
+        // Find the container object
+        SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
+        SimObjPhysics containerObject = null;
+        SimObjPhysics placedObject = null;
+
+        foreach (SimObjPhysics obj in allObjects)
+        {
+            if (obj.ObjectID == containerID)
+            {
+                containerObject = obj;
+            }
+            if (obj.ObjectID == objectID)
+            {
+                placedObject = obj;
+            }
+        }
+
+        if (containerObject == null || placedObject == null)
+        {
+            Debug.LogWarning($"Cannot find container {containerID} or object {objectID}");
+            return false;
+        }
+
+        // Check if the container has Contains components (receptacle trigger boxes)
+        Contains[] containsComponents = containerObject.GetComponentsInChildren<Contains>();
+        
+        if (containsComponents.Length == 0)
+        {
+            Debug.LogWarning($"Container {containerID} has no receptacle trigger boxes");
+            return false;
+        }
+
+        // Check if the placed object is inside any of the container's receptacle trigger boxes
+        foreach (Contains contains in containsComponents)
+        {
+            List<string> containedObjectIDs = contains.CurrentlyContainedObjectIDs();
+            if (containedObjectIDs.Contains(objectID))
+            {
+                Debug.Log($"Object {objectID} is successfully placed in container {containerID}");
+                return true;
+            }
+        }
+
+        Debug.Log($"Object {objectID} is not inside container {containerID}");
         return false;
     }
 }
