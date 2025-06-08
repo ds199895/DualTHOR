@@ -165,7 +165,7 @@ public class UnityClient : MonoBehaviour
     private async Task ProcessActionData(ActionData actionData) {
         Debug.Log("Start recording .....");
         
-        string imagePath = Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+        string imagePath = Path.Combine(Application.persistentDataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
         sceneStateManager.camera_ctrl.imgeDir = imagePath;
         Debug.Log("Set image save path: "+sceneStateManager.camera_ctrl.imgeDir);
         sceneStateManager.camera_ctrl.record = true;
@@ -240,7 +240,7 @@ public class UnityClient : MonoBehaviour
             Debug.Log("lift action!");
             
             // Create image save path
-            string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
+            string imageDir = Path.Combine(Application.persistentDataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
             sceneStateManager.camera_ctrl.imgeDir = imageDir;
             sceneStateManager.camera_ctrl.record = true;
             
@@ -472,7 +472,7 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Start resetting state process - capture initial screenshot");
         
         // Set image save path, using resetstate prefix and unique ID
-        string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        string imagePath = Path.Combine(Application.persistentDataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
         sceneStateManager.camera_ctrl.imgeDir = imagePath;
         
         // Ensure camera controller starts recording
@@ -526,7 +526,7 @@ public class UnityClient : MonoBehaviour
         try
         {
             // Set recording path - ensure unique ID for each dual arm operation
-            string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
+            string imagePath = Path.Combine(Application.persistentDataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
             sceneStateManager.camera_ctrl.imgeDir = imagePath;
             sceneStateManager.camera_ctrl.record = true;
             
@@ -891,7 +891,7 @@ public class UnityClient : MonoBehaviour
         string message = "lift operation not completed";
         
         // Create image save path
-        string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
+        string imageDir = Path.Combine(Application.persistentDataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
         sceneStateManager.camera_ctrl.imgeDir = imageDir;
         sceneStateManager.camera_ctrl.record = true;
         

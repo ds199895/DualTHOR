@@ -2374,6 +2374,8 @@ public class AgentMovement : MonoBehaviour
                 InitializeAdjustments(false);
                 ikX1.OnTargetJointAnglesUpdated += UpdateTargetJointAngles;
                 sceneManager.getObjectsInView.viewDistance=1.5f;
+
+                gripperController.InitializeGripper(RobotType.X1);
                 
                 // ensure the collision detector manager exists
                 EnsureCollisionDetectorManagerExists();
@@ -2406,7 +2408,7 @@ public class AgentMovement : MonoBehaviour
                 ikH1.InitBodies();
                 ikH1.IniitTarget();
                 sceneManager.getObjectsInView.viewDistance=2.0f;
-                
+                gripperController.InitializeGripper(RobotType.H1);
                 // ensure the collision detector manager exists
                 EnsureCollisionDetectorManagerExists();
                 

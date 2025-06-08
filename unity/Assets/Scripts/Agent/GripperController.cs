@@ -22,9 +22,29 @@ public class GripperController : MonoBehaviour
     public void Start()
     {
         AgentMovement movement = this.GetComponent<AgentMovement>();
+        Debug.Log("Current Robot Type: " + movement.CurrentRobotType);
         if (movement.CurrentRobotType == RobotType.H1)
         {
-            
+            Debug.Log("H1 Gripper");
+            currentLeftLeftGripper = h1_leftArmLeftGripper;
+            currentLeftRightGripper = h1_leftArmRightGripper;
+            currentRightLeftGripper = h1_rightArmLeftGripper;
+            currentRightRightGripper = h1_rightArmRightGripper;
+        }
+        else
+        {
+            Debug.Log("X1 Gripper");
+            currentLeftLeftGripper = leftArmLeftGripper;
+            currentLeftRightGripper = leftArmRightGripper;
+            currentRightLeftGripper = rightArmLeftGripper;
+            currentRightRightGripper = rightArmRightGripper;
+        }
+    }
+
+    public void InitializeGripper(RobotType type)
+    {
+        if (type == RobotType.H1)
+        {
             currentLeftLeftGripper = h1_leftArmLeftGripper;
             currentLeftRightGripper = h1_leftArmRightGripper;
             currentRightLeftGripper = h1_rightArmLeftGripper;
@@ -38,6 +58,8 @@ public class GripperController : MonoBehaviour
             currentRightRightGripper = rightArmRightGripper;
         }
     }
+
+
 
     public void SetRobotGripper(RobotType type,bool isLeftArm, bool open)
     {
