@@ -12,10 +12,10 @@ public class GripperController : MonoBehaviour
     public ArticulationBody h1_rightArmLeftGripper;
     public ArticulationBody h1_rightArmRightGripper;
 
-    public ArticulationBody currentLeftLeftGripper { get; private set; }
-    public ArticulationBody currentLeftRightGripper { get; private set; }
-    public ArticulationBody currentRightLeftGripper { get; private set; }
-    public ArticulationBody currentRightRightGripper { get; private set; }
+    public ArticulationBody currentLeftLeftGripper ;
+    public ArticulationBody currentLeftRightGripper ;
+    public ArticulationBody currentRightLeftGripper ;
+    public ArticulationBody currentRightRightGripper;
 
 
 
@@ -69,8 +69,8 @@ public class GripperController : MonoBehaviour
 
         if (open)
         {
-            leftDrive.target = isLeftArm ? 11f : 11f; //左夹爪
-            rightDrive.target = isLeftArm ? -11f : -11f; // 右夹爪
+            leftDrive.target = isLeftArm ? 11f : 11f; //Left gripper 
+            rightDrive.target = isLeftArm ? -11f : -11f; //Right gripper
         }
         else
         {

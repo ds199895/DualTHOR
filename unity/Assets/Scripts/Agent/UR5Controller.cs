@@ -69,7 +69,7 @@ public class UR5Controller : MonoBehaviour
     private void InitializeAdjustments()
     {
         int[] jointIndices = { 2, 3, 4, 5, 6, 7 };
-        string logMessage = "初始化关节调整信息：\n默认值:\n";
+        string logMessage = "Initialize joint adjustment information:\nDefault values:\n";
 
         for (int i = 0; i < jointIndices.Length; i++)
         {
@@ -86,9 +86,9 @@ public class UR5Controller : MonoBehaviour
             adjustmentAngle = NormalizeAngle(adjustmentAngle);
             adjustments[i].angle = adjustmentAngle;
 
-            logMessage += $"关节 {i + 1} 默认旋转: {defaultRotation}\n" +
-                          $"关节 {i + 1} 初始旋转: {initialRotation}\n" +
-                          $"关节 {i + 1} 调整角度: {adjustmentAngle}\n";
+            logMessage += $"Joint {i + 1} default rotation: {defaultRotation}\n" +
+                          $"Joint {i + 1} initial rotation: {initialRotation}\n" +
+                          $"Joint {i + 1} adjustment angle: {adjustmentAngle}\n";
         }
 
         Debug.Log(logMessage);
@@ -120,11 +120,11 @@ public class UR5Controller : MonoBehaviour
     public void DisplayEndEffectorPose()
     {
         var endEffector = articulationChain[^1];
-        var output = $"末端关节名称: {endEffector.name}\n" +
-                     $"末端关节世界坐标: {endEffector.transform.position:F3}\n" +
-                     $"末端关节世界旋转 (欧拉角): {endEffector.transform.rotation.eulerAngles:F3}\n" +
-                     $"末端关节局部坐标: {endEffector.transform.localPosition:F3}\n" +
-                     $"末端关节局部旋转 (欧拉角): {endEffector.transform.localRotation.eulerAngles:F3}";
+        var output = $"End effector name: {endEffector.name}\n" +
+                     $"End effector world coordinates: {endEffector.transform.position:F3}\n" +
+                     $"End effector world rotation (Euler angles): {endEffector.transform.rotation.eulerAngles:F3}\n" +
+                     $"End effector local coordinates: {endEffector.transform.localPosition:F3}\n" +
+                     $"End effector local rotation (Euler angles): {endEffector.transform.localRotation.eulerAngles:F3}";
 
         Debug.Log(output);
     }

@@ -3,11 +3,11 @@ using UnityEngine;
 public class OpenDoor : MonoBehaviour
 {
     [SerializeField] 
-    private Transform door; // 关联门的 Transform（父物体）
+    private Transform door; // Associated door Transform (parent object)
     [SerializeField] 
-    private float rotationAngle = 90f; // 开门时旋转的角度
+    private float rotationAngle = 90f; // Angle of rotation when the door is opened
     [SerializeField]
-    private bool isOpen = false; // 门的当前状态
+    private bool isOpen = false; // Current state of the door
 
     private void OnTriggerEnter(Collider other)
     {
@@ -31,8 +31,8 @@ public class OpenDoor : MonoBehaviour
     {
         if (!isOpen)
         {
-            // 旋转门
-            door.Rotate(Vector3.up, rotationAngle); // 围绕 Y 轴旋转
+            // Rotate the door
+            door.Rotate(Vector3.up, rotationAngle); // Rotate around the Y axis
             isOpen = true;
         }
     }
@@ -41,8 +41,8 @@ public class OpenDoor : MonoBehaviour
     {
         if (isOpen)
         {
-            // 旋转门回去
-            door.Rotate(Vector3.up, -rotationAngle); // 围绕 Y 轴旋转
+            // Rotate the door back
+            door.Rotate(Vector3.up, -rotationAngle); // Rotate around the Y axis
             isOpen = false;
         }
     }

@@ -89,30 +89,30 @@ public class IK_H1 : IKBase
 
     void Update()
     {
-        // // 检测键盘输入
-        // if (Input.GetKeyDown(triggerKey))
-        // {
-        //     Debug.Log("开始IK计算");
-        //     // 转换目标位置到基座坐标系
-        //     float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
-        //     float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
+        // 检测键盘输入
+        if (Input.GetKeyDown(triggerKey))
+        {
+            Debug.Log("开始IK计算");
+            // 转换目标位置到基座坐标系
+            float[][] left_target_matrix = ConvertTargetToBaseMatrix(leftTargetPose, baseTransform);
+            float[][] right_target_matrix = ConvertTargetToBaseMatrix(rightTargetPose, baseTransform);
 
-        //     // 构建请求数据
-        //     var request = new IKRequest
-        //     {
-        //         left_pose = left_target_matrix,
-        //         right_pose = right_target_matrix,
-        //         motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
-        //         motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
-        //     };
-        //     StartCoroutine(SendIKRequest(request));
-        // }
+            // 构建请求数据
+            var request = new IKRequest
+            {
+                left_pose = left_target_matrix,
+                right_pose = right_target_matrix,
+                motorstate = joints.Select(j => j.jointPosition[0]).ToArray(),
+                motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
+            };
+            StartCoroutine(SendIKRequest(request));
+        }
 
-        // // 执行插值
-        // if (isInterpolating)
-        // {
-        //     UpdateJointInterpolation();
-        // }
+        // 执行插值
+        if (isInterpolating)
+        {
+            UpdateJointInterpolation();
+        }
     }
 
 
@@ -292,17 +292,17 @@ public class IK_H1 : IKBase
 
     public override void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
-        // // 选择目标位姿和基座变换
+        // // select the target pose and base transform
         // Transform targetPose = isLeftArm ? leftTargetPose : rightTargetPose;
         // Transform baseTransform = this.baseTransform;
         //
-        // // 转换目标位置到基座坐标系
+        // // convert the target position to the base coordinate system
         // Vector3 targetPositionRelative = ConvertToBaseCoordinates(newTargetPosition, baseTransform);
         //
-        // // 构建目标位姿矩阵
+        // // build the target pose matrix
         // float[][] targetMatrix = TransformToMatrix(targetPositionRelative, targetPose.rotation);
         //
-        // // 构建请求数据
+        // // build the request data
         // var request = new IKRequest
         // {
         //     left_pose = isLeftArm ? targetMatrix : null,
@@ -311,7 +311,7 @@ public class IK_H1 : IKBase
         //     motorV = joints.Select(j => j.jointVelocity[0]).ToArray()
         // };
         //
-        // // 发送反向运动学请求
+        // // send the inverse kinematics request
         // StartCoroutine(SendIKRequest(request));
         if (isLeftArm)
         {

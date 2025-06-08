@@ -8,7 +8,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using DG.Tweening;
 
-//用于管理游戏对象的填充状态
+//using for managing the overflow state of game objects
 public class Spill : MonoBehaviour, IUniqueStateManager, IStateComponent
 {
     [SerializeField]
@@ -16,19 +16,19 @@ public class Spill : MonoBehaviour, IUniqueStateManager, IStateComponent
 
     public void SpillObject()
     {
-        // 获取所有子对象
+        // get all child objects
         Transform[] children = GetComponentsInChildren<Transform>();
         
-        // 遍历所有子对象
+        // traverse all child objects
         foreach (Transform child in children)
         {
-            // 获取子对象的 Rigidbody 组件
+            // get the Rigidbody component of the child object
             // Rigidbody rb = child.GetComponent<Rigidbody>();
             
-            // // 如果子对象有 Rigidbody 组件，则添加爆炸力
+            // // if the child object has a Rigidbody component, then add an explosion force
             // if (rb != null)
             // {
-            //     // 添加爆炸力
+            //     // add an explosion force
             //     rb.AddExplosionForce(explosionForce, explosionPosition, explosionRadius, upwardsModifier, explosionMode);
             // }
         }   

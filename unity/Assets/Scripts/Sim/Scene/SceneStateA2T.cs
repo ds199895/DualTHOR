@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//用于反馈给python端的特定场景状态信息
+//State of the scene for A2T
 [System.Serializable]
 public class SceneStateA2T
 {
@@ -13,36 +13,36 @@ public class SceneStateA2T
 }
 
 [System.Serializable] 
-//物体的状态
+//Object state
 public class ObjectStateA2T
 {
-    public string objectId;//物体id
-    public string name;//物体名称
-    public string objectType;//物体类型
-    public Vector3 position;//物体位置
-    public Quaternion rotation;//物体朝向
+    public string objectId;//object id
+    public string name;//object name
+    public string objectType;//object type
+    public Vector3 position;//object position
+    public Quaternion rotation;//object rotation
     public bool visible;
-    public float distance;//物体中心点距agent中心点的欧式距离
-    public bool receptacle;//是否是容器
-    public bool toggleable;//是否可切换
-    public bool isToggled;//是否处于开状态
-    public bool breakable;//是否可破坏
-    public bool isBroken;//是否已破坏
-    public bool canFillWithLiquid;//是否可填充液体
-    public bool isFilledWithLiquid;//是否已填充液体
-    public bool canBeUsedUp;//是否可被用完
-    public bool isUsedUp;//是否已用完
-    public bool cookable;//是否可烹饪
-    public bool isCooked;//是否已烹饪
-    public bool sliceable;//是否可切片
-    public bool isSliced;//是否已切片
-    public bool openable;//是否可打开
-    public bool isOpen;//是否已打开
-    public bool pickupable;//是否可捡起
-    public bool isPickedUp;//是否已捡起
-    public bool isMoveable;//是否可移动
-    public List<string> receptacleObjectIds;//容器内物体的id
-    public List<string> parentReceptacles;//包含此物体的容器的id
+    public float distance;//distance between object center and agent center
+    public bool receptacle;//container or not
+    public bool toggleable;//toggleable
+    public bool isToggled;//toggled
+    public bool breakable;//breakable
+    public bool isBroken;//broken
+    public bool canFillWithLiquid;//can fill with liquid
+    public bool isFilledWithLiquid;//filled with liquid
+    public bool canBeUsedUp;//can be used up
+    public bool isUsedUp;//used up
+    public bool cookable;//cookable
+    public bool isCooked;//cooked
+    public bool sliceable;//sliceable
+    public bool isSliced;//sliced
+    public bool openable;//openable
+    public bool isOpen;//opened
+    public bool pickupable;//pickupable
+    public bool isPickedUp;//picked up
+    public bool isMoveable;//moveable
+    public List<string> receptacleObjectIds;//ids of objects in the container
+    public List<string> parentReceptacles;//ids of containers containing this object
 }
 
 [System.Serializable]
@@ -51,10 +51,10 @@ public class AgentStateA2T
     public string name;
     public Vector3 position;
     public Quaternion rotation;
-    public string lastAction;//上一次执行的动作
-    public bool lastActionSuccess;//上一次执行动作是否成功,不成功则状态不会发生改变
-    public string errorMessage;//错误信息
-    public List<float> jointAngles; // 存储机器人关节角度
-    public List<float> gripperAngles; // 存储机器人爪子角度
+    public string lastAction;//last action
+    public bool lastActionSuccess;//last action success, if not, the state will not change
+    public string errorMessage;//error message
+    public List<float> jointAngles; // joint angles of the robot
+    public List<float> gripperAngles; // gripper angles of the robot
 }
 

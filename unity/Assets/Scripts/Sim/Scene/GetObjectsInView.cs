@@ -5,11 +5,11 @@ using UnityEngine;
 public class GetObjectsInView : MonoBehaviour
 {
     [SerializeField]
-    private Camera targetCamera; // 相机
+    private Camera targetCamera; // Camera
     [SerializeField]
-    public float viewDistance = 30f; // 视野距离
+    public float viewDistance = 30f; // View distance
     [SerializeField]
-    private List<GameObject> canInteractableObjects; // 记录GameObject的数组
+    private List<GameObject> canInteractableObjects; // Record GameObject array
     private SceneStateManager sceneManager;
 
     
@@ -24,7 +24,7 @@ public class GetObjectsInView : MonoBehaviour
     }
 #endif
 
-    // 绘制射线，方便调试
+    // Draw rays for debugging
     private void DrawVisibleRays()
     {
         foreach (GameObject parent in canInteractableObjects)
@@ -38,27 +38,16 @@ public class GetObjectsInView : MonoBehaviour
                     Vector3 direction = visiblePoint.position - targetCamera.transform.position;
                     Ray ray = new Ray(targetCamera.transform.position, direction);
 
-                    // 绘制射线，方便调试
+                    // Draw rays for debugging
                     Debug.DrawLine(ray.origin, ray.origin + ray.direction * viewDistance, Color.red);
                 }
             }
-            //射线射到物体中心
-            //if (simObjPhysics != null)
-            //{
-            //    // 获取物体的中心点
-            //    Vector3 objectCenter = simObjPhysics.transform.position;
-            //    Vector3 direction = objectCenter - targetCamera.transform.position;
-            //    Ray ray = new Ray(targetCamera.transform.position, direction);
-
-            //    // 绘制射线，方便调试
-            //    Debug.DrawLine(ray.origin, ray.origin + ray.direction * viewDistance, Color.red);
-            //}
         }
     }
     public void GetObjects()
     {
         canInteractableObjects.Clear();
-        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);//计算相机的视锥体平面（六个）
+        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);//Calculate the camera's frustum planes (six)
         int layerMask = LayerMask.GetMask("SimObjVisible");
 
         Collider[] collidersInLayer = Physics.OverlapSphere(targetCamera.transform.position, viewDistance, layerMask);
@@ -82,9 +71,9 @@ public class GetObjectsInView : MonoBehaviour
                             if (IsVisible(interactableParent))
                             {
                                 // print("is visible "+interactableParent.name);
-                                canInteractableObjects.Add(interactableParent); // 添加到集合中
+                                canInteractableObjects.Add(interactableParent); // Add to the collection
                             }
-                            //canInteractableObjects.Add(interactableParent); // 添加到集合中
+                            //canInteractableObjects.Add(interactableParent); // Add to the collection
 
                         }
 
@@ -93,52 +82,14 @@ public class GetObjectsInView : MonoBehaviour
             }
            
         }
-        // 将集合转换为GameObject数组
+        // Convert the collection to a GameObject array
         sceneManager.canInteractableObjects = canInteractableObjects;
         sceneManager.canTransferPoints= sceneManager.TransferPoints.Where(t => t.transform != null && canInteractableObjects.Contains(t)).ToList();
     }
 
-    //public void GetObjects()
-    //{
-    //    loggedInteractableParents.Clear();
-    //    Plane[] planes = GeometryUtility.CalculateFrustumPlanes(targetCamera);
-    //    //int layerMask = LayerMask.GetMask("SimObjVisible");
-
-    //    // 获取所有处理的 GameObject
-    //    GameObject[] allObjects = GameObject.FindGameObjectsWithTag("Interactable");
-    //    print(allObjects.Length);
-    //    foreach (GameObject obj in allObjects)
-    //    {
-    //        // 获取所有子物体的 MeshFilter
-    //        MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
-    //        foreach (MeshFilter meshFilter in meshFilters)
-    //        {
-    //            // 获取网格的包围盒
-    //            Bounds bounds = meshFilter.mesh.bounds;
-    //            bounds.center = meshFilter.transform.TransformPoint(bounds.center);
-    //            bounds.Encapsulate(meshFilter.GetComponent<Renderer>().bounds);
-
-    //            // 检查是否与相机视野相交
-    //            if (GeometryUtility.TestPlanesAABB(planes, bounds))
-    //            {
-    //                Transform interactableParent = GetInteractableParent(obj.transform);
-    //                if (interactableParent != null && !loggedInteractableParents.Contains(interactableParent))
-    //                {
-    //                    loggedInteractableParents.Add(interactableParent); // 添加到集合中
-    //                }
-    //                break; // 一旦找到一个相交的物体，就可以跳出循环
-    //            }
-    //        }
-    //    }
-
-    //    // 将集合转换为GameObject数组
-    //    canInteractableObjects = loggedInteractableParents.Select(t => t.gameObject).ToArray();
-    //    sceneManager.canInteractableObjects = canInteractableObjects.ToList();
-    //}
-
     private bool IsVisible(GameObject parent)
     {
-        // 获取当前Interactable物体的VisiblePoints
+        // Get the VisiblePoints of the current Interactable object
         SimObjPhysics simObjPhysics = parent.GetComponent<SimObjPhysics>();
         if (simObjPhysics != null && simObjPhysics.VisiblePoints != null)
         {
@@ -149,19 +100,19 @@ public class GetObjectsInView : MonoBehaviour
                 // print("ray dir: "+direction);
                 Ray ray = new(targetCamera.transform.position, direction);
 
-                // 检测射线是否与物体相交
+                // Check if the ray intersects with the object
                 if (Physics.Raycast(ray, out RaycastHit hit, viewDistance))
                 {
                     // print("find hit: " + hit.transform.parent.name);
                     if (hit.transform.IsChildOf(parent.transform) || hit.transform == parent)
                     {
                         // print("GetObjectsInView IsVisible: " + parent);
-                        return true; // 找到与VisiblePoint相交的射线
+                        return true; // Find the ray that intersects with the VisiblePoint
                     }
                 }
             }
         }
-        return false; // 没有找到可见点
+        return false; // No visible point found
     }
 
 }

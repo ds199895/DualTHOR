@@ -6,17 +6,17 @@ RenderTexture:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 360Pic
+  m_Name: depthRT
   m_ImageContentsHash:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
   m_IsAlphaChannelOptional: 0
   serializedVersion: 6
-  m_Width: 1024
-  m_Height: 1024
+  m_Width: 256
+  m_Height: 256
   m_AntiAliasing: 1
   m_MipCount: -1
-  m_DepthStencilFormat: 94
+  m_DepthStencilFormat: 92
   m_ColorFormat: 8
   m_MipMap: 0
   m_GenerateMips: 1
@@ -34,6 +34,6 @@ RenderTexture:
     m_WrapU: 1
     m_WrapV: 1
     m_WrapW: 1
-  m_Dimension: 4
+  m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2

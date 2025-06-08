@@ -1,10 +1,11 @@
 # DualTHOR
 We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) that runs on the web for training and evaluation of embodied agents and multimodal models. In addition to AI2-THOR, we have added the following features:
-- Dual-arm action execution: Now supports parallel, asynchronous task execution with both arms.
-- Task rollback: Supports rolling back to any time step during task execution, improving data synthesis efficiency.
-- Action probability system: This version adds a probability system that can customize success rates for individual actions according to config.json.
+- Dual-arm task setup: support more diverse dual-arm tasks including dual-arm essential tasks, dual-arm optional tasks and single-arm tasks.
+- Dual-arm action execution: Now support parallel task execution with both arms.
+- Task replay mechanism: Support rolling back to any time step during task execution, improving data synthesis efficiency.
+- Contingency system: This version adds a probability system that can customize success rates for individual actions according to config.json.
 - More realistic action execution: Added IK library to implement actions, replacing direct attachment transfer, allowing for more detailed simulation of action execution time.
-- More realistic state changes: Added more detailed tuning for states such as water filling and cooking.
+- More realistic state transitions: Added more detailed tuning for states such as water filling and cooking.
 
 
 ## Installation
@@ -40,30 +41,18 @@ pip install meshcat
 pip install casadi
 ```
 
----
-Unitree DDS (unitree_dds_wrapper)
-
-```bash
-# Install the Python version of the unitree_dds_wrapper.
-git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
-cd unitree_dds_wrapper/python
-pip install -e .
-```
-
-
 
 #### 3. Start Agent Server
 
 ```bash
-python main.py
+python test.py
 ```
-![alt text](image/img_v3_launcher.gif)
 
 ## Operation Methods
 
 ### 1. Python Side:
 Python is mainly used to control the Agent in the virtual environment to perform navigation, interaction, control and other tasks, and to obtain perception data from the environment. The main scripts are:
-   1. main.py: Main program entry, including launcher, tcp_server, server_ik; simply start this file directly.
+   1. test.py: Main program entry, including launcher, tcp_server, server_ik; simply test the performance of humanoid robot low-level control.
    2. controller.py: Controller program, responsible for interacting with the Unity environment, starting the server, calling action methods, sending and providing feedback.
    3. config.json: Configuration file, currently only contains success rate; more parameters can be added as needed.
    4. actions: Action scripts containing all action methods.
@@ -117,29 +106,56 @@ A total of eight interaction states are set:
 7. **Slice**: Items can be sliced. Such as slicing a potato into many pieces. Sliced items with the Cook property can also be cooked.
 8. **ToggleOnOff**: Items can be toggled. Such as faucet switches, coffee machine switches.
 9. **UsedUp**: Items can be used up. Such as toilet paper can be depleted.
-### 3. Interaction Table
-This table lists all currently interactive item types, item ID naming (Room_ItemType_ID), location, interactive states, and notes.
-| Item Type   |Item ID Format| Room | Interactive States | Notes |
-|:-: |:-:|:-:|:-:|:-:|
-| Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
-| CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
-| Drawer   |Kitchen_Drawer_ID| Kitchen   | Contains,Open   |    |
-| Faucet   |Kitchen_Faucet_ID| Kitchen   | ToggleOnOff   |    |
-| Fridge   |Kitchen_Fridge_ID| Kitchen   | Contains,Open  |    |
-| Mug   |Kitchen_Mug_ID| Kitchen   | Break,Can pickup,Fill   |    |
-| Pan   |Kitchen_Pan_ID| Kitchen   | Can pickup,Contains   |   |
-| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kitchen   | Can pickup,UsedUp   |   |
-| Potato   |Kitchen_Potato_ID| Kitchen   | Can pickup,Cook,Slice   | Potatoes can be cooked, or sliced and then cooked  |
-| StoveKnob   |Kitchen_StoveKnob_ID| Kitchen   | ToggleOnOff   |  Gas stove switch  |
-| Cabinet   |Kitchen_Cabinet_ID| Kitchen   | Contains,Open  | |
-| CoffeeMachine   |Kitchen_CoffeeMachine_ID|  Kitchen  | Contains,ToggleOnOff   |    |
-| Drawer   |Kitchen_Drawer_ID| Kitchen   | Contains,Open   |    |
-| Faucet   |Kitchen_Faucet_ID| Kitchen   | ToggleOnOff   |    |
-| Fridge   |Kitchen_Fridge_ID| Kitchen   | Contains,Open  |    |
-| Mug   |Kitchen_Mug_ID| Kitchen   | Break,Can pickup,Fill   |    |
-| Pan   |Kitchen_Pan_ID| Kitchen   | Can pickup,Contains   |   |
-| PaperTowerRoll   |Kitchen_PaperTowerRoll_ID| Kitchen   | Can pickup,UsedUp   |   |
-| Potato   |Kitchen_Potato_ID| Kitchen   | Can pickup,Cook,Slice   | Potatoes can be cooked, or sliced and then cooked  |
-| StoveKnob   |Kitchen_StoveKnob_ID| Kitchen   | ToggleOnOff   |  Gas stove switch  |
+10.**Spill**: Items can be spilled. Such as cup filled with liquid.
+### 3. Contingency Mechanism
+
+The Contingency Mechanism in DualTHOR provides a realistic action execution model with configurable probabilities of success and failure. The mechanism includes:
+
+1. **Configurable Success Rates**: Each action type (pick, place, toggle, etc.) has a base success rate that can be customized in ErrorConfig.json.
+
+2. **Object-Specific Success Rates**: Success rates can be further customized based on object type and state (e.g., filled cups have different success rates than empty cups).
+
+3. **Contextual Error Messages**: When actions fail, the system selects appropriate error messages from a weighted probability pool, providing realistic feedback.
+
+4. **Automatic State Transitions**: Failed actions can trigger automatic state changes in objects (e.g., a dropped cup might break or spill its contents).
+
+5. **Implementation**: 
+   - Action success is determined by comparing a random value against the configured success rate
+   - Error messages are selected based on their configured probability weights
+   - The system can automatically apply state changes to affected objects
+
+This system creates more realistic interactions where actions can occasionally fail, requiring agents to adapt and recover, similar to real-world robotic task execution.
+
+### Example of picking action
+<div style="display:flex; gap:2%">
+  <img src="image/broken.jpg" width="49%" />
+  <img src="image/broken1.jpg" width="49%" />
+</div>
+<p align="center"><strong>broken</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/spill.jpg" width="49%" />
+  <img src="image/spill1.jpg" width="49%" />
+</div>
+<p align="center"><strong>spill</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/nothing.jpg" width="49%" />
+  <img src="image/nothing1.jpg" width="49%" />
+</div>
+<p align="center"><strong>nothing happens</strong></p>
+
+<br>
+<div style="display:flex; gap:2%">
+  <img src="image/success.jpg" width="49%" />
+  <img src="image/success1.jpg" width="49%" />
+</div>
+<p align="center"><strong>success</strong></p>
 
 
+## Extended Develop
+If you want to add some features or make modifications yourself, please install Unity Editor 2022.3.x or Unity 6. Then open the unity directory in the Unity Editor. After making your changes, rebuild the project to the unity/Build directory.
+
+And if you want to debug with Unity Editor，please change the controller parameter "start_unity_exe" to False

@@ -2,69 +2,69 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5.0f; // 移动速度
-    public float mouseSensitivity = 2.0f; // 鼠标灵敏度
-    public float verticalRotationLimit = 80.0f; // 垂直旋转限制
+    public float moveSpeed = 5.0f; // Movement speed
+    public float mouseSensitivity = 2.0f; // Mouse sensitivity
+    public float verticalRotationLimit = 80.0f; // Vertical rotation limit
 
     private CharacterController characterController;
-    private float rotationY = 0f; // 垂直旋转角度
-    private float rotationX = 0f; // 水平旋转角度
-    private bool isCursorLocked = true; // 光标锁定状态
+    private float rotationY = 0f; // Vertical rotation angle
+    private float rotationX = 0f; // Horizontal rotation angle
+    private bool isCursorLocked = true; // Cursor lock state
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked; // 初始状态锁定光标
+        Cursor.lockState = CursorLockMode.Locked; // Initial state of cursor lock
     }
 
     void Update()
     {
-        // 检测是否按下“~”键进行光标锁定状态的切换
-        if (Input.GetKeyDown(KeyCode.BackQuote)) // KeyCode.BackQuote 是“~”键的对应键值
+            // Check if the "~" key is pressed to toggle the cursor lock state
+        if (Input.GetKeyDown(KeyCode.BackQuote)) // KeyCode.BackQuote is the corresponding key value for the "~" key
         {
             if (isCursorLocked)
             {
-                Cursor.lockState = CursorLockMode.None; // 解锁光标
-                isCursorLocked = false; // 更新状态
+                Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+                isCursorLocked = false; // Update the state
             }
             else
             {
-                Cursor.lockState = CursorLockMode.Locked; // 锁定光标
-                isCursorLocked = true; // 更新状态
+                Cursor.lockState = CursorLockMode.Locked; // Lock the cursor
+                isCursorLocked = true; // Update the state
             }
         }
 
-        // 如果光标被锁定，则允许移动
+        // If the cursor is locked, allow movement
         if (isCursorLocked)
         {
-            // 获取输入
+            // Get input
             float moveX = Input.GetAxis("Horizontal");
             float moveZ = Input.GetAxis("Vertical");
 
-            // 创建移动向量
+            // Create a movement vector
             Vector3 move = transform.right * moveX + transform.forward * moveZ;
 
-            // 移动角色
+            // Move the character
             characterController.Move(moveSpeed * Time.deltaTime * move);
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                // 奔跑
+                // Run
                 characterController.Move(1.5f * moveSpeed * Time.deltaTime * move);
             }
 
-            // 获取鼠标输入
+            // Get mouse input
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-            // 移动角色的水平旋转
+            // Rotate the character horizontally
             rotationX += mouseX;
             transform.eulerAngles = new Vector3(0, rotationX, 0);
 
-            // 垂直旋转，限制旋转角度
+            // Vertical rotation, limit the rotation angle
             rotationY -= mouseY;
             rotationY = Mathf.Clamp(rotationY, -verticalRotationLimit, verticalRotationLimit);
 
-            // 应用到摄像机的旋转
+            // Apply to the camera rotation
             Camera.main.transform.localEulerAngles = new Vector3(rotationY, 0, 0);
         }
     }

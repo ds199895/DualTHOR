@@ -8,12 +8,12 @@ public class CollisionReporter : MonoBehaviour
 
     void Start()
     {
-        // 找到最近的 ArticulationBody 祖先
+        // find the nearest ArticulationBody ancestor
         parentArticulation = GetComponentInParent<ArticulationBody>();
 
         if (parentArticulation == null)
         {
-            Debug.LogError($"{gameObject.name} 未找到 ArticulationBody 父级");
+            Debug.LogError($"{gameObject.name} not found ArticulationBody ancestor");
         }
     }
 
@@ -26,7 +26,7 @@ public class CollisionReporter : MonoBehaviour
         {
             RobotCollisionManager.Instance.ReportCollision(parentArticulation, collision.gameObject);
         }else{
-            Debug.Log("有碰撞");
+            Debug.Log("collision detected");
         }
     }
 
@@ -39,7 +39,7 @@ public class CollisionReporter : MonoBehaviour
         {
             RobotCollisionManager.Instance.ReportOngoingCollision(parentArticulation, collision.gameObject);
         }else{
-            Debug.Log("持续碰撞");
+            Debug.Log("ongoing collision");
         }
     }
 
@@ -55,26 +55,26 @@ public class CollisionReporter : MonoBehaviour
         {
             RobotCollisionManager.Instance.ReportCollisionExit(parentArticulation, collision.gameObject);
         }else{
-            Debug.Log("结束碰撞");
+            Debug.Log("collision exit");
         }
     }
     
-    // 清理碰撞状态，此方法可以被Unity的SendMessage调用
+    // clear the collision state, this method can be called by Unity's SendMessage
     public void ClearCollision()
     {
         hasCollision = false;
         lastCollidedObject = null;
         
-        // 确保始终移除在RobotCollisionManager中的记录
+        // ensure always remove the record in RobotCollisionManager
         if (parentArticulation != null && RobotCollisionManager.Instance != null)
         {
-            // 检查是否存在该关节的碰撞信息
+            // check if the collision information exists for the joint
             var collisions = RobotCollisionManager.Instance.GetCollisions(parentArticulation);
             if (collisions.Count > 0)
             {
-                Debug.Log($"清理关节 {parentArticulation.name} 的 {collisions.Count} 个碰撞");
+                Debug.Log($"clear the collision information for the joint {parentArticulation.name}, there are {collisions.Count} collisions");
                 
-                // 将所有碰撞报告为已结束
+                // report all collisions as ended
                 foreach (var obj in collisions)
                 {
                     RobotCollisionManager.Instance.ReportCollisionExit(parentArticulation, obj);
@@ -82,17 +82,17 @@ public class CollisionReporter : MonoBehaviour
             }
         }
         
-        // 输出调试信息
-        Debug.Log($"碰撞报告器 {gameObject.name} 已清理碰撞状态");
+        // output the debug information
+        Debug.Log($"collision reporter {gameObject.name} has cleared the collision state");
     }
     
-    // 检查是否有碰撞
+    // check if there is a collision
     public bool HasCollision()
     {
         return hasCollision;
     }
     
-    // 获取最后碰撞的物体
+    // get the last collided object
     public GameObject GetLastCollidedObject()
     {
         return lastCollidedObject;

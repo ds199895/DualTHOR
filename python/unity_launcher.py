@@ -10,14 +10,14 @@ from tqdm import tqdm
 import tos
 from tos import DataTransferType
 
-# 火山引擎TOS配置
+# volcengine TOS configuration
 TOS_ACCESS_KEY = 'AKLTMWJkNmZiMmRmODhiNGNlNTk1Nzc3NDJmNTBiNThjNGM'
 TOS_SECRET_KEY = 'Wm1JNE1HWmxNalZpTXpZd05ESmtOVGxsWm1ZellqZGxaV1JrWTJJd1lUTQ=='
-TOS_ENDPOINT = 'tos-cn-beijing.volces.com'  # 例如：'tos-cn-beijing.volces.com'
+TOS_ENDPOINT = 'tos-cn-beijing.volces.com'  # for example: 'tos-cn-beijing.volces.com'
 TOS_REGION='cn-beijing'
 TOS_BUCKET_NAME = 'unity-agent-playground'
 
-# 根据操作系统选择 Unity 可执行文件路径
+# select Unity executable file path based on operating system
 if platform.system() == "Windows":
     UNITY_EXECUTABLE_PATH = Path(__file__).parent.parent / "unity" / "Build" / "Win" / "Playground.exe"
 elif platform.system() == "Darwin":  # macOS
@@ -27,7 +27,7 @@ elif platform.system() == "Linux":
 else:
     raise Exception("Unsupported operating system")
 
-# 根据操作系统选择 Unity 可执行文件路径
+# select Unity executable file path based on operating system
 if platform.system() == "Windows":
     UNITY_TOS_FOLDER= "scenes/Win"
     UNITY_LOCAL_FOLDER=Path(__file__).parent.parent / "unity" / "Build" / "Win"
@@ -42,7 +42,7 @@ else:
 
 class TosProgress(object):
     """
-    用于显示下载进度的类
+    class for displaying download progress
     """
     def __init__(self, total_size, desc):
         self.pbar = tqdm(total=total_size, unit='B', unit_scale=True, desc=desc)
@@ -50,7 +50,7 @@ class TosProgress(object):
     
     def __call__(self, consumed_bytes, total_bytes, rw_once_bytes, type: DataTransferType):
         """
-        TOS的进度回调函数
+        callback function for TOS download progress
         """
         increment = consumed_bytes - self.last_consumed
         self.last_consumed = consumed_bytes
@@ -59,16 +59,9 @@ class TosProgress(object):
     def close(self):
         self.pbar.close()
 
-# def get_tos_client():
-#     """
-#     创建TOS客户端
-#     """
-#     credential = StaticCredential(TOS_ACCESS_KEY, TOS_SECRET_KEY)
-#     return TosClientV2(TOS_ENDPOINT, credential)
-
 def get_local_version(local_dir):
     """
-    获取本地版本号，如果不存在则返回None
+    get local version, return None if not exist
     """
     version_file = os.path.join(local_dir, "version.json")
     try:
@@ -77,12 +70,12 @@ def get_local_version(local_dir):
                 version_data = json.load(f)
                 return version_data.get('version')
     except Exception as e:
-        print(f"读取本地版本信息失败: {e}")
+        print(f"failed to read local version info: {e}")
     return None
 
 def get_tos_version(client, tos_folder):
     """
-    获取TOS上的版本号，如果不存在则返回None
+    get TOS version, return None if not exist
     """
     try:
         version_path = f"{tos_folder}/version.json"
@@ -91,7 +84,7 @@ def get_tos_version(client, tos_folder):
         version_data = json.loads(version_content)
         return version_data.get('version')
     except Exception as e:
-        print(f"获取TOS版本信息失败: {e}")
+        print(f"failed to get TOS version info: {e}")
         return None
 
 def percentage(consumed_bytes, total_bytes, rw_once_bytes, type: DataTransferType):
@@ -102,74 +95,74 @@ def percentage(consumed_bytes, total_bytes, rw_once_bytes, type: DataTransferTyp
 
 def download_folder_from_tos(local_dir, tos_folder):
     """
-    从火山引擎TOS下载zip文件并解压到指定目录。
-    先检查版本，只有当TOS上的版本比本地新时才下载。
+    download zip file from volcengine TOS and unzip to specified directory.
+    check version first, only download when TOS version is newer than local version.
     
     Args:
-        local_dir: 解压目标目录
-        tos_folder: TOS中zip文件所在的文件夹
+        local_dir: unzip target directory
+        tos_folder: folder of zip file in TOS
     """
     try:
-        # 创建 TosClientV2 对象
+        # create TosClientV2 object
         client = tos.TosClientV2(TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_ENDPOINT, TOS_REGION)
         
-        # 检查版本
+        # check version
         local_version = get_local_version(local_dir)
         tos_version = get_tos_version(client, tos_folder)
         
         if tos_version is None:
-            print("无法获取TOS版本信息，跳过下载")
+            print("cannot get TOS version, skip download")
             return
             
         if local_version is not None and local_version >= tos_version:
-            print(f"本地版本({local_version})已是最新，无需更新")
+            print(f"local version({local_version}) is the latest, skip download")
             return
             
-        print(f"发现新版本({tos_version})，开始更新...")
+        print(f"new version({tos_version}) found, start update...")
         
-        # 构建zip文件的TOS路径和本地临时路径
+        # build TOS path and local temporary path for zip file
         zip_name = f"{platform.system().lower()}_unity.zip"
         tos_zip_path = f"{tos_folder}/{zip_name}"
         temp_zip_path = os.path.join(os.path.dirname(local_dir), zip_name)
         
-        # 获取文件大小
+        # get file size
         object_meta = client.head_object(TOS_BUCKET_NAME, tos_zip_path)
         total_size = object_meta.content_length
         
-        # 下载zip文件（带进度条）
-        print(f"开始下载压缩包: {tos_zip_path}")
-        progress_callback = TosProgress(total_size, "下载进度")
+        # download zip file (with progress bar)
+        print(f"start download zip file: {tos_zip_path}")
+        progress_callback = TosProgress(total_size, "download progress")
         
         try:
             client.download_file(
                 TOS_BUCKET_NAME, 
                 tos_zip_path, 
                 temp_zip_path,
-                part_size=1024 * 1024 * 20,  # 分片大小
-                task_num=3,  # 线程数
-                data_transfer_listener=progress_callback  # 进度条
+                part_size=1024 * 1024 * 20,  # chunk size
+                task_num=3,  # thread number
+                data_transfer_listener=progress_callback  # progress bar
             )
         finally:
             progress_callback.close()
         
-        print(f"压缩包下载完成: {temp_zip_path}")
+        print(f"zip file download completed: {temp_zip_path}")
         
-        # 确保目标目录存在
+        # ensure target directory exists
         if not os.path.exists(local_dir):
             os.makedirs(local_dir)
             
-        # 解压文件（带进度条）
-        print(f"开始解压文件到: {local_dir}")
+        # unzip file (with progress bar)
+        print(f"start unzip file to: {local_dir}")
         with zipfile.ZipFile(temp_zip_path, 'r') as zip_ref:
             file_list = zip_ref.namelist()
-            with tqdm(total=len(file_list), desc="解压进度") as pbar:
+            with tqdm(total=len(file_list), desc="unzip progress") as pbar:
                 for file in file_list:
                     zip_ref.extract(file, local_dir)
                     pbar.update(1)
         
-        print("文件解压完成")
+        print("file unzip completed")
         
-        # 下载并保存新的version.json
+        # download and save new version.json
         version_path = f"{tos_folder}/version.json"
         local_version_file = os.path.join(local_dir, "version.json")
         client.download_file(
@@ -177,11 +170,11 @@ def download_folder_from_tos(local_dir, tos_folder):
             version_path,
             local_version_file
         )
-        print("版本信息已更新")
+        print("version info updated")
         
-        # 删除临时zip文件
+        # delete temporary zip file
         os.remove(temp_zip_path)
-        print("临时压缩包已删除")
+        print("temporary zip file deleted")
         
     except tos.exceptions.TosClientError as e:
         print('fail with client error, message:{}, cause: {}'.format(e.message, e.cause))
@@ -197,30 +190,30 @@ def download_folder_from_tos(local_dir, tos_folder):
 
 def set_executable_permissions():
     """
-    根据操作系统为 Unity 可执行文件设置适当的执行权限
+    set appropriate execution permissions for Unity executable file based on operating system
     """
     try:
         if platform.system() in ["Darwin", "Linux"]:
-            # 为 Unix-like 系统设置执行权限 (chmod +x)
+            # set execution permissions for Unix-like system (chmod +x)
             current_permissions = os.stat(UNITY_EXECUTABLE_PATH)
             os.chmod(UNITY_EXECUTABLE_PATH, current_permissions.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-            print(f"已设置执行权限: {UNITY_EXECUTABLE_PATH}")
+            print(f"execution permissions set: {UNITY_EXECUTABLE_PATH}")
         return True
     except Exception as e:
-        print(f"设置执行权限失败: {e}")
+        print(f"failed to set execution permissions: {e}")
         return False
 
 def start_unity(wait_time=5):
     """
-    启动 Unity 可执行文件，并等待指定的时间确保启动完成。
+    start Unity executable file and wait for specified time to ensure startup completed.
     """
     try:
-        # 下载文件
+        # download file
         download_folder_from_tos(UNITY_LOCAL_FOLDER,UNITY_TOS_FOLDER)
 
-        # 在启动前设置权限
+        # set execution permissions before startup
         if not set_executable_permissions():
-            raise Exception("无法设置执行权限")
+            raise Exception("failed to set execution permissions")
             
         unity_process = subprocess.Popen([str(UNITY_EXECUTABLE_PATH)])
         print("Unity environment started.")
@@ -232,7 +225,7 @@ def start_unity(wait_time=5):
 
 def stop_unity(unity_process):
     """
-    关闭 Unity 环境。
+    stop Unity environment.
     """
     if unity_process and unity_process.poll() is None:
         unity_process.terminate()

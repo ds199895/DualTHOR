@@ -11,27 +11,27 @@ public class IKClient : MonoBehaviour
     private string url = "http://127.0.0.1:5000/ik";
     public AgentMovement agentMovement;
     private List<float> initial_q = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
-    public Transform ur5BaseLeft; // 左臂的基座
-    private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // 左臂的偏移量（夹爪中心与末端关节）
-    public Transform ur5BaseRight; // 右臂的基座
-    private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // 右臂的偏移量（夹爪中心与末端关节）
+    public Transform ur5BaseLeft; // left arm base
+    private Vector3 offsetLeft = new Vector3(0.0f, 0.24f, 0.0f);  // left arm offset (gripper center to end joint)
+    public Transform ur5BaseRight; // right arm base
+    private Vector3 offsetRight = new Vector3(0.0f, 0.24f, 0.0f);  // right arm offset (gripper center to end joint)
 
     public event Action<List<float>> OnTargetJointAnglesUpdated;
 
 
-    // 左右手目标位姿
+    // left and right target poses
     public Transform leftTargetPose;
     public Transform rightTargetPose;
 
-    // 键盘控制
-    public KeyCode triggerKey = KeyCode.Space; // 触发IK的按键
+    // keyboard control
+    public KeyCode triggerKey = KeyCode.Space; // trigger IK key
      
     void Update()
     {
-        // 检测键盘输入
+        // detect keyboard input
         if (Input.GetKeyDown(triggerKey))
         {
-            Debug.Log("开始IK计算");
+            Debug.Log("Start IK calculation");
             ProcessTargetPosition(leftTargetPose.position, true);
             // ProcessTargetPosition(rightTargetPose.position, false);
         }
@@ -40,16 +40,16 @@ public class IKClient : MonoBehaviour
 
 
 
-    // 接收和处理目标位置
+    // receive and process the target position
     public void ProcessTargetPosition(Vector3 newTargetPosition, bool isLeftArm)
     {
         Vector3 offset = isLeftArm ? offsetLeft : offsetRight;
         Transform baseTransform = isLeftArm ? ur5BaseLeft : ur5BaseRight;
 
-        // 转换目标位置到基座坐标系
+        // convert the target position to the base coordinate system
         Vector3 targetPositionRelative = ConvertToBaseCoordinates(newTargetPosition + offset, baseTransform);
 
-        // 构建 translation 数据
+        // build the translation data
         List<float> translation = new List<float>
         {
             targetPositionRelative.z,
@@ -57,7 +57,7 @@ public class IKClient : MonoBehaviour
             targetPositionRelative.y
         };
 
-        // 构建 JSON 数据字典
+        // build the JSON data dictionary
         var data = new Dictionary<string, object>
         {
             { "joint_id", 6 },
@@ -77,11 +77,11 @@ public class IKClient : MonoBehaviour
             { "initial_q", initial_q }
         };
 
-        // 发送反向运动学请求
+        // send the inverse kinematics request
         StartCoroutine(SendIKRequest(data));
     }
 
-    // 发送反向运动学请求的协程
+    // send the inverse kinematics request coroutine
     private IEnumerator SendIKRequest(Dictionary<string, object> data)
     {
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -91,23 +91,23 @@ public class IKClient : MonoBehaviour
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
 
-            //Debug.Log("发送的 JSON 数据: " + jsonData);
+            //Debug.Log("sent JSON data: " + jsonData);
 
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                //Debug.Log("请求成功，响应数据: " + request.downloadHandler.text);
+                //Debug.Log("request successful, response data: " + request.downloadHandler.text);
                 ProcessResponse(request.downloadHandler.text);
             }
             else
             {
-                Debug.LogError("IK请求失败，响应代码：" + request.responseCode);
+                Debug.LogError("IK request failed, response code: " + request.responseCode);
             }
         }
     }
 
-    // 处理服务器响应
+    // process the server response
     private void ProcessResponse(string jsonResponse)
     {
         JObject result = JObject.Parse(jsonResponse);
@@ -116,24 +116,24 @@ public class IKClient : MonoBehaviour
         {
             List<float> jointAnglesDegrees = ConvertToDegrees(result["q"].ToObject<List<float>>());
             OnTargetJointAnglesUpdated?.Invoke(jointAnglesDegrees);
-            Debug.Log("IK角度: " + string.Join(", ", jointAnglesDegrees));
+            Debug.Log("IK angles: " + string.Join(", ", jointAnglesDegrees));
         }
         else
         {
-            Debug.Log("IK计算失败");
+            Debug.Log("IK calculation failed");
         }
     }
 
-    // 将目标位置转换为基座坐标系
+    // convert the target position to the base coordinate system
     Vector3 ConvertToBaseCoordinates(Vector3 targetPosition, Transform baseTransform)
     {
         Vector3 relativePosition = targetPosition - baseTransform.position;
         Vector3 result = Quaternion.Inverse(baseTransform.rotation) * relativePosition;
-        //Debug.Log("相对于基座的目标位置: " + result);
+        //Debug.Log("relative position to the base: " + result);
         return result;
     }
 
-    // 将弧度转换为归一化的角度
+    // convert the radians to the normalized angle
     private List<float> ConvertToDegrees(List<float> jointAnglesRadians)
     {
         List<float> jointAnglesDegrees = new List<float>();
@@ -143,7 +143,7 @@ public class IKClient : MonoBehaviour
             degree = agentMovement.NormalizeAngle(degree);
             jointAnglesDegrees.Add(degree);
         }
-        //Debug.Log("关节角度（弧度转换为度）: " + string.Join(", ", jointAnglesDegrees));
+        //Debug.Log("joint angles (radians to degrees): " + string.Join(", ", jointAnglesDegrees));
         return jointAnglesDegrees;
     }
 }

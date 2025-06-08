@@ -16,13 +16,12 @@ public enum SimObjPrimaryProperty : int // EACH SimObjPhysics MUST HAVE 1 Primar
 
     // these are to identify walls, floor, ceiling - these are not currently being used but might be in the future once
     // all scenes have their walls/floor/ceiling meshes split apart correctly (thanks Eli!)
-    //这些未来可能会用到
+    //maybe these will be used in the future
     //Wall = 4,
     //Floor = 5,
     //Ceiling = 6,
 
     // Objaverse, uncategorized
-    //不知道有啥用
     //Objaverse = 7,
 }
 

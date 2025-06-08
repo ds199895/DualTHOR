@@ -82,16 +82,16 @@ public class SimObjPhysics : MonoBehaviour
 
     //[Header("Transfer Point")]
     [SerializeField]
-    private Transform transferPoint; // 物体的传送点
+    private Transform transferPoint; // the transfer point of the object
 
     //[Header("Interactable Points")]
     [SerializeField]
-    private Transform[] interactablePoints; // 物体的可交互点
+    private Transform[] interactablePoints; // the interactable points of the object
     [Header("Raycast to these points to determine Visible/Interactable")]
 
 
     [SerializeField]
-    private Transform[] liftPoints; // 物体的举升点
+    private Transform[] liftPoints; // the lift points of the object
     [SerializeField]
     public Transform[] VisibilityPoints = null;
 
@@ -198,57 +198,57 @@ public class SimObjPhysics : MonoBehaviour
         InitializeProperties();
     }
 
-    //初始化传送点
+    //initialize the transfer point
     private void InitializeTransferPoint()
     {
-        // 创建一个新的 GameObject 作为 transferPoint
+        // create a new GameObject as transferPoint
         GameObject newTransferPoint = new GameObject("TransferPoint");
         
         newTransferPoint.transform.SetParent(transform);
 
 
-        // 设置位置和旋转
+        // set the position and rotation
         newTransferPoint.transform.position = interactablePoints[0].position + interactablePoints[0].forward * -0.5f;
         // newTransferPoint.transform.position = transform.position + transform.up * 0.5f;
         // newTransferPoint.transform.position = transform.position+transform.right*0.5f;
         newTransferPoint.transform.rotation = transform.rotation;
 
-        // 将新的 Transform 赋值给 transferPoint
+        // assign the new Transform to transferPoint
         transferPoint = newTransferPoint.transform;
     }
 
-    //初始化可交互点
+    //initialize the interactable points
     private void InitializeInteractablePoints()
     {
-        // 获取物体的所有 Renderer 组件
+        // get all the Renderer components of the object
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
         {
-            // 初始化一个空的 Bounds
+            // initialize an empty Bounds
             Bounds bounds = renderers[0].bounds;
             
-            // 合并所有 Renderer 的 Bounds
+            // merge all the Renderer's Bounds
             foreach (Renderer renderer in renderers)
             {
                 bounds.Encapsulate(renderer.bounds);
             }
 
-            // 创建一个新的 GameObject 作为 interactablePoint
+            // create a new GameObject as interactablePoint
             GameObject newInteractablePoint = new GameObject("InteractablePoint");
             newInteractablePoint.transform.SetParent(transform);
 
-            // 设置位置为几何中心
+            // set the position to the geometric center
             newInteractablePoint.transform.position = bounds.center;
             newInteractablePoint.transform.rotation=transform.rotation;
-            // 将新的 Transform 赋值给 interactablePoints
+            // assign the new Transform to interactablePoints
             interactablePoints = new Transform[] { newInteractablePoint.transform };
 
             
-            // 创建liftPoints - 左右两侧的点
+            // create liftPoints - the left and right points
             GameObject leftLiftPoint = new GameObject("LeftLiftPoint");
             GameObject rightLiftPoint = new GameObject("RightLiftPoint");
             
-            // 设置父物体
+            // set the parent object
             leftLiftPoint.transform.SetParent(transform);
             rightLiftPoint.transform.SetParent(transform);
 
@@ -257,44 +257,44 @@ public class SimObjPhysics : MonoBehaviour
             if(PrimaryProperty==SimObjPrimaryProperty.Moveable){
 
                 Debug.Log(gameObject.name+" Moveable, set lift points!");
-                // 计算左右两侧的位置 (使用边界框的确切尺寸)
-                // 左侧面中心点 = bounds中心点 - bounds宽度的一半向右的向量
+                // calculate the position of the left and right points (using the exact size of the bounding box)
+                // the center point of the left side = bounds center point - half of the bounds width to the right
                 Vector3 leftPosition = new Vector3(
-                    bounds.center.x - bounds.extents.x,  // X坐标是中心点减去宽度的一半
-                    bounds.center.y,                    // Y坐标保持与中心点相同
-                    bounds.center.z                     // Z坐标保持与中心点相同
+                    bounds.center.x - bounds.extents.x,  // X coordinate is the center point minus half of the width
+                    bounds.center.y,                    // Y coordinate is the same as the center point
+                    bounds.center.z                     // Z coordinate is the same as the center point
                 );
                 
-                // 右侧面中心点 = bounds中心点 + bounds宽度的一半向右的向量
+                // the center point of the right side = bounds center point + half of the bounds width to the right
                 Vector3 rightPosition = new Vector3(
-                    bounds.center.x + bounds.extents.x,  // X坐标是中心点加上宽度的一半
-                    bounds.center.y,                    // Y坐标保持与中心点相同
-                    bounds.center.z                     // Z坐标保持与中心点相同
+                    bounds.center.x + bounds.extents.x,  // X coordinate is the center point plus half of the width
+                    bounds.center.y,                    // Y coordinate is the same as the center point
+                    bounds.center.z                     // Z coordinate is the same as the center point
                 );
 
                 Debug.Log("leftPosition: "+leftPosition);
                 Debug.Log("rightPosition: "+rightPosition);
                 
-                // 设置位置
+                // set the position
                 leftLiftPoint.transform.position = leftPosition;
                 rightLiftPoint.transform.position = rightPosition;
                 
-                // 设置旋转与父物体一致
+                // set the rotation to be the same as the parent object
                 leftLiftPoint.transform.rotation = transform.rotation;
                 rightLiftPoint.transform.rotation = transform.rotation;
                 
-                // 将两个liftPoint添加到数组中
+                // add the two liftPoints to the array
                 liftPoints = new Transform[] { leftLiftPoint.transform, rightLiftPoint.transform };
                 Debug.Log("liftPoints: "+liftPoints.Length);
             }
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} 没有找到任何 Renderer 组件。");
+            Debug.LogWarning($"{gameObject.name} has no Renderer components.");
         }
     }
     
-    //初始化可看见点
+    //initialize the visible points
     private void InitializeVisiblePoints()
     {
         GameObject visiblePointsObject;
@@ -314,7 +314,7 @@ public class SimObjPhysics : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name} 没有找到名为 'VisibilityPoints' 的子物体。");
+            Debug.LogWarning($"{gameObject.name} has no 'VisibilityPoints' child object.");
         }
     }
 
@@ -370,14 +370,14 @@ public class SimObjPhysics : MonoBehaviour
 
     //void OnDrawGizmos()
     //{
-    //    // 检查可见点是否存在
+    //    // check if the visible points exist
     //    if (visiblePoints != null)
     //    {
-    //        Gizmos.color = Color.yellow; // 设置 Gizmos 颜色为黄色
+    //        Gizmos.color = Color.yellow; // set the Gizmos color to yellow
     //        foreach (Transform point in visiblePoints)
     //        {
-    //            // 绘制黄色正方体在可见点的位置
-    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1f是正方体大小，可以根据需要调整
+    //            // draw a yellow cube at the visible point's position
+    //            Gizmos.DrawCube(point.position, Vector3.one * 0.03f); // 0.1f is the size of the cube, can be adjusted as needed
     //        }
     //    }
     //}

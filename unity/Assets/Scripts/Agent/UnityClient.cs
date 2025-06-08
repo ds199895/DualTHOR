@@ -59,7 +59,7 @@ public class UnityClient : MonoBehaviour
     [Serializable]
     public class DualArmActionMetadata
     {
-        public string execution_mode = "sequential"; // "sequential" 或 "parallel"
+        public string execution_mode = "sequential"; // "sequential" or "parallel"
     }
     
     string PreprocessJson(string json)
@@ -106,7 +106,7 @@ public class UnityClient : MonoBehaviour
                 client = new TcpClient();
                 Debug.Log("Attempting to connect to server at 127.0.0.1:5678...");
 
-                await client.ConnectAsync("127.0.0.1", 5678); // 异步连接
+                await client.ConnectAsync("127.0.0.1", 5678); // Asynchronous connection
                 stream = client.GetStream();
 
                 Debug.Log("Connected to server successfully.");
@@ -114,7 +114,7 @@ public class UnityClient : MonoBehaviour
             catch (Exception e)
             {
                 Debug.LogError($"Connection error: {e.Message}");
-                await Task.Delay(5000); // 5 秒后重试
+                await Task.Delay(5000); // 5 seconds later retry
             }
         }
     }
@@ -136,17 +136,17 @@ public class UnityClient : MonoBehaviour
                     // 检查是否是动作数组
                     if(actionJson.TrimStart().Contains("["))
                     {
-                        Debug.Log("解析动作数组!");
+                        Debug.Log("Parse action array!");
                         await ProcessActionArray(actionJson);
                     }
                     else 
                     {
-                        Debug.Log("解析单个动作!");
+                        Debug.Log("Parse single action!");
                         // 单个动作处理
                         actionJson = PreprocessJson(actionJson);
-                        Debug.Log("解析单个动作: "+actionJson);
+                        Debug.Log("Parse single action: "+actionJson);
                         ActionData actionData = JsonUtility.FromJson<ActionData>(actionJson);
-                        Debug.Log("解析单个动作: "+actionData.ToString());
+                        Debug.Log("Parse single action: "+actionData.ToString());
                         await ProcessActionData(actionData);
                     }
                 }
@@ -165,9 +165,34 @@ public class UnityClient : MonoBehaviour
     private async Task ProcessActionData(ActionData actionData) {
         Debug.Log("Start recording .....");
         
-        sceneStateManager.camera_ctrl.imgeDir=Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
-        Debug.Log("设置图像保存路径: "+sceneStateManager.camera_ctrl.imgeDir);
-        sceneStateManager.camera_ctrl.record=true;
+        string imagePath = Path.Combine(Application.dataPath, "SavedImages")+"/"+actionData.action+ Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imagePath;
+        Debug.Log("Set image save path: "+sceneStateManager.camera_ctrl.imgeDir);
+        sceneStateManager.camera_ctrl.record = true;
+        
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imagePath, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        else
+        {
+            Debug.LogWarning("Depth camera not found, cannot save depth images");
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imagePath, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
 
         Debug.Log("Parsed Action Data: "+actionData.ToString());
         if (string.IsNullOrEmpty(actionData.action)) {
@@ -189,7 +214,7 @@ public class UnityClient : MonoBehaviour
 
             if (agentMovement == null) {
                 Debug.LogWarning("AgentMovement is null, waiting for 2 seconds...");
-                await Task.Delay(2000);
+                await Task.Delay(5000);
                 Init();
             }
             var result = agentMovement.LoadRobot(actionData.robotType);
@@ -209,50 +234,50 @@ public class UnityClient : MonoBehaviour
             SendFeedbackToPython(result,"reset pose");
         } else if (actionData.action=="resetstate"){
             Debug.Log("reset state action!");
-            // 不再直接执行LoadState，而是启动协程处理
+            // No longer directly execute LoadState, but start a coroutine to handle it
             StartCoroutine(ResetStateWithScreenshots());
         } else if (actionData.action=="lift"){
             Debug.Log("lift action!");
             
-            // 创建图像保存路径
+            // Create image save path
             string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
             sceneStateManager.camera_ctrl.imgeDir = imageDir;
             sceneStateManager.camera_ctrl.record = true;
             
-            // 记录原始位置，用于后续检测
+            // Record original position, for later detection
             GameObject targetObject = null;
             Vector3 originalPosition = Vector3.zero;
             if (sceneStateManager.SimObjectsDict.TryGetValue(actionData.objectID, out targetObject) && targetObject != null) {
                 originalPosition = targetObject.transform.position;
             }
             
-            // 启动协程执行Lift操作
+            // Start coroutine to execute Lift operation
             StartCoroutine(LiftWithCallback(actionData.objectID, originalPosition));
         }
         else {
-            // 判断是否为交互类操作(pick、place、toggle、open)
+            // Determine if it is an interaction operation (pick, place, toggle, open)
             bool isInteractionAction = IsInteractionAction(actionData.action);
             
-            // 如果是交互操作且提供了objectID，设置当前交互物体
+            // If it is an interaction operation and provides an objectID, set the current interacting object
             if (isInteractionAction && !string.IsNullOrEmpty(actionData.objectID)) {
-                Debug.Log($"设置交互物体: {actionData.objectID} 用于 {actionData.action} 操作");
+                Debug.Log($"Set interacting object: {actionData.objectID} for {actionData.action} operation");
                 agentMovement.SetCurrentInteractingObject(actionData.objectID);
                 
-                // 添加物体到忽略碰撞列表，避免交互中的碰撞被视为失败
+                // Add object to ignored collision list to avoid collision in interaction
                 agentMovement.AddIgnoredCollisionObject(actionData.objectID);
             }
             
-            Debug.Log("执行动作: "+actionData);
-            // 记录动作开始时间，用于性能分析
+            Debug.Log("Execute action: "+actionData);
+            // Record the start time, for performance analysis
             float startTime = Time.realtimeSinceStartup;
             
-            // 执行动作并获取 JsonData 结果
+            // Execute action and get JsonData result
             agentMovement.ExecuteActionWithCallback(actionData, (result) => {
-                // 计算执行时间
+                // Calculate execution time
                 float executionTime = Time.realtimeSinceStartup - startTime;
-                Debug.Log($"动作 {actionData.action} 执行时间: {executionTime:F3} 秒");
+                Debug.Log($"Action {actionData.action} execution time: {executionTime:F3} seconds");
                 
-                // 根据动作结果发送反馈
+                // Send feedback based on action result
                 Debug.Log($"Action result: success={result.success}, msg={result.msg}");
                 
                 if (actionData.action == "undo" || actionData.action == "redo") {
@@ -262,19 +287,19 @@ public class UnityClient : MonoBehaviour
                     Debug.Log($"Saved current state after action: {actionData.action}");
                 }
 
-                // 发送反馈，根据 result 中的信息
+                // Send feedback based on result information
                 SendActionFeedbackToPython(result.success, result.msg);
                 
-                // 操作完成后清除交互物体ID和忽略碰撞列表
+                // After operation, clear the interacting object ID and ignored collision list
                 if (isInteractionAction) {
                     agentMovement.ClearIgnoredCollisionObjects();
-                    Debug.Log($"已清除交互物体ID和忽略碰撞列表，操作: {actionData.action}");
+                    Debug.Log($"Cleared interacting object ID and ignored collision list, operation: {actionData.action}");
                 }
             });
         }
     }
 
-    // 判断是否为交互类操作的辅助方法
+    // Helper method to determine if it is an interaction operation
     private bool IsInteractionAction(string action)
     {
         string lowerAction = action.ToLower();
@@ -297,13 +322,13 @@ public class UnityClient : MonoBehaviour
                 {
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
                     string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
+                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // Escape backslash
                     
                     feedback = $"{{\"success\": {(success ? 1 : 0)}, \"imgpath\":\"{imagePath}\", \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
                 else
                 {
-                    // 简化版反馈
+                    // Simplified feedback
                     feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\"}}";
                 }
 
@@ -311,8 +336,8 @@ public class UnityClient : MonoBehaviour
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
                 
-                // 清理状态
-                Debug.Log("反馈已发送，现在清理状态");
+                // Clean up state
+                Debug.Log("Feedback sent, now cleaning up state");
                 agentMovement.ClearCollisions();
             }
             catch (Exception ex)
@@ -328,11 +353,27 @@ public class UnityClient : MonoBehaviour
         Debug.Log("Stop recording");
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
+        
+        // 停止深度相机保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            depthCam.StopSavingDepth();
+            depthCam.ResetImageCount();
+        }
+        
+        // 确保Capture360已完成捕获
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            capture360.saveCubemap = false;
+            Debug.Log("Ensured cubemap capture is stopped");
+        }
     }
 
     public void SendFeedbackToPython(bool success)
     {
-        SendFeedbackToPython(success, success ? "操作成功" : "操作失败");
+        SendFeedbackToPython(success, success ? "operation success" : "operation failed");
     }
 
     public void SendFeedbackToPython(bool success, string msg = "")
@@ -348,14 +389,14 @@ public class UnityClient : MonoBehaviour
                 {
                     SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
                     string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
+                    string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // Escape backslash
                     
-                    // 简化后的反馈，不再检查碰撞信息
+                    // Simplified feedback, no longer check collision information
                     feedback = $"{{\"success\": {(success ? 1 : 0)}, \"imgpath\":\"{imagePath}\", \"msg\": \"{msg}\", \"x1position\": \"{currentPosition}\", \"sceneState\": {sceneStateJson}}}";
                 }
                 else
                 {
-                    // 简化版反馈
+                    // Simplified feedback
                     feedback = $"{{\"success\": {(success ? 1 : 0)}, \"msg\": \"{msg}\"}}";
                 }
 
@@ -363,8 +404,8 @@ public class UnityClient : MonoBehaviour
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
                 
-                // 清理状态
-                Debug.Log("反馈已发送，现在清理状态");
+                // Clean up state
+                Debug.Log("Feedback sent, now cleaning up state");
                 agentMovement.ClearCollisions();
             }
             catch (Exception ex)
@@ -382,6 +423,22 @@ public class UnityClient : MonoBehaviour
         {
             sceneStateManager.camera_ctrl.record = false;
             sceneStateManager.camera_ctrl.ResetImageCount();
+            
+            // 停止深度相机保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                depthCam.StopSavingDepth();
+                depthCam.ResetImageCount();
+            }
+            
+            // 确保Capture360已完成捕获
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                capture360.saveCubemap = false;
+                Debug.Log("Ensured cubemap capture is stopped");
+            }
         }
     }
 
@@ -409,32 +466,53 @@ public class UnityClient : MonoBehaviour
         }
     }
 
-    // 添加一个新的协程来处理重置状态前后的截图
+    // Add a new coroutine to handle screenshots before and after resetting state
     private IEnumerator ResetStateWithScreenshots()
     {
-        Debug.Log("开始重置状态过程 - 捕获初始截图");
+        Debug.Log("Start resetting state process - capture initial screenshot");
         
-        // 设置图像保存路径，使用resetstate前缀和唯一ID
-        sceneStateManager.camera_ctrl.imgeDir = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        // Set image save path, using resetstate prefix and unique ID
+        string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/resetstate_" + Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imagePath;
         
-        // 确保相机控制器开始记录
+        // Ensure camera controller starts recording
         sceneStateManager.camera_ctrl.record = true;
         
-        // 等待几帧以确保截图完成
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imagePath, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imagePath, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
+        
+        // Wait for a few frames to ensure the screenshot is complete
         yield return new WaitForSeconds(0.5f);
         
-        // 执行状态重置
-        Debug.Log("执行状态重置操作");
+        // Execute state reset
+        Debug.Log("Execute state reset operation");
         bool result = agentMovement.LoadState("0");
         
-        // 等待状态加载和渲染完成
+        // Wait for state loading and rendering to complete
         yield return new WaitForSeconds(1.0f);
         
-        // 再等待几帧确保场景稳定
+        // Wait for a few more frames to ensure the scene is stable
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
         
-        // 结果反馈
+        // Result feedback
         if(result){
             SendActionFeedbackToPython(result, "reset state success");
         }else{
@@ -442,40 +520,61 @@ public class UnityClient : MonoBehaviour
         }
     }
 
-    // 新方法：处理动作数组
+    // New method: process action array
     private async Task ProcessActionArray(string actionJson)
     {
         try
         {
-            // 设置录制路径 - 确保每次双臂操作都有唯一ID
-            sceneStateManager.camera_ctrl.imgeDir = Path.Combine(Application.dataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
+            // Set recording path - ensure unique ID for each dual arm operation
+            string imagePath = Path.Combine(Application.dataPath, "SavedImages") + "/dualarm_action_" + Guid.NewGuid().ToString();
+            sceneStateManager.camera_ctrl.imgeDir = imagePath;
             sceneStateManager.camera_ctrl.record = true;
             
-            Debug.Log("开始双臂动作录制...");
+            // 设置深度相机开始保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                // 在相同路径下创建depth子文件夹
+                string depthPath = Path.Combine(imagePath, "depth");
+                depthCam.StartSavingDepth(depthPath);
+                Debug.Log("Depth camera started recording to: " + depthPath);
+            }
             
-            // 将JSON数组解析为ActionData数组
+            // 尝试使用Capture360捕获全景图
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                // 在相同路径下创建cubemap子文件夹
+                string cubemapPath = Path.Combine(imagePath, "cubemap");
+                capture360.StartSavingCubemap(cubemapPath);
+                Debug.Log("Cubemap capture started to: " + cubemapPath);
+            }
+            
+            Debug.Log("Start dual arm action recording...");
+            
+            // Parse JSON array to ActionData array
             // string wrappedJson = "{\"actions\":" + actionJson + "}";
             ActionDataArray actionDataArray = JsonUtility.FromJson<ActionDataArray>(actionJson);
             
             if (actionDataArray == null || actionDataArray.actions == null || actionDataArray.actions.Length == 0)
             {
-                Debug.LogError("无法解析动作数组或数组为空");
-                SendFeedbackToPython(false, "动作数组解析失败或为空");
+                Debug.LogError("Cannot parse action array or array is empty");
+                SendFeedbackToPython(false, "Cannot parse action array or array is empty");
                 return;
             }
             
-            Debug.Log($"成功解析动作数组，包含 {actionDataArray.actions.Length} 个动作");
+            Debug.Log($"Successfully parsed action array, containing {actionDataArray.actions.Length} actions");
             
-            // 从ActionDataArray中直接获取执行模式
+            // Get execution mode directly from ActionDataArray
             string executionMode = actionDataArray.executionMode?.ToLower() ?? "sequential";
-            Debug.Log($"从JSON中获取执行模式: {executionMode}");
+            Debug.Log($"Get execution mode from JSON: {executionMode}");
             
-            // 如果仍未找到执行模式，尝试从原始JSON提取
+            // If still not found execution mode, try to extract from original JSON
             if (string.IsNullOrEmpty(executionMode) && actionJson.Contains("executionMode"))
             {
                 try
                 {
-                    // 尝试直接从原始JSON中提取执行模式
+                    // Try to extract execution mode directly from original JSON
                     int modeIndex = actionJson.IndexOf("executionMode");
                     if (modeIndex > 0)
                     {
@@ -492,87 +591,96 @@ public class UnityClient : MonoBehaviour
                             if (modeValue == "parallel")
                             {
                                 executionMode = "parallel";
-                                Debug.Log("已从JSON中提取执行模式: parallel");
+                                Debug.Log("Extracted execution mode: parallel");
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"提取执行模式时出错: {ex.Message}，使用默认顺序执行模式");
+                    Debug.LogWarning($"Error extracting execution mode: {ex.Message}, using default sequential execution mode");
                 }
             }
             
-            // 更新状态管理器中的最后执行动作
+            // Update the last executed action in the state manager
             if (sceneStateManager != null)
             {
-                // 设置当前动作为双臂动作
+                // Set the current action as dual arm action
                 sceneStateManager.UpdateLastAction("dualarm_" + (executionMode == "parallel" ? "parallel" : "sequential"));
-                Debug.Log($"已设置最后动作为: dualarm_{executionMode}");
+                Debug.Log($"Set last action to: dualarm_{executionMode}");
             }
             
-            // 准备结果列表
+            // Prepare result list
             List<ActionResult> results = new List<ActionResult>();
             
-            // 根据执行模式处理动作
+            // Process actions based on execution mode
             if (executionMode == "parallel")
             {
-                // 并行执行模式
-                Debug.Log("使用并行执行模式");
+                // Parallel execution mode
+                Debug.Log("Using parallel execution mode");
                 await ExecuteActionsInParallel(actionDataArray.actions, results);
             }
             else
             {
-                // 顺序执行模式
-                Debug.Log("使用顺序执行模式");
+                // Sequential execution mode
+                Debug.Log("Using sequential execution mode");
                 await ExecuteActionsSequentially(actionDataArray.actions, results);
             }
             
-            // 发送包含所有结果的反馈
+            // Send feedback containing all results
             SendMultiActionFeedbackToPython(results);
         }
         catch (Exception ex)
         {
-            Debug.LogError($"处理动作数组时发生错误: {ex.Message}");
-            SendFeedbackToPython(false, $"处理动作数组错误: {ex.Message}");
+            Debug.LogError($"Error processing action array: {ex.Message}");
+            SendFeedbackToPython(false, $"Error processing action array: {ex.Message}");
             
-            // 确保停止录制
+            // Ensure recording stops
             sceneStateManager.camera_ctrl.record = false;
             sceneStateManager.camera_ctrl.ResetImageCount();
+            
+            // 停止深度相机保存
+            depthCamera depthCam = FindObjectOfType<depthCamera>();
+            if (depthCam != null)
+            {
+                depthCam.StopSavingDepth();
+                depthCam.ResetImageCount();
+            }
+            
+            // 确保Capture360已完成捕获
+            Capture360 capture360 = FindObjectOfType<Capture360>();
+            if (capture360 != null)
+            {
+                capture360.saveCubemap = false;
+                Debug.Log("Ensured cubemap capture is stopped");
+            }
         }
     }
     
-    // 顺序执行动作
+    // Sequential execution of actions
     private async Task ExecuteActionsSequentially(ActionData[] actions, List<ActionResult> results)
     {
         foreach (var actionData in actions)
         {
             try
             {
-                // 处理每个动作并等待完成
+                // Process each action and wait for completion
                 var result = await ProcessActionWithResult(actionData);
                 results.Add(result);
                 
-                Debug.Log($"顺序执行：完成动作 {actionData.action}，结果: {(result.success ? "成功" : "失败")}");
+                Debug.Log($"Sequential execution: completed action {actionData.action}, result: {(result.success ? "success" : "failed")}");
                 
-                // 对于顺序执行，每个动作完成后都保存一次状态
-                // 注释掉这里，因为我们将在所有动作完成后统一保存状态
-                // if (sceneStateManager != null && actionData.action != "undo" && actionData.action != "redo")
-                // {
-                //     sceneStateManager.SaveCurrentState();
-                //     Debug.Log($"已保存动作 {actionData.action} 执行后的状态");
-                // }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"执行动作 {actionData.action} 时发生错误: {ex.Message}");
-                results.Add(new ActionResult(false, $"执行错误: {ex.Message}", actionData.arm, actionData.action));
+                Debug.LogError($"Error executing action {actionData.action}: {ex.Message}");
+                results.Add(new ActionResult(false, $"Error executing action: {ex.Message}", actionData.arm, actionData.action));
                 
-                // 即使出错，也继续执行下一个动作
+                // Continue to execute the next action even if an error occurs
             }
         }
         
-        // 所有动作完成后，更新最后一个执行的动作名称
+        // After all actions are completed, update the last executed action name
         if (actions.Length > 0 && sceneStateManager != null)
         {
             var lastAction = actions[actions.Length - 1];
@@ -580,41 +688,41 @@ public class UnityClient : MonoBehaviour
         }
     }
     
-    // 并行执行动作
+    // Parallel execution of actions
     private async Task ExecuteActionsInParallel(ActionData[] actions, List<ActionResult> results)
     {
-        // 创建任务列表
+        // Create task list
         List<Task<ActionResult>> tasks = new List<Task<ActionResult>>();
         
         foreach (var actionData in actions)
         {
-            // 添加处理每个动作的任务
+            // Add task to process each action
             tasks.Add(ProcessActionWithResult(actionData));
         }
         
-        // 等待所有任务完成
+        // Wait for all tasks to complete
         ActionResult[] taskResults = await Task.WhenAll(tasks);
         
-        // 将结果添加到结果列表
+        // Add results to result list
         results.AddRange(taskResults);
         
-        Debug.Log($"并行执行：完成 {taskResults.Length} 个动作");
+        Debug.Log($"Parallel execution: completed {taskResults.Length} actions");
         
-        // 并行执行完成后，更新最后一个动作（使用第一个动作）
+        // After parallel execution, update the last executed action (use the first action)
         if (actions.Length > 0 && sceneStateManager != null)
         {
             sceneStateManager.UpdateLastAction("dualarm_action");
         }
     }
     
-    // 处理单个动作并返回结果
+    // Process a single action and return the result
     private async Task<ActionResult> ProcessActionWithResult(ActionData actionData)
     {
         TaskCompletionSource<ActionResult> tcs = new TaskCompletionSource<ActionResult>();
         
         try
         {
-            // 特殊处理不需要保存状态的操作
+            // Special processing for actions that do not need to save state
             string actionLower = actionData.action.ToLower();
             bool isSpecialAction = actionLower == "undo" || 
                                   actionLower == "redo" || 
@@ -624,54 +732,54 @@ public class UnityClient : MonoBehaviour
             
             if (isSpecialAction)
             {
-                Debug.Log($"处理特殊动作: {actionData.action}");
+                Debug.Log($"Processing special action: {actionData.action}");
                 bool success = false;
                 string msg = "";
                 
-                // 直接执行特殊操作
+                // Direct execution of special operations
                 switch (actionLower)
                 {
                     case "undo":
                         success = agentMovement.Undo();
-                        msg = success ? "撤销操作成功" : "撤销操作失败";
-                        Debug.Log($"执行Undo操作: {(success ? "成功" : "失败")}");
+                        msg = success ? "Undo operation success" : "Undo operation failed";
+                        Debug.Log($"Executing Undo operation: {(success ? "success" : "failed")}");
                         break;
                         
                     case "redo":
                         success = agentMovement.Redo();
-                        msg = success ? "重做操作成功" : "重做操作失败";
-                        Debug.Log($"执行Redo操作: {(success ? "成功" : "失败")}");
+                        msg = success ? "Redo operation success" : "Redo operation failed";
+                        Debug.Log($"Executing Redo operation: {(success ? "success" : "failed")}");
                         break;
                         
                     case "loadstate":
                         if (!string.IsNullOrEmpty(actionData.stateID))
                         {
                             success = agentMovement.LoadState(actionData.stateID);
-                            msg = success ? $"加载状态 {actionData.stateID} 成功" : $"加载状态 {actionData.stateID} 失败";
-                            Debug.Log($"执行LoadState操作: {(success ? "成功" : "失败")}");
+                            msg = success ? $"Load state {actionData.stateID} success" : $"Load state {actionData.stateID} failed";
+                            Debug.Log($"Executing LoadState operation: {(success ? "success" : "failed")}");
                         }
                         else
                         {
                             success = false;
-                            msg = "缺少stateID参数";
-                            Debug.LogError("LoadState操作缺少stateID参数");
+                            msg = "Missing stateID parameter";
+                            Debug.LogError("LoadState operation missing stateID parameter");
                         }
                         break;
                         
                     case "resetstate":
                         success = agentMovement.LoadState("0");
-                        msg = success ? "重置状态成功" : "重置状态失败";
-                        Debug.Log($"执行ResetState操作: {(success ? "成功" : "失败")}");
+                        msg = success ? "Reset state success" : "Reset state failed";
+                        Debug.Log($"Executing ResetState operation: {(success ? "success" : "failed")}");
                         break;
                         
                     case "getcurstate":
                         success = true;
-                        msg = "获取当前状态";
-                        Debug.Log("执行GetCurrentState操作");
+                        msg = "Get current state";
+                        Debug.Log("Executing GetCurrentState operation");
                         break;
                 }
                 
-                // 立即返回结果
+                // Immediately return the result
                 return new ActionResult(
                     success,
                     msg,
@@ -680,21 +788,21 @@ public class UnityClient : MonoBehaviour
                 );
             }
             
-            // 判断是否为交互类操作(pick、place、toggle、open)
+            // Determine if it is an interaction operation (pick, place, toggle, open)
             bool isInteractionAction = IsInteractionAction(actionData.action);
             
-            // 如果是交互操作且提供了objectID，设置当前交互物体
+            // If it is an interaction operation and provides an objectID, set the current interacting object
             if (isInteractionAction && !string.IsNullOrEmpty(actionData.objectID)) {
-                Debug.Log($"设置交互物体: {actionData.objectID} 用于 {actionData.action} 操作");
+                Debug.Log($"Setting interacting object: {actionData.objectID} for {actionData.action} operation");
                 agentMovement.SetCurrentInteractingObject(actionData.objectID);
                 
-                // 添加物体到忽略碰撞列表，避免交互中的碰撞被视为失败
+                // Add object to ignored collision list to avoid collision in interaction
                 agentMovement.AddIgnoredCollisionObject(actionData.objectID);
             }
             
-            // 设置结果回调
+            // Set result callback
             agentMovement.ExecuteActionWithCallback(actionData, (jsonData) => {
-                // 创建结果对象
+                // Create result object
                 ActionResult result = new ActionResult(
                     jsonData.success,
                     jsonData.msg,
@@ -702,122 +810,147 @@ public class UnityClient : MonoBehaviour
                     actionData.action
                 );
                 
-                // 操作完成后清除交互物体ID和忽略碰撞列表
+                // After operation, clear the interacting object ID and ignored collision list
                 if (isInteractionAction) {
                     agentMovement.ClearIgnoredCollisionObjects();
-                    Debug.Log($"已清除交互物体ID和忽略碰撞列表，操作: {actionData.action}");
+                    Debug.Log($"Cleared interacting object ID and ignored collision list, operation: {actionData.action}");
                 }
                 
-                // 注意：这里不保存状态，我们将在所有动作完成后统一保存
+                // Note: Here we do not save state, we will save it after all actions are completed
                 
-                // 完成任务
+                // Complete the task
                 tcs.SetResult(result);
             });
             
-            // 等待任务完成
+            // Wait for the task to complete
             return await tcs.Task;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"处理动作 {actionData.action} 发生异常: {ex.Message}");
-            return new ActionResult(false, $"处理异常: {ex.Message}", actionData.arm, actionData.action);
+            Debug.LogError($"Error processing action {actionData.action}: {ex.Message}");
+            return new ActionResult(false, $"Error processing action: {ex.Message}", actionData.arm, actionData.action);
         }
     }
     
-    // 发送多动作反馈
+    // Send multi-action feedback
     private void SendMultiActionFeedbackToPython(List<ActionResult> results)
     {
         if (client != null && stream != null)
         {
             try
             {
-                // 在发送反馈前保存当前场景状态
+                // Save current scene state before sending feedback
                 if (sceneStateManager != null)
                 {
-                    // 确保在完成所有动作后保存最终状态
+                    // Ensure saving the final state after all actions are completed
                     sceneStateManager.SaveCurrentState();
-                    Debug.Log("已保存双臂动作执行后的场景状态");
+                    Debug.Log("Saved scene state after dual arm action execution");
                 }
                 
-                // 获取当前场景状态
+                // Get current scene state
                 SceneStateA2T currentSceneState = sceneStateManager.GetCurrentSceneStateA2T();
                 string sceneStateJson = JsonUtility.ToJson(currentSceneState);
-                string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // 转义反斜杠
+                string imagePath = sceneStateManager.ImagePath.Replace("\\", "\\/"); // Escape backslash
                 
-                // 计算整体成功状态（所有动作都成功才算成功）
+                // Calculate overall success status (all actions must be successful to be considered successful)
                 bool overallSuccess = results.All(r => r.success);
                 
-                // 构建结果JSON数组
+                // Build result JSON array
                 string resultsJson = "[" + string.Join(",", results.Select(r => JsonUtility.ToJson(r))) + "]";
                 
-                // 构建完整反馈
+                // Build complete feedback
                 string feedback = $"{{\"success\": {(overallSuccess ? 1 : 0)}, \"imgpath\":\"{imagePath}\", \"sceneState\": {sceneStateJson}, \"results\": {resultsJson}}}";
                 
-                Debug.Log($"发送多动作反馈: {feedback}");
+                Debug.Log($"Sending multi-action feedback: {feedback}");
                 byte[] feedbackData = Encoding.UTF8.GetBytes(feedback + "\n");
                 stream.Write(feedbackData, 0, feedbackData.Length);
                 
-                // 清理状态
-                Debug.Log("反馈已发送，现在清理状态");
+                // Clean up state
+                Debug.Log("Feedback sent, now cleaning up state");
                 agentMovement.ClearCollisions();
             }
             catch (Exception ex)
             {
-                Debug.LogError($"发送多动作反馈时发生异常: {ex.GetType().Name} - {ex.Message}");
+                Debug.LogError($"Error sending multi-action feedback: {ex.GetType().Name} - {ex.Message}");
             }
         }
         else
         {
-            Debug.LogWarning("无法发送反馈: client 或 stream 为 null.");
+            Debug.LogWarning("Cannot send feedback: client or stream is null.");
         }
         
-        Debug.Log("停止录制");
+        Debug.Log("Stop recording");
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
     }
 
-    // 添加新的协程处理Lift操作
+    // Add new coroutine to handle Lift operation
     private IEnumerator LiftWithCallback(string objectID, Vector3 originalPosition)
     {
         bool success = false;
-        string message = "lift操作未完成";
+        string message = "lift operation not completed";
         
-        // 执行lift操作（放在try块外）
+        // Create image save path
+        string imageDir = Path.Combine(Application.dataPath, "SavedImages") + "/lift_" + Guid.NewGuid().ToString();
+        sceneStateManager.camera_ctrl.imgeDir = imageDir;
+        sceneStateManager.camera_ctrl.record = true;
+        
+        // 设置深度相机开始保存
+        depthCamera depthCam = FindObjectOfType<depthCamera>();
+        if (depthCam != null)
+        {
+            // 在相同路径下创建depth子文件夹
+            string depthPath = Path.Combine(imageDir, "depth");
+            depthCam.StartSavingDepth(depthPath);
+            Debug.Log("Depth camera started recording to: " + depthPath);
+        }
+        
+        // 尝试使用Capture360捕获全景图
+        Capture360 capture360 = FindObjectOfType<Capture360>();
+        if (capture360 != null)
+        {
+            // 在相同路径下创建cubemap子文件夹
+            string cubemapPath = Path.Combine(imageDir, "cubemap");
+            capture360.StartSavingCubemap(cubemapPath);
+            Debug.Log("Cubemap capture started to: " + cubemapPath);
+        }
+        
+        // Execute lift operation (put it outside the try block)
         yield return StartCoroutine(agentMovement.Lift(objectID));
         
         try {
-            // 检查操作是否成功
+            // Check if the operation is successful
             GameObject targetObject = null;
             if (sceneStateManager.SimObjectsDict.TryGetValue(objectID, out targetObject) && targetObject != null) {
-                // 检查高度变化
+                // Check height change
                 Vector3 currentPosition = targetObject.transform.position;
-                bool heightIncreased = currentPosition.y > originalPosition.y + 0.05f; // 高度增加至少5厘米
+                bool heightIncreased = currentPosition.y > originalPosition.y + 0.05f; // Height increased by at least 5 cm
                 
-                // 检查是否被抓取
+                // Check if it is held
                 bool isHeld = targetObject.transform.parent != null && 
                              (targetObject.transform.parent.CompareTag("Hand") || 
                               targetObject.transform.parent.name.Contains("Gripper"));
                 
                 success = heightIncreased || isHeld;
                 if (success) {
-                    message = "lift操作成功完成";
-                    Debug.Log($"Lift成功: 物体{objectID}高度从{originalPosition.y}增加到{currentPosition.y}");
+                    message = "lift operation completed successfully";
+                    Debug.Log($"Lift success: object {objectID} height increased from {originalPosition.y} to {currentPosition.y}");
                 } else {
-                    message = "lift操作失败：物体未被正确抬起";
-                    Debug.LogWarning($"Lift失败: 物体{objectID}高度从{originalPosition.y}到{currentPosition.y}，抓取状态：{isHeld}");
+                    message = "lift operation failed: object not lifted correctly";
+                    Debug.LogWarning($"Lift failed: object {objectID} height from {originalPosition.y} to {currentPosition.y}, gripper state: {isHeld}");
                 }
             } else {
                 success = false;
-                message = $"lift操作失败：找不到物体{objectID}";
-                Debug.LogError($"找不到物体{objectID}");
+                message = $"lift operation failed: object {objectID} not found";
+                Debug.LogError($"Object {objectID} not found");
             }
         } catch (Exception ex) {
             success = false;
-            message = $"lift操作异常: {ex.Message}";
-            Debug.LogError($"Lift操作发生异常: {ex.Message}");
+            message = $"lift operation failed: {ex.Message}";
+            Debug.LogError($"Lift operation failed: {ex.Message}");
         }
         
-        // 更新状态管理器中的动作结果
+        // Update the action result in the state manager
         if (sceneStateManager != null) {
             sceneStateManager.UpdateLastActionSuccess("lift");
             if (!success && sceneStateManager.GetCurrentSceneStateA2T() != null && 
@@ -825,15 +958,29 @@ public class UnityClient : MonoBehaviour
                 sceneStateManager.GetCurrentSceneStateA2T().agent.errorMessage = message;
             }
             
-            // 保存当前状态
+            // Save current state
             sceneStateManager.SaveCurrentState();
         }
         
-        // 发送结果到Python
+        // Send result to Python
         SendFeedbackToPython(success, message);
         
-        // 确保停止录制
+        // Ensure recording stops
         sceneStateManager.camera_ctrl.record = false;
         sceneStateManager.camera_ctrl.ResetImageCount();
+        
+        // 停止深度相机保存
+        if (depthCam != null)
+        {
+            depthCam.StopSavingDepth();
+            depthCam.ResetImageCount();
+        }
+        
+        // 确保Capture360已完成捕获
+        if (capture360 != null)
+        {
+            capture360.saveCubemap = false;
+            Debug.Log("Ensured cubemap capture is stopped");
+        }
     }
 }

@@ -1,12 +1,12 @@
 using UnityEngine;
 
 /// <summary>
-/// 所有状态变化组件应实现的接口
+/// The interface that all state change components should implement
 /// </summary>
 public interface IStateComponent
 {
     /// <summary>
-    /// 执行状态变化的方法
+    /// The method to execute the state change
     /// </summary>
     void Execute();
 } 

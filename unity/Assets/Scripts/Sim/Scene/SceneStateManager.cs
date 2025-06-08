@@ -25,31 +25,31 @@ public class SceneStateManager : MonoBehaviour
     TextMeshProUGUI stateIndexText;
     [SerializeField]
     TextMeshProUGUI maxStateIndexText;
-    [Header("场景中所有模拟物体")]
+    [Header("scene objects, including broken and sliced objects, visible in the unity editor")]
     [SerializeField]
-    private List<GameObject> simObjects = new();//场景中所有模拟物体，包括破碎和切碎后生成的物体，用于unity编辑器中可见
-    [Header("场景中所有可交互物体")]
+    private List<GameObject> simObjects = new();//scene objects, including broken and sliced objects, visible in the unity editor
+    [Header("scene objects that can be interacted with")]
     [SerializeField]
-    private List<GameObject> interactableObjects = new();//场景中所有可交互物体
+    private List<GameObject> interactableObjects = new();//scene objects that can be interacted with
     //[SerializeField]
-    [Header("视野范围内能交互物体")]
+    [Header("scene objects that can be interacted with in the view")]
 
-    public List<GameObject> canInteractableObjects = new();//视野范围内所有可交互物体
-    [Header("场景中所有可传送位置")]
+    public List<GameObject> canInteractableObjects = new();//scene objects that can be interacted with in the view
+    [Header("scene objects that can be transferred")]
 
     [SerializeField]
-    private List<GameObject> transferPoints = new();//场景中所有可交互物体的传送位置
+    private List<GameObject> transferPoints = new();//scene objects that can be transferred
     //[SerializeField]
-    [Header("视野范围内能交互物体的传送位置")]
+    [Header("scene objects that can be interacted with in the view")]
 
-    public List<GameObject> canTransferPoints = new();//视野范围内可交互物体的传送位置
+    public List<GameObject> canTransferPoints = new();//scene objects that can be transferred in the view
 
-    [Header("可交互物体的可操作位置")]
+    [Header("scene objects that can be operated")]
     [SerializeField]
-    private List<GameObject> interactablePoints = new();//场景中所有可交互物体的可操作位置
+    private List<GameObject> interactablePoints = new();//scene objects that can be operated
 
-    private readonly Dictionary<string, GameObject> simObjectsDict = new();//场景中所有模拟物体字典，用于快速查找
-    //private readonly Dictionary<string, GameObject> canInteractableObjectsDict = new();//场景中所有模拟物体字典，用于快速查找
+    private readonly Dictionary<string, GameObject> simObjectsDict = new();//scene objects dictionary, for quick lookup
+    //private readonly Dictionary<string, GameObject> canInteractableObjectsDict = new();//scene objects dictionary, for quick lookup
 
     public List<GameObject> TransferPoints => transferPoints;
     //public List<GameObject> CanTransferPoints => canTransferPoints;
@@ -81,13 +81,13 @@ public class SceneStateManager : MonoBehaviour
 
     public Dictionary<string, ActionConfig> actionConfigs;
 
-    // 定义ActionConfig类
+    // define ActionConfig class
     [Serializable]
     public class ActionConfig
     {
         public float successRate;
         public Dictionary<string, ErrorEffectConfig> errorMessages;
-        // 添加基于物体状态的配置
+        // add object state based configuration
         public Dictionary<string, ObjectStateConfig> objectStateConfigs;
 
         public override string ToString()
@@ -97,14 +97,14 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    // 新增错误效果配置类，用于存储错误消息对应的概率和状态效果
+    // add error effect config class, for storing the probability and state effect of error messages
     [Serializable]
     public class ErrorEffectConfig
     {
-        public float probability; // 概率
-        public string targetState; // 目标状态
+        public float probability; // probability
+        public string targetState; // target state
         
-        // 构造函数，方便从旧配置转换
+        // constructor, for easy conversion from old configuration
         public ErrorEffectConfig(float prob, string state = "")
         {
             probability = prob;
@@ -117,33 +117,33 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    // 新增ObjectStateConfig类，用于存储物体特定状态的成功率配置
+    // add object state config class, for storing the success rate configuration of specific object states
     [Serializable]
     public class ObjectStateConfig
     {
-        public string objectType; // 物体类型 (cup, plate等)
-        public string stateCondition; // 状态条件 (filled, broken, open等)
-        public float successRate; // 该状态下的成功率
-        public Dictionary<string, ErrorEffectConfig> errorMessages; // 该状态下的错误消息及概率
+        public string objectType; // object type (cup, plate, etc.)
+        public string stateCondition; // state condition (filled, broken, open, etc.)
+        public float successRate; // success rate of this state
+        public Dictionary<string, ErrorEffectConfig> errorMessages; // error messages and their probabilities of this state
     }
 
     void Start()
     {
         LoadActionConfigs();
 
-        // 查找并填充可交互物体列表
+        // find and fill the list of interactable objects
         FillList(simObjects, new[] { "Interactable", "DynamicAdd" });
-        // 查找并填充可交互物体字典
+        // find and fill the dictionary of interactable objects
         FillDict(simObjectsDict, new[] { "Interactable", "DynamicAdd" });
         
 
-        // 查找并填充可交互物体列表
+        // find and fill the list of interactable objects
         FillList(interactableObjects, new[] { "Interactable"});
 
-        // 查找并填充传送位置列表
+        // find and fill the list of transfer points
         FillList(transferPoints, new[] { "TransferPoint" });
 
-        // 查找并填充可操作位置列表
+        // find and fill the list of interactable points
         FillList(interactablePoints, new[] { "InteractablePoint" });
 
         GameObject[] dynamicAdds = GameObject.FindGameObjectsWithTag("DynamicAdd");
@@ -156,7 +156,7 @@ public class SceneStateManager : MonoBehaviour
         
         StartCoroutine(DelayedSave());
 
-        // 保存初始状态
+        // save the initial state
         SaveCurrentState();
         Debug.Log($"Initial state saved - currentStateIndex: {currentStateIndex}");
     }
@@ -169,40 +169,40 @@ public class SceneStateManager : MonoBehaviour
             try 
             {
                 actionConfigs = JsonConvert.DeserializeObject<Dictionary<string, ActionConfig>>(json);
-                Debug.Log("动作配置文件加载成功");
+                Debug.Log("action config file loaded successfully");
             }
             catch (Exception e)
             {
-                Debug.LogError($"动作配置文件加载失败: {e.Message}");
+                Debug.LogError($"failed to load action config file: {e.Message}");
                 actionConfigs = CreateDefaultActionConfigs();
             }
         }
         else
         {
             Debug.LogError("ErrorConfig.json not found!");
-            // 创建默认配置
+            // create default configuration
             actionConfigs = CreateDefaultActionConfigs();
         }
     }
 
-    // 新增方法：创建默认配置
+    // add method: create default configuration
     private Dictionary<string, ActionConfig> CreateDefaultActionConfigs()
     {
         var configs = new Dictionary<string, ActionConfig>();
         
-        // 添加默认Pick动作配置
+        // add default pick action configuration
         var pickConfig = new ActionConfig
         {
             successRate = 0.91f,
             errorMessages = new Dictionary<string, ErrorEffectConfig> 
             {
-                { "抓取失败，物体掉落", new ErrorEffectConfig(0.05f, "") },
-                { "无法抓取到物体", new ErrorEffectConfig(0.04f, "") }
+                { "failed to pick up, object falls", new ErrorEffectConfig(0.05f, "") },
+                { "failed to pick up object", new ErrorEffectConfig(0.04f, "") }
             },
             objectStateConfigs = new Dictionary<string, ObjectStateConfig>()
         };
         
-        // 为cup添加特殊状态配置
+        // add special state configuration for cup
         var filledCupConfig = new ObjectStateConfig
         {
             objectType = "Cup",
@@ -210,21 +210,21 @@ public class SceneStateManager : MonoBehaviour
             successRate = 0.91f,
             errorMessages = new Dictionary<string, ErrorEffectConfig>
             {
-                { "抓取失败，杯子碎裂", new ErrorEffectConfig(0.02f, "broken") },
-                { "无法抓取到杯子", new ErrorEffectConfig(0.03f, "") },
-                { "抓取失败，杯子内容物泼洒", new ErrorEffectConfig(0.04f, "spilled") }
+                { "failed to pick up, cup broken", new ErrorEffectConfig(0.02f, "broken") },
+                { "failed to pick up cup", new ErrorEffectConfig(0.03f, "") },
+                { "failed to pick up, cup contents spilled", new ErrorEffectConfig(0.04f, "spilled") }
             }
         };
         
         pickConfig.objectStateConfigs.Add("Cup_filled", filledCupConfig);
         configs.Add("pick", pickConfig);
         
-        // 可以添加更多默认配置...
+        // can add more default configurations...
         
         return configs;
     }
 
-    // 简化的配置结果类
+    // simplified configuration result class
     public class ActionConfigResult
     {
         public float successRate;
@@ -232,7 +232,7 @@ public class SceneStateManager : MonoBehaviour
         
         public (string message, string effectState) GetRandomErrorMessage() {  
             float total = errorMessages.Values.Sum(e => e.probability);  
-            if(total <= 0) return ("未知错误", "");  
+            if(total <= 0) return ("unknown error", "");  
 
             float randomValue = UnityEngine.Random.value;  
             float cumulative = 0;  
@@ -244,7 +244,7 @@ public class SceneStateManager : MonoBehaviour
                     return (error.Key, error.Value.targetState);  
                 }  
             }  
-            return ("未知错误", "");  
+            return ("unknown error", "");  
         }  
 
         public override string ToString()
@@ -253,52 +253,52 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    // 新增：根据物体状态获取动作配置
+    // add: get action config by object state
     public ActionConfigResult GetActionConfigByObjectState(string actionType, SimObjPhysics targetObj)
     {
         ActionConfigResult result = new ActionConfigResult
         {
-            successRate = 0.95f, // 默认高成功率
+            successRate = 0.95f, // default high success rate
             errorMessages = new Dictionary<string, ErrorEffectConfig>
             {
-                { "操作失败", new ErrorEffectConfig(0.05f, "") }
+                { "operation failed", new ErrorEffectConfig(0.05f, "") }
             }
         };
         
         if (actionConfigs == null || !actionConfigs.TryGetValue(actionType.ToLower(), out ActionConfig config))
         {
-            Debug.LogWarning($"未找到动作类型的配置: {actionType}，使用默认配置");
+            Debug.LogWarning($"no configuration found for action type: {actionType}, using default configuration");
             return result;
         }
         
-        // 先使用基础配置
+        // use base configuration first
         result.successRate = config.successRate;
         result.errorMessages = new Dictionary<string, ErrorEffectConfig>(config.errorMessages);
         
-        // 如果没有目标物体或没有对象状态配置，使用基础配置
+        // if no target object or no object state configuration, use base configuration
         if (targetObj == null || config.objectStateConfigs == null || config.objectStateConfigs.Count == 0)
         {
             return result;
         }
-        Debug.Log($"尝试根据物体状态查找特定配置");
+        Debug.Log($"try to find specific configuration by object state");
 
-        // 尝试根据物体状态查找特定配置
+        // try to find specific configuration by object state
         foreach (var stateConfig in config.objectStateConfigs)
         {
 
             // Debug.Log(targetObj.objType);
-            Debug.Log($"检查物体类型: {targetObj.Type} 与配置的物体类型: {stateConfig.Value.objectType}");
-            // 检查物体类型是否匹配
+            Debug.Log($"check object type: {targetObj.Type} with configured object type: {stateConfig.Value.objectType}");
+            // check if object type matches
             if (!targetObj.Type.ToString().Equals(stateConfig.Value.objectType, StringComparison.OrdinalIgnoreCase))
                 continue;
                 
-            Debug.Log($"检查物体 {targetObj.ObjectID} 的状态: {stateConfig.Value.stateCondition}");
-            // 检查物体状态是否匹配
+            Debug.Log($"check object state: {targetObj.ObjectID} with configured object state: {stateConfig.Value.stateCondition}");
+            // check if object state matches
             bool stateMatches = false;
             switch (stateConfig.Value.stateCondition)
             {
                 case "isFilled":
-                    Debug.Log($"检查物体 {targetObj.ObjectID} 的填充状态: {targetObj.GetComponent<Fill>().isFilled}");
+                    Debug.Log($"check object {targetObj.ObjectID} fill state: {targetObj.GetComponent<Fill>().isFilled}");
                     stateMatches = targetObj.GetComponent<Fill>().isFilled;
                     break;
                 case "isBroken":
@@ -311,17 +311,17 @@ public class SceneStateManager : MonoBehaviour
                     stateMatches = targetObj.IsToggleable && targetObj.GetComponent<CanToggleOnOff>().isOn;
                     break;
                 case "default":
-                    stateMatches = true; // 默认状态总是匹配
+                    stateMatches = true; // default state always matches
                     break;
-                // 可以添加更多状态检查...
+                // can add more state checks...
             }
             
-            // 如果状态匹配，使用特定配置
+            // if state matches, use specific configuration
             if (stateMatches)
             {
                 result.successRate = stateConfig.Value.successRate;
                 result.errorMessages = stateConfig.Value.errorMessages;
-                Debug.Log($"使用物体 {targetObj.ObjectID} 的特定状态配置: {stateConfig.Value.stateCondition}");
+                Debug.Log($"use specific state configuration for object {targetObj.ObjectID}: {stateConfig.Value.stateCondition}");
                 break;
             }
         }
@@ -329,10 +329,10 @@ public class SceneStateManager : MonoBehaviour
         return result;
     }
 
-    // 修改：返回动作配置信息，而不执行随机判断
+    // modify: return action config info, without random judgment
     public ActionConfigResult GetActionConfig(string actionType, string objectID)
     {
-        // 查找目标物体
+        // find target object
         SimObjPhysics targetObj = null;
         if (!string.IsNullOrEmpty(objectID))
         {
@@ -347,23 +347,23 @@ public class SceneStateManager : MonoBehaviour
             }
         }
         
-        // 获取基于物体状态的配置
+        // get action config by object state
         ActionConfigResult config = GetActionConfigByObjectState(actionType, targetObj);
         Debug.Log($"Action config: {config}");
         Debug.Log($"Action config successRate: {config.successRate}");
         
-        // 返回完整的配置信息，由AgentMovement决定是否成功
+        // return full config info, let AgentMovement decide if success
         return config;
     }
     
     // 保留兼容现有代码，但不执行随机判断
     public (bool success, string errorMessage, string targetState) CheckActionSuccess(string actionType, string objectID)
     {
-        // 获取配置信息
+        // get config info
         var config = GetActionConfig(actionType, objectID);
         
-        // 为了与现有代码兼容，返回一个默认的结果
-        // 实际的成功/失败判断由AgentMovement执行
+        // for compatibility with existing code, return a default result
+        // actual success/failure judgment is performed by AgentMovement
         return (true, string.Empty, string.Empty);
     }
 
@@ -381,12 +381,12 @@ public class SceneStateManager : MonoBehaviour
                 if (agentMovement != null && !agentMovement.lastMoveSuccessful)
                 {
                     currentAgent.lastActionSuccess = false;
-                    currentAgent.errorMessage = "移动被障碍物阻挡或无法安全执行";
+                    currentAgent.errorMessage = "moved blocked by obstacle or failed to move";
                     return false;
                 }
             }
             
-            // 不再进行动作成功率检查，由AgentMovement负责
+            // no longer check action success rate, let AgentMovement handle it
             return true;
         }
         else
@@ -396,31 +396,31 @@ public class SceneStateManager : MonoBehaviour
         }
     }
 
-    // 填充列表的方法
+    // fill list method
     private void FillList(List<GameObject> list, string[] tags)
     {
         foreach (string tag in tags)
         {
-            GameObject[] objects = GameObject.FindGameObjectsWithTag(tag); // 查找所有带有当前标签的物体
+            GameObject[] objects = GameObject.FindGameObjectsWithTag(tag); // find all objects with current tag
 
             foreach (var obj in objects)
             {
-                if (tag == "TransferPoint") // 判断是否是 TransferPoint 标签
+                if (tag == "TransferPoint") // check if it is TransferPoint tag
                 {
-                    if (obj.transform.parent != null) // 检查物体是否有父物体
+                    if (obj.transform.parent != null) // check if object has parent
                     {
-                        list.Add(obj.transform.parent.gameObject); // 添加父物体
+                        list.Add(obj.transform.parent.gameObject); // add parent object
                     }
                 }
                 else
                 {
-                    list.Add(obj); // 添加其他标签的物体本身
+                    list.Add(obj); // add object itself
                 }
             }
         }
     }
 
-    // 填充字典的方法
+    // fill dictionary method
     private void FillDict(Dictionary<string, GameObject> dict, string[] tags)
     {
         foreach (string tag in tags)
@@ -447,31 +447,6 @@ public class SceneStateManager : MonoBehaviour
             AdjustRotationToWorldAxes(obj.transform);
         }
         
-        
-        //if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Alpha1))
-        //{
-        //    SaveCurrentState(); 
-        //}
-        //if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Alpha2))
-        //{
-        //    Undo(); 
-        //}
-        //if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Alpha3))
-        //{
-        //    Redo(); 
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha1))
-        //{
-        //    SaveCurrentState();
-        //}
-        //if (Input.GetKeyDown(KeyCode.Alpha2))
-        //{
-        //    Undo();
-        //}
-        //if ( Input.GetKeyDown(KeyCode.Alpha3))
-        //{
-        //    Redo();
-        //}
     }
     
     public void AdjustRotationToWorldAxes(Transform objectTransform)
@@ -479,7 +454,7 @@ public class SceneStateManager : MonoBehaviour
 
         if (objectTransform != null)
         {
-            // 将物体的旋转调整为与世界坐标轴对齐
+            // adjust object rotation to align with world axes
             objectTransform.rotation = Quaternion.identity;
         }
     }
@@ -488,8 +463,8 @@ public class SceneStateManager : MonoBehaviour
     {
         Debug.Log($"Before SaveCurrentState - currentStateIndex: {currentStateIndex}");
         
-        #region 保存版本控制的场景信息
-        // 保存当前状态
+        #region save version controlled scene info
+        // save current state
         SceneState state = new()
         {
             id = currentStateIndex + 1,
@@ -499,44 +474,44 @@ public class SceneStateManager : MonoBehaviour
             objects = new ObjectState[simObjects.Count]
         };
         
-        // 保存机器人关节角度
+        // save robot joint angles
         AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
         if (agentMovement != null && agentMovement.articulationChain != null)
         {
             state.jointAngles = new List<float>();
             state.gripperAngles = new List<float>();
             
-            // 保存所有关节角度
+            // save all joint angles
             foreach (ArticulationBody joint in agentMovement.articulationChain)
             {
                 if (joint.jointType != ArticulationJointType.FixedJoint)
                 {
-                    // 只检查dofCount是否大于0
+                    // check if dofCount is greater than 0
                     if (joint.dofCount > 0)
                     {
                         state.jointAngles.Add(joint.jointPosition[0]);
                     }
                     else
                     {
-                        // 如果关节未初始化，添加默认值0
+                        // if joint is not initialized, add default value 0
                         state.jointAngles.Add(0f);
-                        Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"joint {joint.name} not found valid position info, using default value 0");
                     }
                 }
             }
             
-            // 保存爪子角度
+            // save gripper angles
             if (agentMovement.gripperController != null)
             {
-                // 获取当前左臂爪子
+                // get current left arm gripper
                 ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
                 ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
                 
-                // 获取当前右臂爪子
+                // get current right arm gripper
                 ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
                 ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
                 
-                // 保存左臂爪子角度
+                // save left arm gripper angles
                 if (leftArmLeftGripper != null)
                 {
                     if (leftArmLeftGripper.dofCount > 0)
@@ -546,7 +521,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         state.gripperAngles.Add(0f);
-                        Debug.LogWarning($"左臂左爪 {leftArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"left arm left gripper {leftArmLeftGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
@@ -559,11 +534,11 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         state.gripperAngles.Add(0f);
-                        Debug.LogWarning($"左臂右爪 {leftArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"left arm right gripper {leftArmRightGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
-                // 保存右臂爪子角度
+                // save right arm gripper angles
                 if (rightArmLeftGripper != null)
                 {
                     if (rightArmLeftGripper.dofCount > 0)
@@ -573,7 +548,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         state.gripperAngles.Add(0f);
-                        Debug.LogWarning($"右臂左爪 {rightArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"right arm left gripper {rightArmLeftGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
@@ -586,7 +561,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         state.gripperAngles.Add(0f);
-                        Debug.LogWarning($"右臂右爪 {rightArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"right arm right gripper {rightArmRightGripper.name} not found valid position info, using default value 0");
                     }
                 }
             }
@@ -594,14 +569,14 @@ public class SceneStateManager : MonoBehaviour
         
         // stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // 保存每个 simObject 的状态
+        // save state of each simObject
         for (int i = 0; i < simObjects.Count; i++)
         {
             state.objects[i] = SaveObjectState(simObjects[i]);
         }
         #endregion
 
-        #region 保存返回给python的场景信息
+        #region save scene info returned to python
         SceneStateA2T stateA2T = new()
         {
             id = currentStateIndex + 1,
@@ -611,50 +586,50 @@ public class SceneStateManager : MonoBehaviour
                 name = agent.name,
                 position = agent.transform.position,
                 rotation = agent.transform.rotation,
-                lastAction = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastAction : "idle", // 默认值
+                lastAction = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastAction : "idle", // default value
                 lastActionSuccess = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.lastActionSuccess : false,
                 errorMessage = stateHistoryA2T.Count > 0 ? stateHistoryA2T[currentStateIndex].agent.errorMessage : string.Empty
             },
             reachablePositons = canTransferPoints.Select(t => t.transform.position).ToArray()
         };
         
-        // 保存机器人关节角度到A2T状态
+        // save robot joint angles to A2T state
         if (agentMovement != null && agentMovement.articulationChain != null)
         {
             stateA2T.agent.jointAngles = new List<float>();
             stateA2T.agent.gripperAngles = new List<float>();
             
-            // 保存所有关节角度
+            // save all joint angles
             foreach (ArticulationBody joint in agentMovement.articulationChain)
             {
                 if (joint.jointType != ArticulationJointType.FixedJoint)
                 {
-                    // 只检查dofCount是否大于0
+                    // check if dofCount is greater than 0
                     if (joint.dofCount > 0)
                     {
                         stateA2T.agent.jointAngles.Add(joint.jointPosition[0]);
                     }
                     else
                     {
-                        // 如果关节未初始化，添加默认值0
+                        // if joint is not initialized, add default value 0
                         stateA2T.agent.jointAngles.Add(0f);
-                        // Debug.LogWarning($"关节 {joint.name} 未找到有效的位置信息，使用默认值0");
+                        // Debug.LogWarning($"joint {joint.name} not found valid position info, using default value 0");
                     }
                 }
             }
             
-            // 保存爪子角度
+            // save gripper angles
             if (agentMovement.gripperController != null)
             {
-                // 获取当前左臂爪子
+                // get current left arm gripper
                 ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
                 ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
                 
-                // 获取当前右臂爪子
+                // get current right arm gripper
                 ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
                 ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
                 
-                // 保存左臂爪子角度
+                // save left arm gripper angles
                 if (leftArmLeftGripper != null)
                 {
                     if (leftArmLeftGripper.dofCount > 0)
@@ -664,7 +639,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         stateA2T.agent.gripperAngles.Add(0f);
-                        Debug.LogWarning($"左臂左爪 {leftArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"left arm left gripper {leftArmLeftGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
@@ -677,11 +652,11 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         stateA2T.agent.gripperAngles.Add(0f);
-                        Debug.LogWarning($"左臂右爪 {leftArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"left arm right gripper {leftArmRightGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
-                // 保存右臂爪子角度
+                // save right arm gripper angles
                 if (rightArmLeftGripper != null)
                 {
                     if (rightArmLeftGripper.dofCount > 0)
@@ -691,7 +666,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         stateA2T.agent.gripperAngles.Add(0f);
-                        Debug.LogWarning($"右臂左爪 {rightArmLeftGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"right arm left gripper {rightArmLeftGripper.name} not found valid position info, using default value 0");
                     }
                 }
                 
@@ -704,7 +679,7 @@ public class SceneStateManager : MonoBehaviour
                     else
                     {
                         stateA2T.agent.gripperAngles.Add(0f);
-                        Debug.LogWarning($"右臂右爪 {rightArmRightGripper.name} 未找到有效的位置信息，使用默认值0");
+                        Debug.LogWarning($"right arm right gripper {rightArmRightGripper.name} not found valid position info, using default value 0");
                     }
                 }
             }
@@ -716,7 +691,7 @@ public class SceneStateManager : MonoBehaviour
         }
         #endregion
 
-        // 确保当前状态索引不超过历史记录
+        // ensure current state index does not exceed history
         if (currentStateIndex < stateHistory.Count - 1)
         {
             stateHistory.RemoveRange(currentStateIndex + 1, stateHistory.Count - (currentStateIndex + 1));
@@ -725,7 +700,7 @@ public class SceneStateManager : MonoBehaviour
         stateHistory.Add(state);
         stateHistoryA2T.Add(stateA2T);
         // maxStateIndexText.text= "MaxIndex:" + (stateHistory.Count-1).ToString();
-        // 输出场景状态
+        // print scene state
         //print(JsonUtility.ToJson(state));
         print(JsonUtility.ToJson(stateA2T));
         currentStateIndex++;
@@ -733,7 +708,7 @@ public class SceneStateManager : MonoBehaviour
         Debug.Log($"StateHistory count: {stateHistory.Count}");
     }
 
-    // 保存单个物体的状态
+    // save state of single object
     private ObjectState SaveObjectState(GameObject obj)
     {
         ObjectState objectState = new()
@@ -742,20 +717,20 @@ public class SceneStateManager : MonoBehaviour
             position = obj.transform.localPosition,
             rotation = obj.transform.localRotation,
             isActive = obj.activeSelf,
-            isPickedUp = obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"), // 检查父物体是否为Hand
+            isPickedUp = obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"), // check if parent is Hand
         };
 
-        // 保存可序列化状态
+        // save serializable state
         IUniqueStateManager[] savables = obj.GetComponents<IUniqueStateManager>();
         foreach (var savable in savables)
         {
-            savable.SaveState(objectState); // 保存状态
+            savable.SaveState(objectState); // save state
         }
 
         return objectState;
     }
 
-    // 保存可交互物体的状态
+    // save state of interactable object
     private ObjectStateA2T SaveInteractableObjectState(GameObject obj)
     {
         SimObjPhysics sop = obj.GetComponent<SimObjPhysics>();
@@ -818,7 +793,7 @@ public class SceneStateManager : MonoBehaviour
         {
             currentStateIndex--;
             
-            // 先恢复所有交互物体的从属关系
+            // restore parent relationship of all interactable objects
             RestorePickedObjectsParent();
             
             LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
@@ -827,45 +802,45 @@ public class SceneStateManager : MonoBehaviour
         return false;
     }
 
-    // 恢复所有交互物体的从属关系
+    // restore parent relationship of all interactable objects
     private void RestorePickedObjectsParent()
     {
-        Debug.Log("开始恢复所有被拿起的物体...");
+        Debug.Log("Start restoring all picked objects...");
         List<Transform> possibleGrippers = new List<Transform>();
         
-        // 1. 查找所有带Hand标签的物体（整个手部）
+        // 1. find all objects with Hand tag (whole hand)
         GameObject[] hands = GameObject.FindGameObjectsWithTag("Hand");
         foreach (GameObject hand in hands)
         {
             possibleGrippers.Add(hand.transform);
         }
         
-        // 2. 查找GripperController组件中的所有夹爪关节
+        // 2. find all gripper joints in GripperController component
         AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
         if (agentMovement != null && agentMovement.gripperController != null)
         {
             GripperController gc = agentMovement.gripperController;
             
-            // 添加X1机器人夹爪
+            // add X1 robot gripper
             if (gc.leftArmLeftGripper != null) possibleGrippers.Add(gc.leftArmLeftGripper.transform);
             if (gc.leftArmRightGripper != null) possibleGrippers.Add(gc.leftArmRightGripper.transform);
             if (gc.rightArmLeftGripper != null) possibleGrippers.Add(gc.rightArmLeftGripper.transform);
             if (gc.rightArmRightGripper != null) possibleGrippers.Add(gc.rightArmRightGripper.transform);
             
-            // 添加H1机器人夹爪
+            // add H1 robot gripper
             if (gc.h1_leftArmLeftGripper != null) possibleGrippers.Add(gc.h1_leftArmLeftGripper.transform);
             if (gc.h1_leftArmRightGripper != null) possibleGrippers.Add(gc.h1_leftArmRightGripper.transform);
             if (gc.h1_rightArmLeftGripper != null) possibleGrippers.Add(gc.h1_rightArmLeftGripper.transform);
             if (gc.h1_rightArmRightGripper != null) possibleGrippers.Add(gc.h1_rightArmRightGripper.transform);
             
-            // 添加当前激活的夹爪
+            // add current active gripper
             if (gc.currentLeftLeftGripper != null) possibleGrippers.Add(gc.currentLeftLeftGripper.transform);
             if (gc.currentLeftRightGripper != null) possibleGrippers.Add(gc.currentLeftRightGripper.transform);
             if (gc.currentRightLeftGripper != null) possibleGrippers.Add(gc.currentRightLeftGripper.transform);
             if (gc.currentRightRightGripper != null) possibleGrippers.Add(gc.currentRightRightGripper.transform);
         }
         
-        // 3. 额外查找可能的手指关节（按名称）
+        // 3. find possible finger joints (by name)
         string[] possibleGripperNames = new[] { 
             "hand_left_link", "hand_right_link", 
             "gripper_left", "gripper_right",
@@ -885,77 +860,77 @@ public class SceneStateManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"找到 {possibleGrippers.Count} 个可能的夹爪/手指位置");
+        Debug.Log($"found {possibleGrippers.Count} possible gripper/finger positions");
         
-        // 遍历所有可能的夹爪，检查子物体
+        // iterate through all possible grippers, check sub-objects
         int releasedCount = 0;
         foreach (Transform gripper in possibleGrippers)
         {
-            // 跳过null引用
+            // skip null reference
             if (gripper == null) continue;
             
-            Debug.Log($"检查夹爪/手指: {gripper.name}，子物体数量: {gripper.childCount}");
+            Debug.Log($"check gripper/finger: {gripper.name}, sub-objects count: {gripper.childCount}");
             
-            // 获取该夹爪下的所有子物体
+            // get all sub-objects of the gripper
             for (int i = gripper.childCount - 1; i >= 0; i--)
             {
                 Transform child = gripper.GetChild(i);
                 SimObjPhysics simObj = child.GetComponent<SimObjPhysics>();
                 
-                // 只处理具有SimObjPhysics组件的物体（交互物体）
+                // only process objects with SimObjPhysics component (interactable objects)
                 if (simObj != null)
                 {
-                    Debug.Log($"Undo/Redo: 将物体 {child.name} (ID: {simObj.ObjectID}) 从夹爪 {gripper.name} 释放");
+                    Debug.Log($"Undo/Redo: release object {child.name} (ID: {simObj.ObjectID}) from gripper {gripper.name}");
                     releasedCount++;
                     
-                    // 彻底释放物体，确保物体回归ObjectsParent
-                    Vector3 currentPosition = child.position; // 记录当前世界坐标位置
-                    Quaternion currentRotation = child.rotation; // 记录当前世界旋转
+                    // completely release object, ensure object returns to ObjectsParent
+                    Vector3 currentPosition = child.position; // record current world position
+                    Quaternion currentRotation = child.rotation; // record current world rotation
                     
-                    // 断开与夹爪的连接，设置为场景根物体
+                    // disconnect from gripper, set to scene root
                     child.SetParent(ObjectsParent);
                     
-                    // 恢复物理属性之前确保位置不变
+                    // ensure position before restoring physics
                     child.position = currentPosition;
                     child.rotation = currentRotation;
                     
-                    // 恢复物理属性
+                    // restore physics
                     Rigidbody rigidbody = child.GetComponent<Rigidbody>();
                     if (rigidbody != null)
                     {
-                        // 先设为运动学以确保位置不变
+                        // set to kinematic to ensure position
                         rigidbody.isKinematic = true;
                         
-                        // 调整旋转为世界坐标系
+                        // adjust rotation to world axes
                         AdjustRotationToWorldAxes(child);
                         
-                        // 完全恢复物理
+                        // fully restore physics
                         rigidbody.isKinematic = false;
                         rigidbody.useGravity = true;
                         rigidbody.detectCollisions = true;
-                        rigidbody.linearVelocity = Vector3.zero; // 清除速度
-                        rigidbody.angularVelocity = Vector3.zero; // 清除角速度
+                        rigidbody.linearVelocity = Vector3.zero; // clear velocity
+                        rigidbody.angularVelocity = Vector3.zero; // clear angular velocity
                     }
                     
-                    // 从操作列表中移除
+                    // remove from operation list
                     if (ObjectsInOperation.Contains(child.gameObject))
                     {
                         ObjectsInOperation.Remove(child.gameObject);
-                        Debug.Log($"已从操作列表中移除物体: {child.name}");
+                        Debug.Log($"removed object {child.name} from operation list");
                     }
                 }
             }
         }
         
-        // 更新Agent组件中的currentInteractingObjectID
+        // update currentInteractingObjectID in Agent component
         AgentMovement agentMovementForClear = agent.GetComponent<AgentMovement>();
         if (agentMovementForClear != null)
         {
-            // 通知AgentMovement清除当前交互物体
+            // notify AgentMovement to clear current interacting object
             agentMovementForClear.ClearIgnoredCollisionObjects();
         }
         
-        Debug.Log($"恢复操作完成，共释放了 {releasedCount} 个物体回到场景");
+        Debug.Log($"restore operation completed, released {releasedCount} objects back to scene");
     }
 
     public bool Redo()
@@ -964,7 +939,7 @@ public class SceneStateManager : MonoBehaviour
         {
             currentStateIndex++;
             
-            // 先恢复所有交互物体的从属关系
+            // restore parent relationship of all interactable objects
             RestorePickedObjectsParent();
             
             LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
@@ -973,16 +948,16 @@ public class SceneStateManager : MonoBehaviour
         return false;
     }
 
-    // 加载指定索引的状态
+    // load state by index
     public bool LoadStateByIndex(string indexText)
     {
         if (int.TryParse(indexText, out int index))
         {
-            if (index >= 0 && index <= stateHistory.Count-1) // 检查索引是否在有效范围内
+            if (index >= 0 && index <= stateHistory.Count-1) // check if index is in valid range
             {
-                currentStateIndex = index; // 索引从0开始，用户输入从1开始
+                currentStateIndex = index; // index starts from 0, user input starts from 1
                 
-                // 先恢复所有交互物体的从属关系
+                // restore parent relationship of all interactable objects
                 RestorePickedObjectsParent();
                 
                 LoadState(stateHistory[currentStateIndex], stateHistoryA2T[currentStateIndex]);
@@ -990,12 +965,12 @@ public class SceneStateManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("输入的索引超出范围！");
+                Debug.LogWarning("input index out of range!");
             }
         }
         else
         {
-            Debug.LogWarning("无效的索引输入！");
+            Debug.LogWarning("invalid index input!");
         }
         return false;
     }
@@ -1004,12 +979,12 @@ public class SceneStateManager : MonoBehaviour
     {
         //string sceneStateJson = JsonUtility.ToJson(state);
         //print(sceneStateJson);
-        // 更新场景状态和相关信息
+        // update scene state and related information
         // agent.transform.SetPositionAndRotation(state.agentPosition, state.agentRotation);
         root.TeleportRoot(state.agentPosition,state.agentRotation);
         // stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // 恢复关节角度
+        // restore joint angles
         AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
         if (agentMovement != null && agentMovement.articulationChain != null)
         {
@@ -1028,18 +1003,18 @@ public class SceneStateManager : MonoBehaviour
                 }
             }
             
-            // 恢复爪子角度
+            // restore gripper angles
             if (state.gripperAngles != null && state.gripperAngles.Count > 0 && agentMovement.gripperController != null)
             {
-                // 获取当前左臂爪子
+                // get current left arm gripper
                 ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
                 ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
                 
-                // 获取当前右臂爪子
+                // get current right arm gripper
                 ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
                 ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
                 
-                // 恢复左臂爪子角度
+                // restore left arm gripper angle
                 if (leftArmLeftGripper != null && state.gripperAngles.Count > 0)
                 {
                     var drive = leftArmLeftGripper.xDrive;
@@ -1054,7 +1029,7 @@ public class SceneStateManager : MonoBehaviour
                     leftArmRightGripper.xDrive = drive;
                 }
                 
-                // 恢复右臂爪子角度
+                // restore right arm gripper angle
                 if (rightArmLeftGripper != null && state.gripperAngles.Count > 2)
                 {
                     var drive = rightArmLeftGripper.xDrive;
@@ -1071,7 +1046,7 @@ public class SceneStateManager : MonoBehaviour
             }
         }
 
-        // 还原其他物体的状态
+        // restore other objects' state
         foreach (ObjectState objectState in state.objects)
         {
             LoadObjectState(objectState);
@@ -1084,7 +1059,7 @@ public class SceneStateManager : MonoBehaviour
         print(sceneStateJson);
         string sceneStateJsonA2T = JsonUtility.ToJson(stateA2T);
         print(sceneStateJsonA2T);
-        // 更新场景状态和相关信息
+        // update scene state and related information
 
         print("Load state");
 
@@ -1094,7 +1069,7 @@ public class SceneStateManager : MonoBehaviour
 
         stateIndexText.text = "CurrentIndex: " + state.id;
 
-        // 恢复关节角度
+        // restore joint angles
         AgentMovement agentMovement = agent.GetComponent<AgentMovement>();
         if (agentMovement != null && agentMovement.articulationChain != null)
         {
@@ -1113,18 +1088,18 @@ public class SceneStateManager : MonoBehaviour
                 }
             }
             
-            // 恢复爪子角度
+            // restore gripper angles
             if (state.gripperAngles != null && state.gripperAngles.Count > 0 && agentMovement.gripperController != null)
             {
-                // 获取当前左臂爪子
+                // get current left arm gripper
                 ArticulationBody leftArmLeftGripper = agentMovement.gripperController.currentLeftLeftGripper;
                 ArticulationBody leftArmRightGripper = agentMovement.gripperController.currentLeftRightGripper;
                 
-                // 获取当前右臂爪子
+                // get current right arm gripper
                 ArticulationBody rightArmLeftGripper = agentMovement.gripperController.currentRightLeftGripper;
                 ArticulationBody rightArmRightGripper = agentMovement.gripperController.currentRightRightGripper;
                 
-                // 恢复左臂爪子角度
+                // restore left arm gripper angle
                 if (leftArmLeftGripper != null && state.gripperAngles.Count > 0)
                 {
                     var drive = leftArmLeftGripper.xDrive;
@@ -1139,7 +1114,7 @@ public class SceneStateManager : MonoBehaviour
                     leftArmRightGripper.xDrive = drive;
                 }
                 
-                // 恢复右臂爪子角度
+                // restore right arm gripper angle
                 if (rightArmLeftGripper != null && state.gripperAngles.Count > 2)
                 {
                     var drive = rightArmLeftGripper.xDrive;
@@ -1156,7 +1131,7 @@ public class SceneStateManager : MonoBehaviour
             }
         }
 
-        // 还原其他物体的状态
+        // restore other objects' state
         foreach (ObjectState objectState in state.objects)
         {
             LoadObjectState(objectState);
@@ -1167,74 +1142,54 @@ public class SceneStateManager : MonoBehaviour
 
     private void LoadObjectState(ObjectState objectState)
     {
-        // 查找动态物体
+        // find dynamic object
         if (simObjectsDict.TryGetValue(objectState.name, out GameObject obj))
         {
-            // 先处理父级关系
-            // 1. 如果物体当前在手中，但在保存的状态中不是被拿起的，则将其释放
+            // first, handle parent relationship
+            // 1. if object is in hand, but not picked up in saved state, release it
             if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand") && !objectState.isPickedUp)
             {
-                Debug.Log($"LoadObjectState: 将物体 {obj.name} 从手部释放到场景中");
+                Debug.Log($"LoadObjectState: release object {obj.name} from hand to scene");
                 obj.transform.SetParent(ObjectsParent);
                 
-                // 从操作列表中移除
+                // remove from operation list
                 if (ObjectsInOperation.Contains(obj))
                 {
                     ObjectsInOperation.Remove(obj);
                 }
             }
-            // 2. 如果物体在保存的状态中是被拿起的，但当前不在手中，这种情况应该由Agent的Pick操作来处理
-            // 我们只恢复位置，不改变父级关系
+            // 2. if object is picked up in saved state, but not in hand, this should be handled by Agent's Pick operation
+            // we only restore position, not change parent relationship
             
-            // 设置活动状态
+            // set active state
             obj.SetActive(objectState.isActive);
 
-            // 处理物理状态和位置
+            // handle physics state and position
             HandlePhysicsState(obj, objectState);
 
-            // 恢复其他状态（通过IUniqueStateManager接口）
+            // restore other states (through IUniqueStateManager interface)
             IUniqueStateManager[] savables = obj.GetComponents<IUniqueStateManager>();
             foreach (var savable in savables)
             {
                 savable.LoadState(objectState);
             }
-            
-            // 再次检查刚体状态，确保根据父级关系正确设置
-            // Rigidbody rb = obj.GetComponent<Rigidbody>();
-            // if (rb != null)
-            // {
-            //     if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
-            //     {
-            //         // 如果在手中，禁用物理
-            //         rb.isKinematic = true;
-            //         rb.useGravity = false;
-            //         rb.detectCollisions = false;
-            //     }
-            //     else if (!objectState.isPickedUp)
-            //     {
-            //         // 如果不在手中且保存状态也不是被拿起，启用物理
-            //         rb.isKinematic = false;
-            //         rb.useGravity = true;
-            //         rb.detectCollisions = true;
-            //     }
-            // }
         }
         else
         {
-            Debug.LogWarning($"无法找到物体: {objectState.name}");
+            Debug.LogWarning($"cannot find object: {objectState.name}");
         }
     }
 
     private void HandlePhysicsState(GameObject obj, ObjectState objectState)
     {
-        // 无论物体类型如何，都先暂停物理
+        // regardless of object type, first pause physics
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         bool hadRigidbody = rb != null;
         bool wasKinematic = hadRigidbody && rb.isKinematic;
         bool usedGravity = hadRigidbody && rb.useGravity;
         bool detectCollisions = hadRigidbody && rb.detectCollisions;
         
-        // 暂时禁用物理以确保位置设置正确
+        // temporarily disable physics to ensure position setting is correct
         if (hadRigidbody)
         {
 
@@ -1242,22 +1197,22 @@ public class SceneStateManager : MonoBehaviour
             rb.useGravity = false;
             rb.detectCollisions = false;
             
-            // 清除所有现有速度和角速度
+            // clear all existing velocity and angular velocity
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
         
-        // 设置位置和旋转
+        // set position and rotation
         obj.transform.SetLocalPositionAndRotation(objectState.position, objectState.rotation);
         
-        // 确保物理系统与新的transform同步
+        // ensure physics system is synchronized with new transform
         Physics.SyncTransforms();
         
-        // 根据物体类型恢复物理属性
+        // restore physics properties according to object type
         SimObjPhysics simObj = obj.GetComponent<SimObjPhysics>();
         if (hadRigidbody)
         {
-            // 如果物体目前被拿起（在手中），保持kinematic=true
+            // if object is currently picked up (in hand), keep kinematic=true
             if (obj.transform.parent != null && obj.transform.parent.CompareTag("Hand"))
             {
                 rb.isKinematic = true;
@@ -1266,8 +1221,8 @@ public class SceneStateManager : MonoBehaviour
             }
             else if (simObj != null && simObj.PrimaryProperty == SimObjPrimaryProperty.CanPickup)
             {
-                // 对于可拾取物体，我们需要确保它们的位置稳定后再恢复物理
-                // 先进行位置固定，然后延迟恢复物理
+                // for pickable objects, we need to ensure their position is stable before restoring physics
+                // first, fix position, then delay restore physics
                 StartCoroutine(SafelyRestorePhysics(rb, false, true, true));
             }
             else
@@ -1275,7 +1230,7 @@ public class SceneStateManager : MonoBehaviour
                 if(simObj.PrimaryProperty != SimObjPrimaryProperty.Static)
                 {
 
-                    // 其他物体恢复原有状态
+                    // restore original state of other objects
                     rb.isKinematic = wasKinematic;
                     rb.useGravity = usedGravity;
                     rb.detectCollisions = detectCollisions;
@@ -1283,46 +1238,46 @@ public class SceneStateManager : MonoBehaviour
 
             }
             
-            // 确保所有速度都被重置
+            // ensure all velocities are reset
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
         
-        // 记录调试信息
-        Debug.Log($"物体 {obj.name} 位置已恢复到: {objectState.position}, 旋转: {objectState.rotation.eulerAngles}");
+        // record debug information
+        Debug.Log($"object {obj.name} position restored to: {objectState.position}, rotation: {objectState.rotation.eulerAngles}");
     }
     
-    // 安全地恢复物理属性的协程
+    // Safely restore physics properties
     private IEnumerator SafelyRestorePhysics(Rigidbody rb, bool isKinematic, bool useGravity, bool detectCollisions)
     {
         if (rb == null) yield break;
         
-        // 等待一帧，确保所有位置设置都已完成
+        // wait for one frame, ensure all position settings are completed
         yield return null;
         
-        // 再次确保物理系统与transform同步
+        // ensure physics system is synchronized with transform
         Physics.SyncTransforms();
         
-        // 确保速度为零
+        // ensure velocity is zero
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         
-        // 先恢复碰撞检测但保持kinematic状态
+        // first, restore collision detection but keep kinematic state
         rb.detectCollisions = detectCollisions;
         yield return new WaitForFixedUpdate();
         
-        // 然后恢复重力但保持kinematic状态
+        // then, restore gravity but keep kinematic state
         rb.useGravity = useGravity;
         yield return new WaitForFixedUpdate();
         
-        // 最后恢复kinematic状态
+        // finally, restore kinematic state
         rb.isKinematic = isKinematic;
         
-        // 再次确保速度为零，防止位置突变
+        // ensure velocity is zero
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         
-        Debug.Log($"物体 {rb.gameObject.name} 的物理属性已安全恢复");
+        Debug.Log($"object {rb.gameObject.name} physics properties restored");
     }
 
 
@@ -1349,7 +1304,7 @@ public class SceneStateManager : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"未找到ID为 {objectID} 的物品");
+        Debug.LogWarning($"cannot find object with ID: {objectID}");
         return null;
     }
 
@@ -1367,13 +1322,13 @@ public class SceneStateManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"物品 {objectID} 没有可用的交互点");
+                    Debug.LogWarning($"object {objectID} has no available interactable points");
                     return null;
                 }
             }
         }
 
-        Debug.LogWarning($"未找到ID为 {objectID} 的物品");
+        Debug.LogWarning($"cannot find object with ID: {objectID}");
         return null;
     }
 
@@ -1390,26 +1345,26 @@ public class SceneStateManager : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"未找到ID为 {objectID} 的物品");
+        Debug.LogWarning($"cannot find object with ID: {objectID}");
         return null;
         
     }
 
     public void SetParent(Transform parent, string objectID)
     {
-        Debug.Log($"SetParent: 将物体 {objectID} 设置为 {parent.name} 的子物体");
+        Debug.Log($"SetParent: set object {objectID} as child of {parent.name}");
         
-        // 确保父物体有Hand标签，便于后续恢复时查找
+        // ensure parent has Hand tag, for later recovery
         if (!parent.CompareTag("Hand"))
         {
             try
             {
                 parent.tag = "Hand";
-                Debug.Log($"已为夹爪 {parent.name} 添加Hand标签");
+                Debug.Log($"added Hand tag to {parent.name}");
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"无法为夹爪添加Hand标签: {e.Message}");
+                Debug.LogWarning($"cannot add Hand tag to {parent.name}: {e.Message}");
             }
         }
         
@@ -1419,19 +1374,19 @@ public class SceneStateManager : MonoBehaviour
         {
             if (obj.ObjectID == objectID)
             {
-                Debug.Log($"找到物体 {obj.name} (ID: {objectID})，设置其父物体为 {parent.name}");
+                Debug.Log($"found object {obj.name} (ID: {objectID}), set its parent to {parent.name}");
                 
                 ObjectsInOperation.Add(obj.gameObject);
                 obj.transform.SetParent(parent);
                 Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
                 if (rigidbody != null)
                 {
-                    rigidbody.isKinematic = true; // 设置为运动学模式
-                    rigidbody.useGravity = false; // 禁用重力
-                    rigidbody.detectCollisions = false; // 禁用碰撞检测
+                    rigidbody.isKinematic = true; // set to kinematic mode
+                    rigidbody.useGravity = false; // disable gravity
+                    rigidbody.detectCollisions = false; // disable collision detection
                 }
                 
-                Debug.Log($"物体 {obj.name} 已成功设置为 {parent.name} 的子物体，并禁用了物理");
+                Debug.Log($"object {obj.name} successfully set as child of {parent.name}, and disabled physics");
             }
         }
     }
@@ -1451,9 +1406,9 @@ public class SceneStateManager : MonoBehaviour
                 {
                     AdjustRotationToWorldAxes(obj.transform);
                     
-                    rigidbody.isKinematic = false; // 恢复物理运动
-                    rigidbody.useGravity = true; // 启用重力
-                    rigidbody.detectCollisions = true; // 启用碰撞检测
+                    rigidbody.isKinematic = false; // restore physics
+                    rigidbody.useGravity = true; // enable gravity
+                    rigidbody.detectCollisions = true; // enable collision detection
                 }
                 // ObjectsInOperation.Remove(obj);
             }
@@ -1479,32 +1434,32 @@ public class SceneStateManager : MonoBehaviour
         {
             var currentAgent = stateHistoryA2T[currentStateIndex].agent;
             
-            // 检查碰撞对象是否为当前交互物体
+            // check if collision object is current interacting object
             bool isInteractingObject = false;
             
-            // 获取AgentMovement组件
+            // get AgentMovement component
             AgentMovement agentMovement = FindObjectOfType<AgentMovement>();
             if (agentMovement != null)
             {
-                // 尝试判断collisionB是否为交互物体
+                // try to determine if collisionB is current interacting object
                 SimObjPhysics[] allObjects = FindObjectsOfType<SimObjPhysics>();
                 foreach (SimObjPhysics obj in allObjects)
                 {
                     if (obj.gameObject.name == collisionB)
                     {
-                        // 从AgentMovement获取当前交互物体信息
-                        // 假设AgentMovement有一个方法来检查物体是否为当前交互物体
+                        // get current interacting object information from AgentMovement
+                        // assume AgentMovement has a method to check if object is current interacting object
                         if (agentMovement.IsCurrentInteractingObject(obj.ObjectID))
                         {
                             isInteractingObject = true;
-                            Debug.Log($"碰撞物体 {collisionB} 是当前交互物体，不视为错误碰撞");
+                            Debug.Log($"collision object {collisionB} is current interacting object, not considered as a collision");
                             break;
                         }
                     }
                 }
             }
             
-            // 如果不是交互物体，则视为失败
+            // if not interacting object, consider as failure
             if (!isInteractingObject)
             {
                 currentAgent.lastActionSuccess = false;
@@ -1512,8 +1467,8 @@ public class SceneStateManager : MonoBehaviour
             }
             else
             {
-                // 如果是交互物体，仍然记录碰撞但不视为失败
-                Debug.Log($"检测到与交互物体的碰撞，不标记为失败: {collisionB}");
+                // if interacting object, still record collision but not considered as failure
+                Debug.Log($"detected collision with interacting object, not considered as failure: {collisionB}");
             }
         }
         else
