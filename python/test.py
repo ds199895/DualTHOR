@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="livingroom2")
     
     # 启动控制器
     controller.start()
@@ -84,14 +84,24 @@ def test_controller():
     
     logging.info("test end")
 
-
-def test_dual_arm():
+def test_lift():
     controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
     controller.step("moveahead", magnitude=1.6)
-    controller.step("moveleft", magnitude=2)
-    
+    # controller.step("moveright", magnitude=0.7)
+    # controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
+    controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
+
+def test_dual_arm():
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="kitchen")
+    controller.start()
+    controller.step("rotateright", magnitude=1)
+    controller.step("moveahead", magnitude=1.6)
+    controller.step("moveleft", magnitude=1.7)
+
+    controller.step("pick", objectID="Bowl_148b0fbf", arm="left")
+    controller.step("pick", objectID="Kitchen_Potato_01", arm="right")
     # example 1: sequential execution - left arm pick bowl, then right arm open drawer
     sequential_actions = [
         {
@@ -109,9 +119,9 @@ def test_dual_arm():
     ]
 
     # sequential execution (sequential=True)
-    results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
+    # results = controller.execute_dual_arm_actions(sequential_actions, sequential=True)
 
-    print(results)
+    # print(results)
 
 
     parallel_actions = [
@@ -156,9 +166,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     try:
-        test_controller()
+        # test_controller()
 
-        # test_dual_arm()
+        test_dual_arm()
+
+        # test_lift()
 
         while True:
             time.sleep(1)
