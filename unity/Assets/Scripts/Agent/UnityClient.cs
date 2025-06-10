@@ -126,16 +126,40 @@ public class UnityClient : MonoBehaviour
         {
             try
             {
+                // 使用StringBuilder来累积接收到的数据
+                StringBuilder dataBuffer = new StringBuilder();
                 byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-
-                if (bytesRead > 0)
+                
+                // 持续读取直到接收到完整的JSON数据
+                while (stream.DataAvailable)
                 {
-                    string actionJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Debug.Log($"Received action from Python: {actionJson}");
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    if (bytesRead > 0)
+                    {
+                        string chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        dataBuffer.Append(chunk);
+                    }
+                    
+                    // 检查是否接收到完整的JSON（以换行符结尾）
+                    string currentData = dataBuffer.ToString();
+                    if (currentData.EndsWith("\n"))
+                    {
+                        break;
+                    }
+                    
+                    // 短暂等待，避免过度占用CPU
+                    await Task.Delay(1);
+                }
+                
+                string actionJson = dataBuffer.ToString().Trim(); // 移除换行符
+                
+                if (!string.IsNullOrEmpty(actionJson))
+                {
+                    Debug.Log($"Received complete action from Python: {actionJson}");
+                    Debug.Log($"Action data length: {actionJson.Length} characters");
 
                     // 检查是否是动作数组
-                    if(actionJson.TrimStart().Contains("["))
+                    if(actionJson.TrimStart().Contains("\"actions\""))
                     {
                         Debug.Log("Parse action array!");
                         await ProcessActionArray(actionJson);

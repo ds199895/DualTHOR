@@ -687,6 +687,7 @@ public class SceneStateManager : MonoBehaviour
 
         for (int i = 0; i < interactableObjects.Count; i++)
         {
+            Debug.Log("interactableObjects[i]: "+interactableObjects[i]);
             stateA2T.objects[i] = SaveInteractableObjectState(interactableObjects[i]);
         }
         #endregion
@@ -736,6 +737,25 @@ public class SceneStateManager : MonoBehaviour
         SimObjPhysics sop = obj.GetComponent<SimObjPhysics>();
         // Debug.Log("obj: "+obj);
         // Debug.Log("sop: "+sop);
+        // Debug.Log("obj.name: "+obj.name);
+
+        // Debug.Log("sop.ObjectID: "+sop.ObjectID);
+        // Debug.Log("sop.Type: "+sop.Type);
+        // Debug.Log("sop.SecondaryProperties: "+sop.SecondaryProperties);
+        // Debug.Log("sop.PrimaryProperty: "+sop.PrimaryProperty);
+        // Debug.Log("sop.IsToggleable: "+sop.IsToggleable);
+        // Debug.Log("sop.IsBreakable: "+sop.IsBreakable);
+        // Debug.Log("sop.IsFillable: "+sop.IsFillable);
+        // Debug.Log("sop.CanBeUsedUp: "+sop.CanBeUsedUp);
+        // Debug.Log("sop.IsCookable: "+sop.IsCookable);
+        // Debug.Log("sop.IsSliceable: "+sop.IsSliceable);
+        // Debug.Log("sop.IsOpenable: "+sop.IsOpenable);
+        // Debug.Log("sop.IsMoveable: "+sop.IsMoveable);
+        // Debug.Log("sop.ParentReceptacleObjectsIds: "+sop.ParentReceptacleObjectsIds());
+        // Debug.Log("obj.transform.parent.name: "+obj.transform.parent.name);
+
+
+
         ObjectStateA2T objectStateA2T = new()
         {
             name = obj.name,

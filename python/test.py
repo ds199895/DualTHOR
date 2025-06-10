@@ -94,14 +94,15 @@ def test_lift():
     controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 def test_dual_arm():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='x1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
     controller.step("moveahead", magnitude=1.6)
     controller.step("moveleft", magnitude=1.7)
 
-    controller.step("pick", objectID="Bowl_148b0fbf", arm="left")
-    controller.step("pick", objectID="Kitchen_Potato_01", arm="right")
+    # controller.step("pick", objectID="Bowl_148b0fbf", arm="left")
+
+    # controller.step("pick", objectID="Kitchen_Potato_01", arm="right")
     # example 1: sequential execution - left arm pick bowl, then right arm open drawer
     sequential_actions = [
         {
@@ -139,11 +140,25 @@ def test_dual_arm():
         }
     ]
 
+    
     # parallel execution (sequential=False)
     # results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
     # print(results)
+    # test place
+    # feedback=controller.step("place", objectID="Kitchen_Potato_01", arm="right",container="Kitchen_Pan_01")
+    # print(feedback)
+
     # controller.step("undo")
 
+
+def test_pick_place():
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller.start()
+    # controller.step("rotateright", magnitude=1)
+    # controller.step("moveahead", magnitude=1.6)
+    controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
+    controller.step("place", objectID="Kitchen_Cup_01", arm="left",container="Plate_49b95a7a")
+    
 def print_feedback_result(feedback, action_name):
     """print action execution result, including collision details"""
     success = feedback.get('success', False)
@@ -171,6 +186,8 @@ if __name__ == "__main__":
         test_dual_arm()
 
         # test_lift()
+
+        # test_pick_place()
 
         while True:
             time.sleep(1)

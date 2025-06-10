@@ -40,6 +40,9 @@ class TCPServer:
         """
         if not self.conn:
             raise Exception("No active connection to send data.")
+        # 确保数据以换行符结尾，用于标识数据包结束
+        if not data.endswith('\n'):
+            data += '\n'
         self.conn.sendall(data.encode())
         logging.info(f"Sent data: {data}")
 

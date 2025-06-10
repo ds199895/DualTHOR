@@ -582,7 +582,12 @@ public class AgentMovement : MonoBehaviour
                 }
                 else if (method.Name.Equals("Place", StringComparison.OrdinalIgnoreCase))
                 {
-                    StartCoroutine(Place((string)args[0], (bool)args[1], callback, (string)args[2]));
+                    Debug.Log("place args length: "+args.Length);
+                    for(int i=0;i<args.Length;i++){
+                        Debug.Log($"place args {i}: {args[i]}");
+                    }
+                
+                    StartCoroutine(Place((string)args[0], (bool)args[1], callback, (string)args[3]));
                 }
                 else if (method.Name.Equals("Toggle", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1610,15 +1615,16 @@ public class AgentMovement : MonoBehaviour
         hasMovedToPosition = false;
 
         Vector3 targetPosition;
-
+        Debug.Log($"Placing object {objectID} in container {container}");
         // If container is specified, move to container's interactive point first
         if (!string.IsNullOrEmpty(container))
         {
+            Debug.Log($"Moving to container {container} interactive point...");
             Transform containerInteractivePoint = SceneStateManager.GetInteractablePoint(container);
             if (containerInteractivePoint != null)
             {
                 // Apply vertical offset to the container's interactive point
-                targetPosition = containerInteractivePoint.position + Vector3.up * 0.1f; // 10cm vertical offset
+                targetPosition = containerInteractivePoint.position + Vector3.up * 0.3f; // 10cm vertical offset
                 Debug.Log($"Moving to container {container} interactive point: {targetPosition}");
             }
             else
