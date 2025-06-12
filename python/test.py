@@ -94,7 +94,7 @@ def test_lift():
     controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 def test_dual_arm():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
     controller.step("moveahead", magnitude=1.6)
@@ -142,17 +142,17 @@ def test_dual_arm():
 
     
     # parallel execution (sequential=False)
-    # results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
-    # print(results)
+    results = controller.execute_dual_arm_actions(parallel_actions, sequential=False)
+    print(results)
     # test place
-    # feedback=controller.step("place", objectID="Kitchen_Potato_01", arm="right",container="Kitchen_Pan_01")
-    # print(feedback)
+    feedback=controller.step("place", objectID="Kitchen_Potato_01", arm="right",container="Kitchen_Pan_01")
+    print(feedback)
 
     # controller.step("undo")
 
 
 def test_pick_place():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     controller.start()
     # controller.step("rotateright", magnitude=1)
     # controller.step("moveahead", magnitude=1.6)
