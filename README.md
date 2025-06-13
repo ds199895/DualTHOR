@@ -48,7 +48,6 @@ python test.py
 
 ## Interaction
 
-### Python Code:
 Python is mainly used to control the Agent in the virtual environment to perform navigation, interaction, control and other tasks, and to obtain perception data from the environment. The main scripts are:
    1. test.py: Main program entry, including launcher, tcp_server, server_ik; simply test the performance of humanoid robot low-level control.
    2. controller.py: Controller program, responsible for interacting with the Unity environment, starting the server, calling action methods, sending and providing feedback.
@@ -73,7 +72,7 @@ Python is mainly used to control the Agent in the virtual environment to perform
       - Resetjoint resets the mechanical arm joint angle, restoring to the initial joint angle, followed by parameter (arm=Left\Right). For example, `resetjoint arm=left`.
       ![alt text](image/img_v3_resetjoint.gif)
 
-#### Feedback System: After the action is completed, all state information will be automatically returned as feedback, including the robot and items.
+   5. Feedback System: After the action is completed, all state information will be automatically returned as feedback, including the robot and items.
 
 ## Visual Observation
 1. The scene has multiple cameras, including first-person and third-person front, back, left, and right views, to provide 360° panoramic view with no blind spots for image information acquisition, supporting free rotation in all directions, ensuring the robot can monitor the surrounding environment in real time, and the number and direction of views can be customized according to requirements. (Showing all views would be too performance-intensive, so how to display views is still to be discussed)
