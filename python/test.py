@@ -152,7 +152,7 @@ def test_dual_arm():
 
 
 def test_pick_place():
-    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     # controller.step("rotateright", magnitude=1)
     # controller.step("moveahead", magnitude=1.6)
@@ -183,11 +183,11 @@ if __name__ == "__main__":
     try:
         # test_controller()
 
-        test_dual_arm()
+        # test_dual_arm()
 
         # test_lift()
 
-        # test_pick_place()
+        test_pick_place()
 
         while True:
             time.sleep(1)
