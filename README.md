@@ -12,7 +12,6 @@ We have built a lightweight simulation environment based on [AI2-THOR](https://a
 ### 1. Clone the Project
 
 ### 2. Setup Configuration
----
 
 #### 1. Python Environment
 Create a virtual environment with Python version `3.10.15`.
@@ -20,7 +19,7 @@ Create a virtual environment with Python version `3.10.15`.
 conda create -n playground python=3.10.15
 conda activate playground
 ```
----
+
 
 #### 2. Install Required Libraries
 
@@ -33,7 +32,6 @@ cd python
 pip install -r requirements.txt
 ```
 
----
 IK(inverse kinematics)
 ```bash
 conda install pinocchio -c conda-forge
@@ -61,10 +59,13 @@ Python is mainly used to control the Agent in the virtual environment to perform
       ![alt text](image/img_v3_move.gif)
       - Rotate includes `RotateRight`, `RotateLeft`, command input can be uppercase or lowercase. Followed by parameters, the first parameter is rotation direction, default is 90°; the second parameter is success rate, default is 1. For example, `RotateRight Magnitude=1` means rotate right 90° by default, `RotateRight Magnitude=2` means rotate right 180°.
       ![alt text](image/img_v3_rotate.gif)
-      - Pick and Place are for grabbing and placing objects (need to teleport to the object first), the first parameter is arm selection (Left\Right) (currently defaulting to both arms, pending modification), the second parameter is the ObjectId of the interactive item. Details of ObjectId are introduced in the table. For example, `tp objectID=Kitchen_Cup_01` `pick arm=left objectID=Kitchen_Cup_01` means teleport to the Cup first, then grab the Cup with the left arm.
+      - Pick is for grabbing objects (need to navigate to the object first), the first parameter is arm selection (Left\Right) (currently defaulting to both arms, pending modification), the second parameter is the ObjectId of the interactive item. For example, `pick arm=left objectID=Kitchen_Cup_01` means grab the Cup with the left arm.
+      - Place is for placing objects. The place operation is based on a prior pick operation, meaning it assumes that there is already an object in the left/right arm by default. Like Pick, the first parameter of Placing is arm selection(Left\Right), And the third parameter, container, is optional. It indicates which container the object should be placed into. For example, `place arm=left container=Plate_49b95a7a` means place the object in left arm into the container named 'Plate_49b95a7a'.
       ![alt text](image/img_v3_pick.gif)
-      - Toggle and Open followed by ObjectId (need to teleport to the object first), currently defaults to right hand operation, pending modification. For example, `tp Kitchen_Faucet_01` `toggle Kitchen_Faucet_01` means teleport to the faucet and turn on the faucet.
+      - Toggle and Open followed by ObjectId (need to teleport to the object first), currently defaults to right hand operation, pending modification. For example,`toggle Kitchen_Faucet_01` means turn on the faucet with default right arm.
       ![alt text](image/img_v3_toggle.gif)
+      - "Lift" represents a bimanual operation, typically used for heavier and larger objects — often appliances — that require the use of both arms. By default, the "Lift" action uses both arms. The input parameter is the ObjectID.
+      ![alt text](image/img_v3_lift.gif)
       - TP means teleport, with only one parameter, ObjectId, which teleports to the vicinity of that item.
       - Undo and Redo are for state history management, Redo can roll back to the previous state information, while Undo is to cancel.
       - LoadState is for specified rollback, followed by the specified state id. For example, `loadstate stateID=1` means roll back to the first state.
@@ -103,7 +104,7 @@ A total of eight interaction states are set:
 4. **Cook**: Items can be cooked. For example, when a potato in a pot is heated to a certain temperature with the gas turned on, the potato will be cooked.
 5. **Fill**: Items can be filled with liquid. For example, a cup can be filled with water or coffee. When the cup is tilted 90°, the filled liquid will disappear.
 6. **Open**: Items can be opened. Such as opening a refrigerator door or a drawer.
-7. **Slice**: Items can be sliced. Such as slicing a potato into many pieces. Sliced items with the Cook property can also be cooked.
+7. **IsMovable**: Items that can be moved correspond to the action "lift", such as a coffee machine.
 8. **ToggleOnOff**: Items can be toggled. Such as faucet switches, coffee machine switches.
 9. **UsedUp**: Items can be used up. Such as toilet paper can be depleted.
 10.**Spill**: Items can be spilled. Such as cup filled with liquid.

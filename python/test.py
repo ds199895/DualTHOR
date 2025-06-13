@@ -185,9 +185,9 @@ if __name__ == "__main__":
 
         # test_dual_arm()
 
-        # test_lift()
+        test_lift()
 
-        test_pick_place()
+        # test_pick_place()
 
         while True:
             time.sleep(1)
