@@ -88,10 +88,12 @@ def test_lift():
     controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
-    controller.step("moveahead", magnitude=1.6)
+    controller.step("moveahead", magnitude=0.2)
+    controller.step("moveahead", magnitude=0.2)
+    controller.step('loadstate',stateid=1)
     # controller.step("moveright", magnitude=0.7)
     # controller.step("pick", objectID="Kitchen_Cup_01", arm="left")
-    controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
+    # controller.step("lift",objectID="Kitchen_CoffeeMachine_01")
 
 def test_dual_arm():
     controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
