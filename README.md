@@ -46,9 +46,8 @@ pip install casadi
 python test.py
 ```
 
-## Operation Methods
+## Interaction
 
-### 1. Python Side:
 Python is mainly used to control the Agent in the virtual environment to perform navigation, interaction, control and other tasks, and to obtain perception data from the environment. The main scripts are:
    1. test.py: Main program entry, including launcher, tcp_server, server_ik; simply test the performance of humanoid robot low-level control.
    2. controller.py: Controller program, responsible for interacting with the Unity environment, starting the server, calling action methods, sending and providing feedback.
@@ -73,16 +72,9 @@ Python is mainly used to control the Agent in the virtual environment to perform
       - Resetjoint resets the mechanical arm joint angle, restoring to the initial joint angle, followed by parameter (arm=Left\Right). For example, `resetjoint arm=left`.
       ![alt text](image/img_v3_resetjoint.gif)
 
-#### Feedback System: After the action is completed, all state information will be automatically returned as feedback, including the robot and items.
+   5. Feedback System: After the action is completed, all state information will be automatically returned as feedback, including the robot and items.
 
-### 2. Unity Side:
-  - Need to confirm IP and PORT in advance to ensure normal connection, currently defaulting to localhost and 5678.
-  - Press Z to enter robot control mode, WSAD to control robot movement, mouse to control rotation, center the screen on interactive items to interact. For example, left click to Pick, left click again to Place; aim at the faucet to turn the water on and off, aim at the refrigerator to open and close the door, etc. See [Interaction Table](#interaction-table) for details.
-  - Press P key to save all camera images, including first and third person camera screenshots saved to the local directory.
-  - Press the number 0 key to enter free camera mode, separating from the whole.
-
-
-## Visual System
+## Visual Observation
 1. The scene has multiple cameras, including first-person and third-person front, back, left, and right views, to provide 360° panoramic view with no blind spots for image information acquisition, supporting free rotation in all directions, ensuring the robot can monitor the surrounding environment in real time, and the number and direction of views can be customized according to requirements. (Showing all views would be too performance-intensive, so how to display views is still to be discussed)
 ![alt text](image/camera.png)
 2. Provides depth map acquisition within the camera's field of view.
@@ -90,7 +82,7 @@ Python is mainly used to control the Agent in the virtual environment to perform
 4. Saves image data from each view as PNG files with UUIDs in the local directory, and can later convert image data to binary data for transmission.
 
 
-## Item Interaction System
+## Item Details
 ### 1. Item Classification
 Objects are divided into three categories: Static/Moveable/Can pickup.
 1. Static: Objects that cannot be moved in the scene. Such as switches, faucets.
