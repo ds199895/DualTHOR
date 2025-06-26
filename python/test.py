@@ -12,7 +12,7 @@ def test_controller():
     # bathroom
     # livingroom
     # livingroom2
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="livingroom2")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="livingroom2")
     
     # 启动控制器
     controller.start()
@@ -85,7 +85,7 @@ def test_controller():
     logging.info("test end")
 
 def test_lift():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     controller.start()
     controller.step("rotateright", magnitude=1)
     controller.step("moveahead", magnitude=0.2)
@@ -154,7 +154,7 @@ def test_dual_arm():
 
 
 def test_pick_place():
-    controller = Controller(config_path="config.json", start_unity_exe=False,robot_type='h1', scene="kitchen")
+    controller = Controller(config_path="config.json", start_unity_exe=True,robot_type='h1', scene="kitchen")
     controller.start()
     # controller.step("rotateright", magnitude=1)
     # controller.step("moveahead", magnitude=1.6)
