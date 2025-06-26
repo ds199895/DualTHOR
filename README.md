@@ -3,7 +3,7 @@
 <div align="center">
 
 <!-- [[Website]](https://) -->
-[[arXiv]](https://arxiv.org/abs/2503.12533)
+[[arXiv]](https://arxiv.org/abs/2506.16012)
 
 [![Python Version](https://img.shields.io/badge/Python-3.10-blue.svg)]()
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
