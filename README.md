@@ -1,9 +1,9 @@
-# DualTHOR: A Dual-Arm Humanoid Simulation Platform for Contingency-Aware Planning
+# Towards Proprioception-Aware Embodied Planning for Dual-Arm Humanoid Robots
 
 <div align="center">
 
 <!-- [[Website]](https://) -->
-[[arXiv]](https://arxiv.org/abs/2506.16012)
+[[arXiv]](https://arxiv.org/abs/2510.07882)
 
 [![Python Version](https://img.shields.io/badge/Python-3.10-blue.svg)]()
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
