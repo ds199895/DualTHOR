@@ -9,6 +9,7 @@
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
 
 </div>
+
 ![alt text](image/overview.jpg)
 
 We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. Extendidng AI2-THOR capabilities, we have added the following features:
@@ -199,10 +200,10 @@ If you want to debug with Unity Editor, please change the controller parameter "
 ## Citation
 If you find our work useful, please consider citing us!
 ```
-@article{li2025dualthor,
-    title={DualTHOR: A Dual-Arm Humanoid Simulation Platform for Contingency-Aware Planning},
-    author={Boyu Li, Siyuan He, Hang Xu, Haoqi Yuan, Yu Zang, Liwei Hu, Junpeng Yue, Zhenxiong Jiang, Pengbo Hu, B{\"o}rje F. Karlsson, Yehui Tang, Zongqing Lu},
-    journal={arXiv preprint arXiv:2506.16012},
-    year={2025}
+@article{li2025towards,
+  title={Towards Proprioception-Aware Embodied Planning for Dual-Arm Humanoid Robots},
+  author={Li, Boyu and He, Siyuan and Xu, Hang and Yuan, Haoqi and Zang, Yu and Hu, Liwei and Yue, Junpeng and Jiang, Zhenxiong and Hu, Pengbo and Karlsson, B{\"o}rje F and others},
+  journal={arXiv preprint arXiv:2510.07882},
+  year={2025}
 }
 ```
