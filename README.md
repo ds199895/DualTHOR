@@ -12,7 +12,7 @@
 
 ![alt text](image/overview.jpg)
 
-We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. Extendidng AI2-THOR capabilities, we have added the following features:
+We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. We also propose Proprio-MLLM, an MLLM that incorporates proprioceptive information into dual-arm planning. Extendidng AI2-THOR capabilities, we have added the following features into DualTHOR:
 - Dual-arm task setup: Support more diverse dual-arm tasks including dual-arm essential tasks, dual-arm optional tasks, and single-arm tasks.
 - Dual-arm action execution: Now support parallel task execution with both arms.
 - Task replay mechanism: Support rolling back to any time step during task execution, improving data synthesis efficiency.
@@ -189,6 +189,11 @@ This system creates more realistic interactions where actions can occasionally f
   <img src="image/success1.jpg" width="49%" />
 </div>
 <p align="center"><strong>Success</strong></p>
+
+## TODO List
+- [x] Release DualTHOR with basic scenes
+- [ ] Release training code and pretrained weights for Proprio-MLLM
+- [ ] Add more dual-arm humanoid robots and object assets
 
 
 ## Extended Development
