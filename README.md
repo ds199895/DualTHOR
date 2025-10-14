@@ -2,9 +2,6 @@
 
 <div align="center">
 
-<!-- [[Website]](https://) -->
-[[arXiv]](https://arxiv.org/abs/2510.07882)
-
 [![Python Version](https://img.shields.io/badge/Python-3.10-blue.svg)]()
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
 
@@ -201,14 +198,4 @@ If you want to add some features or make modifications yourself, please install 
 
 If you want to debug with Unity Editor, please change the controller parameter "start_unity_exe" to False.
 
-
-## Citation
-If you find our work useful, please consider citing us!
-```
-@article{li2025towards,
-  title={Towards Proprioception-Aware Embodied Planning for Dual-Arm Humanoid Robots},
-  author={Li, Boyu and He, Siyuan and Xu, Hang and Yuan, Haoqi and Zang, Yu and Hu, Liwei and Yue, Junpeng and Jiang, Zhenxiong and Hu, Pengbo and Karlsson, B{\"o}rje F and others},
-  journal={arXiv preprint arXiv:2510.07882},
-  year={2025}
-}
 ```
