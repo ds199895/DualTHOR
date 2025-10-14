@@ -9,6 +9,7 @@
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
 
 </div>
+![alt text](image/overview.jpg)
 
 We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. Extendidng AI2-THOR capabilities, we have added the following features:
 - Dual-arm task setup: Support more diverse dual-arm tasks including dual-arm essential tasks, dual-arm optional tasks, and single-arm tasks.
