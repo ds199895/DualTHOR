@@ -1,16 +1,15 @@
-# DualTHOR: A Dual-Arm Humanoid Simulation Platform for Contingency-Aware Planning
+# Towards Proprioception-Aware Embodied Planning for Dual-Arm Humanoid Robots
 
 <div align="center">
-
-<!-- [[Website]](https://) -->
-[[arXiv]](https://arxiv.org/abs/2506.16012)
 
 [![Python Version](https://img.shields.io/badge/Python-3.10-blue.svg)]()
 [![GitHub license](https://img.shields.io/badge/MIT-blue)]()
 
 </div>
 
-We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. Extendidng AI2-THOR capabilities, we have added the following features:
+![alt text](image/overview.jpg)
+
+We have built a lightweight simulation environment based on [AI2-THOR](https://ai2thor.allenai.org/) for training and evaluation of embodied agents and multimodal models. We also propose Proprio-MLLM, an MLLM that incorporates proprioceptive information into dual-arm planning. Extendidng AI2-THOR capabilities, we have added the following features into DualTHOR:
 - Dual-arm task setup: Support more diverse dual-arm tasks including dual-arm essential tasks, dual-arm optional tasks, and single-arm tasks.
 - Dual-arm action execution: Now support parallel task execution with both arms.
 - Task replay mechanism: Support rolling back to any time step during task execution, improving data synthesis efficiency.
@@ -188,20 +187,15 @@ This system creates more realistic interactions where actions can occasionally f
 </div>
 <p align="center"><strong>Success</strong></p>
 
+## TODO List
+- [x] Release DualTHOR with basic scenes
+- [ ] Release training code and pretrained weights for Proprio-MLLM
+- [ ] Add more dual-arm humanoid robots and object assets
+
 
 ## Extended Development
 If you want to add some features or make modifications yourself, please install Unity Editor 2022.3.x or Unity 6. Then open the unity directory in the Unity Editor. After making your changes, rebuild the project to the unity/Build directory.
 
 If you want to debug with Unity Editor, please change the controller parameter "start_unity_exe" to False.
 
-
-## Citation
-If you find our work useful, please consider citing us!
-```
-@article{li2025dualthor,
-    title={DualTHOR: A Dual-Arm Humanoid Simulation Platform for Contingency-Aware Planning},
-    author={Boyu Li, Siyuan He, Hang Xu, Haoqi Yuan, Yu Zang, Liwei Hu, Junpeng Yue, Zhenxiong Jiang, Pengbo Hu, B{\"o}rje F. Karlsson, Yehui Tang, Zongqing Lu},
-    journal={arXiv preprint arXiv:2506.16012},
-    year={2025}
-}
 ```
